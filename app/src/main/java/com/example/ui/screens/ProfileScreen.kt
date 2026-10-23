@@ -104,6 +104,7 @@ fun ProfileScreen(
   modifier: Modifier = Modifier
 ) {
   val colors = CalTheme.colors
+  val context = LocalContext.current
   val scrollState = rememberScrollState()
 
   var circadianReminders by remember { mutableStateOf(true) }
@@ -982,7 +983,6 @@ fun ProfileScreen(
     }
 
     // Invite Friends & Earn 20% OFF Card
-    val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val referralCode = remember(uiState.userName) {
       val base = uiState.userName.filter { it.isLetter() }.take(4).uppercase()
