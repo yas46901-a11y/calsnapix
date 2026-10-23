@@ -1,0 +1,6 @@
+{
+  "name": "CalSnapix",
+  "description": "Personalized Indian nutrition, meal scanning, regional diet planning and wellness tracker.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
