@@ -762,7 +762,7 @@ fun DailyNutritionTrackingScreen(
       ) {
         Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = colors.accent, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(6.dp))
-        Text("MyCal AI", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = colors.ink)
+        Text("CalSnapix AI", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = colors.ink)
       }
     }
   }

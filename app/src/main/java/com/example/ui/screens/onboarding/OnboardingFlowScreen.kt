@@ -1,7 +1,10 @@
 package com.example.ui.screens.onboarding
 
+import android.content.Intent
+import android.net.Uri
 import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -71,8 +74,11 @@ import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -164,6 +170,7 @@ fun OnboardingFlowScreen(
 ) {
   val colors = CalTheme.colors
   val view = LocalView.current
+  val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
   val currentStep = uiState.onboardingStep.coerceIn(0, TOTAL_ONBOARDING_STEPS - 1)
 
@@ -201,6 +208,7 @@ fun OnboardingFlowScreen(
   var authPassword by remember { mutableStateOf("") }
   var authIsPasswordVisible by remember { mutableStateOf(false) }
   var authIsSignUpMode by remember { mutableStateOf(true) }
+  var authIs18OrOlder by remember { mutableStateOf(false) }
 
   // Step 22 Loading timer state
   var setupProgress by remember { mutableFloatStateOf(0f) }
@@ -224,10 +232,14 @@ fun OnboardingFlowScreen(
     localDiets,
     localRegions,
     localActivityLevel,
+    localHeightCm,
+    localWeightKg,
+    localTargetWeightKg,
     authName,
     authEmail,
     authPassword,
-    authIsSignUpMode
+    authIsSignUpMode,
+    authIs18OrOlder
   ) {
     derivedStateOf {
       when (currentStep) {
@@ -239,9 +251,13 @@ fun OnboardingFlowScreen(
         5 -> localHeightCm in 100..250 && localWeightKg in 30f..250f
         6 -> localAge in 13..95
         7 -> localGoalId.isNotBlank()
-        8 -> localTargetWeightKg in 30f..250f
+        8 -> {
+          val heightM = (localHeightCm.toFloat() / 100f).coerceAtLeast(0.5f)
+          val targetBmi = localTargetWeightKg / (heightM * heightM)
+          localTargetWeightKg in 30f..250f && targetBmi >= 18.5f
+        }
         9 -> true // motivational interstitial
-        10 -> localPaceKgPerWeek in 0.2f..1.2f
+        10 -> localPaceKgPerWeek in 0.2f..1.0f
         11 -> localObstacles.isNotEmpty()
         12 -> localDiets.isNotEmpty()
         13 -> true // allergies can be None
@@ -251,7 +267,7 @@ fun OnboardingFlowScreen(
         17 -> setupProgress >= 1f // loading step
         18 -> true // plan ready
         19 -> if (authIsSignUpMode) {
-          authName.trim().length >= 2 && authEmail.contains("@") && authPassword.length >= 6
+          authName.trim().length >= 2 && authEmail.contains("@") && authPassword.length >= 6 && authIs18OrOlder
         } else {
           authEmail.contains("@") && authPassword.length >= 6
         }
@@ -289,6 +305,12 @@ fun OnboardingFlowScreen(
         onUpdateGoal(localGoalId, localTargetWeightKg, localPaceKgPerWeek)
       }
       8 -> {
+        val heightM = (localHeightCm.toFloat() / 100f).coerceAtLeast(0.5f)
+        val targetBmi = localTargetWeightKg / (heightM * heightM)
+        if (targetBmi < 18.5f) {
+          Toast.makeText(context, "Target weight results in underweight BMI (< 18.5). Please choose a healthy target.", Toast.LENGTH_SHORT).show()
+          return
+        }
         onSaveAnswer("target_weight_kg", localTargetWeightKg)
         onUpdateGoal(localGoalId, localTargetWeightKg, localPaceKgPerWeek)
       }
@@ -320,6 +342,10 @@ fun OnboardingFlowScreen(
       }
       19 -> {
         if (authIsSignUpMode) {
+          if (!authIs18OrOlder) {
+            Toast.makeText(context, "Please confirm you are 18 years of age or older to register.", Toast.LENGTH_SHORT).show()
+            return
+          }
           onSignUp(authName.trim(), authEmail.trim(), authPassword)
         } else {
           onLogin(authEmail.trim(), authPassword)
@@ -503,6 +529,7 @@ fun OnboardingFlowScreen(
 
               // 8. Target Weight Wheel Picker
               8 -> Step9TargetWeight(
+                heightCm = localHeightCm,
                 currentWeightKg = localWeightKg,
                 targetWeightKg = localTargetWeightKg,
                 onTargetWeightChange = { localTargetWeightKg = it }
@@ -621,11 +648,13 @@ fun OnboardingFlowScreen(
                 password = authPassword,
                 isPasswordVisible = authIsPasswordVisible,
                 isSignUpMode = authIsSignUpMode,
+                is18OrOlder = authIs18OrOlder,
                 onToggleMode = { authIsSignUpMode = it },
                 onNameChange = { authName = it },
                 onEmailChange = { authEmail = it },
                 onPasswordChange = { authPassword = it },
                 onTogglePasswordVisibility = { authIsPasswordVisible = !authIsPasswordVisible },
+                on18OrOlderChange = { authIs18OrOlder = it },
                 onGoogleSignIn = onGoogleSignIn,
                 errorMessage = uiState.authError,
                 isLoading = uiState.isAuthLoading
@@ -645,7 +674,7 @@ fun OnboardingFlowScreen(
       }
 
       // 3. Pinned Bottom Continue Bar (Big black pill 56dp tall, disabled until answered)
-      if (currentStep > 0 && currentStep != 17) { // Screen 0 and 17 have their own inline action triggers
+      if (currentStep > 0 && currentStep != 17 && currentStep != 20) { // Screen 0, 17, and 20 (Paywall) have their own inline action triggers
         Surface(
           modifier = Modifier
             .fillMaxWidth()
@@ -751,23 +780,6 @@ private fun Step0Welcome(
   ) {
     Spacer(modifier = Modifier.height(12.dp))
 
-    // Official CalSnapix Logo (Uploaded Brand Asset)
-    Surface(
-      shape = RoundedCornerShape(22.dp),
-      color = Color(0xFF0F172A),
-      border = BorderStroke(2.dp, Color(0xFF10B981).copy(alpha = 0.6f)),
-      shadowElevation = 6.dp,
-      modifier = Modifier.padding(bottom = 12.dp)
-    ) {
-      Image(
-        painter = painterResource(R.drawable.ic_calsnapix_logo),
-        contentDescription = "CalSnapix Logo",
-        modifier = Modifier
-          .size(72.dp)
-          .clip(RoundedCornerShape(22.dp))
-      )
-    }
-
     // Powered by MyCal AI glowing pill
     Surface(
       shape = RoundedCornerShape(999.dp),
@@ -787,7 +799,7 @@ private fun Step0Welcome(
           modifier = Modifier.size(15.dp)
         )
         Text(
-          text = "Next-Gen Indian Nutrition • Powered by MyCal AI",
+          text = "Next-Gen Indian Nutrition • Powered by CalSnapix AI",
           fontSize = 12.sp,
           fontWeight = FontWeight.Bold,
           color = Color(0xFF10B981)
@@ -834,30 +846,23 @@ private fun Step0Welcome(
             )
         )
 
-        // Indian Thali illustration mockup
-        Column(
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.Center
+        // CalSnapix Green Brand Logo (Centered in Scanning View)
+        Surface(
+          shape = RoundedCornerShape(28.dp),
+          color = Color(0xFF0F172A),
+          border = BorderStroke(2.5.dp, Color(0xFF10B981)),
+          shadowElevation = 10.dp,
+          modifier = Modifier
+            .size(136.dp)
+            .testTag("onboarding_welcome_green_logo")
         ) {
-          Box(
+          Image(
+            painter = painterResource(R.drawable.ic_calsnapix_logo),
+            contentDescription = "CalSnapix Logo",
             modifier = Modifier
-              .size(150.dp)
-              .clip(CircleShape)
-              .background(colors.surface2)
-              .border(2.dp, Color(0xFFE2E8F0).copy(alpha = 0.3f), CircleShape),
-            contentAlignment = Alignment.Center
-          ) {
-            Canvas(modifier = Modifier.size(126.dp)) {
-              // Plate rim
-              drawCircle(color = Color(0xFFD4AF37), style = Stroke(width = 5.dp.toPx()))
-              // Dal katori (rich golden yellow)
-              drawCircle(color = Color(0xFFF59E0B), radius = 22.dp.toPx(), center = Offset(size.width * 0.35f, size.height * 0.35f))
-              // Paneer / Sabzi katori (rich masala red)
-              drawCircle(color = Color(0xFFEF4444), radius = 22.dp.toPx(), center = Offset(size.width * 0.68f, size.height * 0.38f))
-              // Rotis (warm wheat)
-              drawCircle(color = Color(0xFFD97706).copy(alpha = 0.8f), radius = 30.dp.toPx(), center = Offset(size.width * 0.5f, size.height * 0.7f))
-            }
-          }
+              .fillMaxSize()
+              .clip(RoundedCornerShape(28.dp))
+          )
         }
 
         // Camera laser beam (vibrant animated green & white)
@@ -1696,7 +1701,7 @@ private fun Step8PrimaryGoal(
       Triple("mindful_eating", "Maintain & Vitality", "Eat with Ayurvedic circadian rhythms and maintain optimal BMI."),
       Triple("gain_weight", "Gain Healthy Weight", "Nutrient-dense Indian surplus with ghee, nuts, paneer & sattu."),
       Triple("build_muscle", "Build Muscle & High Protein", "Hit 80–120g clean daily protein with Indian staples."),
-      Triple("manage_health", "Eat Healthier & Balance Gut", "Low glycemic, gut-friendly Indian meal plans designed by dietitians.")
+      Triple("manage_health", "Eat Healthier & Balance Gut", "Low glycemic, gut-friendly Indian meal plans designed by nutrition experts.")
     )
 
     goals.forEach { (id, title, desc) ->
@@ -1764,6 +1769,7 @@ private fun Step8PrimaryGoal(
 // -------------------------------------------------------------
 @Composable
 private fun Step9TargetWeight(
+  heightCm: Int,
   currentWeightKg: Float,
   targetWeightKg: Float,
   onTargetWeightChange: (Float) -> Unit
@@ -1771,6 +1777,10 @@ private fun Step9TargetWeight(
   val colors = CalTheme.colors
   val weightList = remember { (35..160).map { it.toFloat() } }
   val diff = targetWeightKg - currentWeightKg
+  val heightM = (heightCm.toFloat() / 100f).coerceAtLeast(0.5f)
+  val targetBmi = targetWeightKg / (heightM * heightM)
+  val isUnderweight = targetBmi < 18.5f
+  val minHealthyWeightKg = 18.5f * heightM * heightM
 
   Column(
     modifier = Modifier.fillMaxWidth(),
@@ -1805,9 +1815,9 @@ private fun Step9TargetWeight(
       testTag = "target_weight_wheel_picker"
     )
 
-    Spacer(modifier = Modifier.height(24.dp))
+    Spacer(modifier = Modifier.height(20.dp))
 
-    // Live dynamic line
+    // Estimated change indicator chip (No guaranteed promises)
     Surface(
       shape = RoundedCornerShape(999.dp),
       color = colors.accentSoft
@@ -1825,8 +1835,8 @@ private fun Step9TargetWeight(
         )
         Text(
           text = when {
-            diff < -0.1f -> "You'll lose ${String.format(java.util.Locale.US, "%.1f", abs(diff))} kg"
-            diff > 0.1f -> "You'll gain ${String.format(java.util.Locale.US, "%.1f", diff)} kg"
+            diff < -0.1f -> "Estimated weight change: ~${String.format(java.util.Locale.US, "%.1f", abs(diff))} kg"
+            diff > 0.1f -> "Estimated weight change: ~${String.format(java.util.Locale.US, "%.1f", diff)} kg"
             else -> "Maintain your healthy weight"
           },
           fontSize = 14.sp,
@@ -1835,6 +1845,54 @@ private fun Step9TargetWeight(
         )
       }
     }
+
+    // Safety BMI Check Alert: block underweight targets (< 18.5)
+    if (isUnderweight) {
+      Spacer(modifier = Modifier.height(14.dp))
+      Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = colors.warn.copy(alpha = 0.12f),
+        border = BorderStroke(1.dp, colors.warn),
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        Row(
+          modifier = Modifier.padding(14.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+          Icon(
+            imageVector = Icons.Default.Warning,
+            contentDescription = "Warning",
+            tint = colors.warn,
+            modifier = Modifier.size(24.dp)
+          )
+          Column {
+            Text(
+              text = "Unsafe Target Weight (BMI: ${String.format(java.util.Locale.US, "%.1f", targetBmi)})",
+              fontSize = 13.sp,
+              fontWeight = FontWeight.Bold,
+              color = colors.warn
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+              text = "This target is in the underweight range (BMI < 18.5). For your height (${heightCm} cm), the minimum safe healthy weight is ${String.format(java.util.Locale.US, "%.1f", minHealthyWeightKg)} kg.",
+              fontSize = 12.sp,
+              color = colors.ink,
+              lineHeight = 16.sp
+            )
+          }
+        }
+      }
+    }
+
+    Spacer(modifier = Modifier.height(14.dp))
+    Text(
+      text = "ℹ️ Please consult a doctor or healthcare professional before starting any weight loss program.",
+      fontSize = 11.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center,
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+    )
   }
 }
 
@@ -1859,9 +1917,9 @@ private fun Step10Motivational(
     Spacer(modifier = Modifier.height(8.dp))
     Text(
       text = if (targetWeightKg < currentWeightKg) {
-        "Losing ${String.format(java.util.Locale.US, "%.1f", diff)} kg is completely realistic. It's not hard at all with a personalized Indian meal plan!"
+        "An estimated target change of ~${String.format(java.util.Locale.US, "%.1f", diff)} kg is realistic. Individual results vary; we guide you step by step with personalized Indian meal choices."
       } else {
-        "Gaining ${String.format(java.util.Locale.US, "%.1f", diff)} kg of lean mass is a great goal. We will guide every step."
+        "An estimated target gain of ~${String.format(java.util.Locale.US, "%.1f", diff)} kg of lean mass is a great goal. We will guide every step."
       },
       fontSize = 16.sp,
       lineHeight = 24.sp,
@@ -2685,7 +2743,7 @@ private fun Step19Notifications(
     Spacer(modifier = Modifier.height(32.dp))
 
     val notificationFeatures = listOf(
-      Icons.Default.Schedule to ("Agni Digest Windows" to "Reminders at 8:30 AM & 1:30 PM for peak digestion"),
+      Icons.Default.Schedule to ("Traditional Meal Windows" to "Traditional Ayurvedic lifestyle reminders at 8:30 AM & 1:30 PM (for general interest)"),
       Icons.Default.Opacity to ("Hydration Check-ins" to "Gentle water prompts spaced evenly across the day"),
       Icons.Default.AutoAwesome to ("Daily Indian Macro Summary" to "Evening recap of your calorie, protein, and carb balance")
     )
@@ -3364,11 +3422,13 @@ private fun Step24CreateAccount(
   password: String,
   isPasswordVisible: Boolean,
   isSignUpMode: Boolean,
+  is18OrOlder: Boolean,
   onToggleMode: (Boolean) -> Unit,
   onNameChange: (String) -> Unit,
   onEmailChange: (String) -> Unit,
   onPasswordChange: (String) -> Unit,
   onTogglePasswordVisibility: () -> Unit,
+  on18OrOlderChange: (Boolean) -> Unit,
   onGoogleSignIn: () -> Unit,
   errorMessage: String?,
   isLoading: Boolean
@@ -3563,6 +3623,37 @@ private fun Step24CreateAccount(
       modifier = Modifier.fillMaxWidth().testTag("onboarding_signup_password")
     )
 
+    // Age confirmation under India DPDP Act for Sign Up
+    if (isSignUpMode) {
+      Spacer(modifier = Modifier.height(14.dp))
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(12.dp))
+          .clickable { on18OrOlderChange(!is18OrOlder) }
+          .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Checkbox(
+          checked = is18OrOlder,
+          onCheckedChange = on18OrOlderChange,
+          colors = CheckboxDefaults.colors(
+            checkedColor = colors.accent,
+            uncheckedColor = colors.ink2
+          ),
+          modifier = Modifier.testTag("onboarding_signup_age_checkbox")
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+          text = "I confirm that I am 18 years of age or older (Required under India DPDP Act)",
+          fontSize = 12.sp,
+          color = colors.ink,
+          fontWeight = FontWeight.Medium,
+          lineHeight = 16.sp
+        )
+      }
+    }
+
     if (errorMessage != null) {
       Spacer(modifier = Modifier.height(10.dp))
       Text(
@@ -3583,6 +3674,10 @@ private fun Step24CreateAccount(
     Spacer(modifier = Modifier.height(16.dp))
 
     // Terms & Conditions and Privacy Policy Links (In Sign In / Sign Up)
+    val context = LocalContext.current
+    val termsUrl = "https://claude.ai/artifact/6oxxES7VRyyNnrG9HVxN45"
+    val privacyUrl = "https://claude.ai/artifact/HPtn6GbWs3uTXEYTFEQJ9U"
+
     Column(
       modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
@@ -3603,7 +3698,13 @@ private fun Step24CreateAccount(
           fontWeight = FontWeight.Bold,
           color = colors.accent,
           modifier = Modifier
-            .clickable { showTermsDialog = true }
+            .clickable {
+              try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(termsUrl)))
+              } catch (e: Exception) {
+                showTermsDialog = true
+              }
+            }
             .padding(4.dp)
             .testTag("onboarding_terms_link")
         )
@@ -3614,7 +3715,13 @@ private fun Step24CreateAccount(
           fontWeight = FontWeight.Bold,
           color = colors.accent,
           modifier = Modifier
-            .clickable { showPrivacyDialog = true }
+            .clickable {
+              try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl)))
+              } catch (e: Exception) {
+                showPrivacyDialog = true
+              }
+            }
             .padding(4.dp)
             .testTag("onboarding_privacy_link")
         )
@@ -3634,7 +3741,7 @@ private fun Step24CreateAccount(
             verticalArrangement = Arrangement.spacedBy(10.dp)
           ) {
             Text(
-              text = "Last Updated: October 2026\nApp: CalSnapix • Indian Nutrition & Wellness",
+              text = "Last Updated: October 2026\nApp: CalSnapix • Indian Nutrition & Wellness\nPublic URL: calsnapix.in/terms",
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = colors.accent
@@ -3658,7 +3765,7 @@ private fun Step24CreateAccount(
               lineHeight = 17.sp
             )
             Text(
-              text = "4. Data Ownership & Erasure:\nYou retain full ownership of your records. You may permanently delete your account and wipe all logs at any time from your profile.",
+              text = "4. Data Ownership & Erasure:\nYou retain full ownership of your records. You may permanently delete your account and wipe all logs at any time from your profile or via calsnapix.in/delete-account.",
               fontSize = 12.sp,
               color = colors.ink2,
               lineHeight = 17.sp
@@ -3689,13 +3796,13 @@ private fun Step24CreateAccount(
             verticalArrangement = Arrangement.spacedBy(10.dp)
           ) {
             Text(
-              text = "Effective Date: October 2026\nApp: CalSnapix • Zero-Knowledge Nutrition Privacy",
+              text = "Effective Date: October 2026\nApp: CalSnapix • Encrypted Nutrition Privacy\nPublic URL: calsnapix.in/privacy",
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = colors.accent
             )
             Text(
-              text = "1. Zero-Knowledge Privacy:\nWe do not sell, broker, or rent your biometric data, weight history, or meal photos to third parties or advertising networks.",
+              text = "1. Privacy Commitment:\nWe never sell your data. Your logs are encrypted. We do not sell, broker, or rent your biometric data, weight history, or meal photos to third parties or advertising networks.",
               fontSize = 12.sp,
               color = colors.ink,
               lineHeight = 17.sp
@@ -3707,7 +3814,7 @@ private fun Step24CreateAccount(
               lineHeight = 17.sp
             )
             Text(
-              text = "3. Data Security & Erasure:\nProtected with 256-bit encryption. Complete one-tap account deletion is permanently available under Profile > Delete Account.",
+              text = "3. Data Security & Erasure:\nProtected with 256-bit encryption. Complete one-tap account deletion is permanently available under Profile > Delete Account or web deletion at calsnapix.in/delete-account.",
               fontSize = 12.sp,
               color = colors.ink2,
               lineHeight = 17.sp

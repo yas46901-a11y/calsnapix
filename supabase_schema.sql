@@ -67,26 +67,61 @@ CREATE INDEX IF NOT EXISTS idx_meals_user_id ON public.meals (user_id);
 CREATE INDEX IF NOT EXISTS idx_scanned_meals_user_id ON public.scanned_meals (user_id);
 CREATE INDEX IF NOT EXISTS idx_scanned_meals_barcode ON public.scanned_meals (barcode);
 
--- 6. Row Level Security (RLS)
+-- 6. Zero-Trust Row Level Security (RLS) - Users only read and write their own records
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scanned_meals ENABLE ROW LEVEL SECURITY;
 
--- Allow public access with anon key for mobile app client
-CREATE POLICY "Allow anon read user_profiles" ON public.user_profiles FOR SELECT USING (true);
-CREATE POLICY "Allow anon insert user_profiles" ON public.user_profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anon update user_profiles" ON public.user_profiles FOR UPDATE USING (true);
-CREATE POLICY "Allow anon delete user_profiles" ON public.user_profiles FOR DELETE USING (true);
+-- 6.1 user_profiles: Each user can only select, insert, update, or delete their own profile record
+CREATE POLICY "Users can only read their own profile"
+    ON public.user_profiles FOR SELECT
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
 
-CREATE POLICY "Allow anon read meals" ON public.meals FOR SELECT USING (true);
-CREATE POLICY "Allow anon insert meals" ON public.meals FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anon update meals" ON public.meals FOR UPDATE USING (true);
-CREATE POLICY "Allow anon delete meals" ON public.meals FOR DELETE USING (true);
+CREATE POLICY "Users can only insert their own profile"
+    ON public.user_profiles FOR INSERT
+    WITH CHECK (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
 
-CREATE POLICY "Allow anon read scanned_meals" ON public.scanned_meals FOR SELECT USING (true);
-CREATE POLICY "Allow anon insert scanned_meals" ON public.scanned_meals FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anon update scanned_meals" ON public.scanned_meals FOR UPDATE USING (true);
-CREATE POLICY "Allow anon delete scanned_meals" ON public.scanned_meals FOR DELETE USING (true);
+CREATE POLICY "Users can only update their own profile"
+    ON public.user_profiles FOR UPDATE
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+CREATE POLICY "Users can only delete their own profile"
+    ON public.user_profiles FOR DELETE
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+-- 6.2 meals: Strict isolation preventing cross-account data leakage
+CREATE POLICY "Users can only read their own meals"
+    ON public.meals FOR SELECT
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+CREATE POLICY "Users can only insert their own meals"
+    ON public.meals FOR INSERT
+    WITH CHECK (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+CREATE POLICY "Users can only update their own meals"
+    ON public.meals FOR UPDATE
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+CREATE POLICY "Users can only delete their own meals"
+    ON public.meals FOR DELETE
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+-- 6.3 scanned_meals: Strict isolation for camera and barcode meal scans
+CREATE POLICY "Users can only read their own scanned meals"
+    ON public.scanned_meals FOR SELECT
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+CREATE POLICY "Users can only insert their own scanned meals"
+    ON public.scanned_meals FOR INSERT
+    WITH CHECK (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+CREATE POLICY "Users can only update their own scanned meals"
+    ON public.scanned_meals FOR UPDATE
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
+
+CREATE POLICY "Users can only delete their own scanned meals"
+    ON public.scanned_meals FOR DELETE
+    USING (auth.uid() IS NOT NULL AND (auth.uid()::text = user_id::text OR user_id = (SELECT id FROM auth.users WHERE id = auth.uid() LIMIT 1)));
 
 -- ====================================================================
 -- 7. Onboarding State Persistence & Discount tracking in User Profiles
@@ -269,3 +304,84 @@ BEGIN
     );
 END;
 $$;
+
+-- ====================================================================
+-- 9. Server-Side Discount & Coupon System (e.g. INSTA20)
+-- Prevents client-side manipulation and limits to 1 use per account
+-- ====================================================================
+CREATE TABLE IF NOT EXISTS public.coupon_codes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code TEXT UNIQUE NOT NULL,
+    discount_percent INT NOT NULL CHECK (discount_percent BETWEEN 1 AND 100),
+    max_redemptions_per_account INT DEFAULT 1,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Seed initial official INSTA20 coupon
+INSERT INTO public.coupon_codes (code, discount_percent, max_redemptions_per_account, active)
+VALUES ('INSTA20', 20, 1, true)
+ON CONFLICT (code) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS public.coupon_redemptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    coupon_id UUID NOT NULL REFERENCES public.coupon_codes(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    redeemed_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT unique_user_coupon UNIQUE(user_id, coupon_id)
+);
+
+ALTER TABLE public.coupon_codes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.coupon_redemptions ENABLE ROW LEVEL SECURITY;
+
+CREATE OR REPLACE FUNCTION public.validate_and_redeem_coupon(p_code TEXT)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth, pg_temp
+AS $$
+DECLARE
+    v_user_id UUID;
+    v_coupon_rec RECORD;
+    v_already_redeemed BOOLEAN;
+BEGIN
+    v_user_id := auth.uid();
+    p_code := UPPER(TRIM(p_code));
+
+    SELECT * INTO v_coupon_rec
+    FROM public.coupon_codes
+    WHERE code = p_code AND active = true;
+
+    IF v_coupon_rec.id IS NULL THEN
+        RETURN jsonb_build_object('valid', false, 'error', 'Invalid or expired discount code');
+    END IF;
+
+    IF v_user_id IS NOT NULL THEN
+        SELECT EXISTS (
+            SELECT 1 FROM public.coupon_redemptions
+            WHERE coupon_id = v_coupon_rec.id AND user_id = v_user_id
+        ) INTO v_already_redeemed;
+
+        IF v_already_redeemed THEN
+            RETURN jsonb_build_object('valid', false, 'error', 'This discount code has already been redeemed by your account');
+        END IF;
+
+        -- Record server redemption
+        INSERT INTO public.coupon_redemptions (coupon_id, user_id)
+        VALUES (v_coupon_rec.id, v_user_id);
+
+        -- Update user profile
+        UPDATE public.user_profiles
+        SET applied_discount_percent = v_coupon_rec.discount_percent
+        WHERE user_id = (SELECT id FROM auth.users WHERE id = v_user_id LIMIT 1);
+    END IF;
+
+    RETURN jsonb_build_object(
+        'valid', true,
+        'code', v_coupon_rec.code,
+        'discount_percent', v_coupon_rec.discount_percent,
+        'message', format('20%% discount code applied to your subscription!')
+    );
+END;
+$$;
+

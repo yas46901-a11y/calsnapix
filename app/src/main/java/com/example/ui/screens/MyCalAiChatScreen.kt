@@ -114,7 +114,7 @@ fun MyCalAiChatScreen(
     mutableStateListOf(
       ChatMessage(
         isUser = false,
-        text = "Namaste ${uiState.userName.substringBefore(" ")}! 🙏 I am **MyCal AI**, your personal Clinical Dietitian and Indian Nutrition Coach.\n\nI can help you calibrate your daily calories (${uiState.dailyCalorieTarget} kcal), design high-protein vegetarian meal plans, navigate Indian wedding buffets, or balance your doshas. What's on your mind today?"
+        text = "Namaste ${uiState.userName.substringBefore(" ")}! 🙏 I am **CalSnapix AI**, your personal AI Nutrition Assistant.\n\nI can help you calculate your daily calories (${uiState.dailyCalorieTarget} kcal), suggest high-protein vegetarian meal options, explore healthy food swaps, or understand portion sizes. What's on your mind today?"
       )
     )
   }
@@ -122,11 +122,11 @@ fun MyCalAiChatScreen(
   val suggestedPrompts = listOf(
     "🥗 Dinner ideas under 400 kcal?",
     "💪 How to hit 100g protein as a vegetarian?",
-    "🍛 Is Dal Makhani okay for fat loss?",
+    "🍛 Is Dal Makhani okay for weight management?",
     "☕ Best healthy evening snack swaps for chai?",
-    "🌾 Bajra vs Ragi roti for weight loss?",
-    "🔥 How to naturally stimulate digestive agni?",
-    "🍽️ What to eat at an Indian wedding buffet?"
+    "🌾 Bajra vs Ragi roti for fiber?",
+    "🌿 Traditional meal timing and hydration tips?",
+    "🍽️ What to choose at an Indian wedding buffet?"
   )
 
   // Speech to text launcher
@@ -238,7 +238,7 @@ fun MyCalAiChatScreen(
                   horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                   Text(
-                    text = "MyCal AI",
+                    text = "CalSnapix AI",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = colors.ink,
@@ -264,7 +264,7 @@ fun MyCalAiChatScreen(
                   )
                 }
                 Text(
-                  text = "AI Clinical Dietitian • Active Coaching",
+                  text = "AI Nutrition Assistant • General Wellness",
                   fontSize = 11.sp,
                   color = colors.ink2
                 )
@@ -316,7 +316,7 @@ fun MyCalAiChatScreen(
           ) {
             Icon(
               imageVector = Icons.Default.Search,
-              contentDescription = "Search MyCal AI",
+              contentDescription = "Search CalSnapix AI",
               tint = colors.accent,
               modifier = Modifier.size(20.dp)
             )
@@ -478,7 +478,7 @@ fun MyCalAiChatScreen(
                 verticalAlignment = Alignment.CenterVertically
               ) {
                 Text(
-                  text = "🎯 Ask MyCal AI for My ${userWeightKg}kg Meal Plan",
+                  text = "🎯 Ask CalSnapix AI for My ${userWeightKg}kg Meal Plan",
                   fontSize = 11.sp,
                   fontWeight = FontWeight.Bold,
                   color = colors.accent
@@ -576,7 +576,7 @@ fun MyCalAiChatScreen(
                         modifier = Modifier.size(15.dp)
                       )
                       Text(
-                        text = "MyCal AI Dietitian",
+                        text = "CalSnapix AI Nutrition Assistant",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = colors.accent
@@ -588,6 +588,13 @@ fun MyCalAiChatScreen(
                       fontSize = 14.sp,
                       lineHeight = 21.sp,
                       color = colors.ink
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                      text = "⚠️ AI-generated, not medical advice",
+                      fontSize = 10.sp,
+                      color = colors.ink2,
+                      fontWeight = FontWeight.Normal
                     )
                   }
                 }
@@ -618,7 +625,7 @@ fun MyCalAiChatScreen(
                       color = colors.accent
                     )
                     Text(
-                      text = "MyCal AI is formulating dietitian advice...",
+                      text = "CalSnapix AI is formulating nutrition suggestions...",
                       fontSize = 12.sp,
                       color = colors.ink2
                     )
@@ -652,7 +659,7 @@ fun MyCalAiChatScreen(
                   val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                     putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                     putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
-                    putExtra(RecognizerIntent.EXTRA_PROMPT, "Ask MyCal AI your nutrition question...")
+                    putExtra(RecognizerIntent.EXTRA_PROMPT, "Ask CalSnapix AI your nutrition question...")
                   }
                   speechLauncher.launch(intent)
                 } catch (e: Exception) {

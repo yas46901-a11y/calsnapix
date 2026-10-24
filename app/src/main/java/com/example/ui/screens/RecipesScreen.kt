@@ -264,12 +264,12 @@ fun RecipesScreen(
           ) {
             Icon(
               imageVector = Icons.Default.AutoAwesome,
-              contentDescription = "MyCal AI",
+              contentDescription = "CalSnapix AI",
               tint = colors.accent,
               modifier = Modifier.size(15.dp)
             )
             Text(
-              text = "MyCal AI",
+              text = "CalSnapix AI",
               fontSize = 12.sp,
               fontWeight = FontWeight.Bold,
               color = colors.accent
@@ -475,8 +475,8 @@ fun RecipesScreen(
             }
           }
           Column {
-            Text("MyCal AI Kitchen Architect", fontWeight = FontWeight.Bold, color = colors.ink, fontSize = 18.sp)
-            Text("MyCal AI Chef • Healthy Global Cooking", fontSize = 11.sp, color = colors.accent)
+            Text("CalSnapix AI Kitchen Architect", fontWeight = FontWeight.Bold, color = colors.ink, fontSize = 18.sp)
+            Text("CalSnapix AI Chef • Healthy Global Cooking", fontSize = 11.sp, color = colors.accent)
           }
         }
       },
@@ -849,7 +849,7 @@ fun RecipesScreen(
             }
           }
           Column {
-            Text("MyCal AI Voice Meal Logger", fontWeight = FontWeight.Bold, color = colors.ink, fontSize = 17.sp)
+            Text("CalSnapix AI Voice Meal Logger", fontWeight = FontWeight.Bold, color = colors.ink, fontSize = 17.sp)
             Text("Speak Your Meal • Instant Nutrition Parsing", fontSize = 11.sp, color = colors.accent)
           }
         }

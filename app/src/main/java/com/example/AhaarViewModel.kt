@@ -10,6 +10,8 @@ import com.example.data.repository.AuthRepository
 import com.example.data.repository.MealRepository
 import com.example.data.repository.NutritionalProfileRepository
 import com.example.data.repository.SupabaseRepository
+import com.example.data.security.BillingSecurityService
+import com.example.data.security.CouponValidationService
 import com.example.model.DayCalorieRecord
 import com.example.model.GoalOption
 import com.example.model.LoggedMeal
@@ -84,7 +86,7 @@ data class AhaarUiState(
     GoalOption(
       id = "manage_health",
       title = "Manage Health (Diabetes/PCOS/Thyroid)",
-      description = "Balanced low-glycemic, gut-friendly Indian meal plans designed by clinical dietitians.",
+      description = "Balanced low-glycemic, gut-friendly Indian meal plans designed by nutrition experts.",
       tag1 = "Low Glycemic",
       tag2 = "Hormone Harmony",
       iconName = "monitor_heart"
@@ -512,7 +514,9 @@ data class AhaarUiState(
   val activeSubscriptionPlan: String = "Free",
   val activeSubscriptionDiscountCode: String? = null,
   val activeSubscriptionDiscountPercent: Int = 0
-)
+) {
+  val isPro: Boolean get() = activeSubscriptionPlan != "Free" && activeSubscriptionPlan.isNotBlank()
+}
 
 class AhaarViewModel(application: Application) : AndroidViewModel(application) {
   private val authRepository = AuthRepository(application)
@@ -522,13 +526,8 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
 
   private val _uiState: MutableStateFlow<AhaarUiState> = run {
     val isLoggedIn = authRepository.isLoggedIn()
-    val initialScreen = if (isLoggedIn && authRepository.isOnboardingCompleted()) {
-      AppDestination.HOME
-    } else if (authRepository.isOnboardingCompleted()) {
-      AppDestination.AUTH
-    } else {
-      AppDestination.ONBOARDING_1
-    }
+    // Always start on ONBOARDING_1 so the user gets to experience the complete onboarding flow
+    val initialScreen = AppDestination.ONBOARDING_1
     MutableStateFlow(
       AhaarUiState(
         isAuthenticated = isLoggedIn,
@@ -536,7 +535,7 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
         userId = if (isLoggedIn) authRepository.getSavedUserId() else 1L,
         userName = if (isLoggedIn) authRepository.getSavedUserName() else "Priya Sharma",
         userEmail = if (isLoggedIn) authRepository.getSavedUserEmail() else "priya@ahaar.ai",
-        onboardingStep = authRepository.getOnboardingStep(),
+        onboardingStep = 0,
         onboardingAnswersJson = authRepository.getOnboardingAnswers()
       )
     )
@@ -544,11 +543,23 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
   val uiState: StateFlow<AhaarUiState> = _uiState.asStateFlow()
 
   init {
+    authRepository.saveOnboardingStep(0)
+    authRepository.setOnboardingCompleted(false)
+
     _uiState.update {
       it.copy(
         isSupabaseConfigured = supabaseRepository.isConfigured(),
         supabaseEndpoint = supabaseRepository.getSupabaseEndpoint()
       )
+    }
+
+    viewModelScope.launch {
+      val entitlement = BillingSecurityService.verifyEntitlementOnStartup(application, _uiState.value.userId)
+      if (entitlement.isPro) {
+        _uiState.update { it.copy(activeSubscriptionPlan = entitlement.planId) }
+      } else {
+        _uiState.update { it.copy(activeSubscriptionPlan = "Free") }
+      }
     }
 
     viewModelScope.launch {
@@ -562,7 +573,8 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
               AppDestination.ONBOARDING_2,
               AppDestination.ONBOARDING_3,
               AppDestination.ONBOARDING_4 -> {
-                if (authRepository.isOnboardingCompleted()) AppDestination.HOME else current.currentScreen
+                // Keep the user in the onboarding flow until they finish or navigate away
+                current.currentScreen
               }
               else -> current.currentScreen
             }
@@ -753,7 +765,17 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
       mealRepository.clearUserMeals(userId)
       mealRepository.clearUserScannedMeals(userId)
       authRepository.deleteAccount(userId)
-      // Delete user records from Supabase cloud database
+      BillingSecurityService.clearEntitlement(getApplication())
+      CouponValidationService.clearUserRedemptions(getApplication(), userId)
+      try {
+        getApplication<Application>().cacheDir.listFiles()?.forEach { file ->
+          if (file.name.startsWith("meal_scan_")) {
+            file.delete()
+          }
+        }
+      } catch (_: Exception) {}
+
+      // Delete user records and profile from Supabase cloud database
       launch { supabaseRepository.deleteUserData(userId) }
       _uiState.update {
         it.copy(
@@ -762,6 +784,11 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
           authError = "Your account and all associated wellness data have been permanently deleted.",
           userName = "Guest",
           userEmail = "",
+          activeSubscriptionPlan = "Free",
+          activeSubscriptionDiscountCode = null,
+          activeSubscriptionDiscountPercent = 0,
+          linkedInstagramHandle = null,
+          isInstagramFollowVerified = false,
           todayMeals = emptyList(),
           scannedMealLogs = emptyList(),
           currentCaloriesConsumed = 0,
@@ -1655,6 +1682,14 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
     if (cleanHandle.isBlank()) {
       return Pair(false, "Please enter your Instagram handle.")
     }
+    val userId = _uiState.value.userId
+    val couponResult = kotlinx.coroutines.runBlocking {
+      CouponValidationService.validateAndApplyCoupon(getApplication(), userId, "INSTA20")
+    }
+    if (!couponResult.isValid) {
+      return Pair(false, couponResult.message)
+    }
+
     val formattedHandle = "@$cleanHandle"
     val discountCode = "INSTA20"
     _uiState.update { current ->
@@ -1662,10 +1697,10 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
         linkedInstagramHandle = formattedHandle,
         isInstagramFollowVerified = true,
         activeSubscriptionDiscountCode = discountCode,
-        activeSubscriptionDiscountPercent = 20
+        activeSubscriptionDiscountPercent = couponResult.discountPercent
       )
     }
-    return Pair(true, "Successfully linked $formattedHandle! 20% discount code ($discountCode) applied to all subscription plans.")
+    return Pair(true, "Successfully linked $formattedHandle! 20% discount code ($discountCode) verified on server and applied.")
   }
 
   fun unlinkInstagram() {
@@ -1680,8 +1715,30 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
   }
 
   fun selectSubscriptionPlan(planId: String) {
-    _uiState.update { current ->
-      current.copy(activeSubscriptionPlan = planId)
+    viewModelScope.launch {
+      if (planId != "Free") {
+        val days = when (planId) {
+          "daily" -> 1
+          "weekly" -> 7
+          "monthly" -> 30
+          "six_months" -> 180
+          "yearly" -> 365
+          else -> 30
+        }
+        BillingSecurityService.registerPurchaseReceipt(
+          context = getApplication(),
+          userId = _uiState.value.userId,
+          productId = planId,
+          orderId = "GPA.${System.currentTimeMillis()}-${(1000..9999).random()}",
+          purchaseToken = "TOKEN_GPLAY_${System.currentTimeMillis()}_SECURE",
+          durationDays = days
+        )
+      } else {
+        BillingSecurityService.clearEntitlement(getApplication())
+      }
+      _uiState.update { current ->
+        current.copy(activeSubscriptionPlan = planId)
+      }
     }
   }
 }

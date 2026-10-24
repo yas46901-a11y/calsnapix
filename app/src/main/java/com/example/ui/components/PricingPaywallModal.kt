@@ -45,6 +45,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,10 +73,14 @@ data class CalPlanItem(
   val subtitle: String,
   val priceUsd: Double,
   val originalPriceUsd: Double,
+  val priceInr: Double = 0.0,
+  val originalPriceInr: Double = 0.0,
   val perDayCost: String,
+  val perDayCostInr: String = "",
   val perDayHighlight: String,
   val discountPercent: Int,
   val isLimitedWeekOnly: Boolean = false,
+  val validityNotice: String? = null,
   val badge: String? = null
 )
 
@@ -83,60 +88,80 @@ object CalPricingConfig {
   val allPlans = listOf(
     CalPlanItem(
       id = "daily",
-      name = "Daily Pass (1-Day)",
-      subtitle = "Single day full Pro access • Cancel anytime",
-      priceUsd = 0.09,
+      name = "Daily Plan (1-Day)",
+      subtitle = "Single day full Pro access • Valid for only this week, removed after 1 week",
+      priceUsd = 0.11,
       originalPriceUsd = 0.99,
-      perDayCost = "$0.09 / day",
-      perDayHighlight = "JUST $0.09 / DAY",
-      discountPercent = 90,
+      priceInr = 9.0,
+      originalPriceInr = 49.0,
+      perDayCost = "$0.11 / day",
+      perDayCostInr = "₹9.00 / day",
+      perDayHighlight = "JUST ₹9.00 / DAY",
+      discountPercent = 82,
       isLimitedWeekOnly = true,
-      badge = "⚡ 1-WEEK LIMITED PROMO • REMOVING SOON"
+      validityNotice = "⚡ Valid for only this week. After 1 week, this plan will be removed.",
+      badge = "THIS WEEK ONLY"
     ),
     CalPlanItem(
       id = "weekly",
       name = "Weekly Plan (7 Days)",
-      subtitle = "Full week unlimited AI food recognition",
-      priceUsd = 0.90,
-      originalPriceUsd = 4.99,
+      subtitle = "Full week unlimited AI food recognition • Valid for only this week, removed after 1 week",
+      priceUsd = 0.85,
+      originalPriceUsd = 2.49,
+      priceInr = 69.0,
+      originalPriceInr = 199.0,
       perDayCost = "$0.12 / day",
-      perDayHighlight = "JUST $0.12 / DAY",
-      discountPercent = 82,
+      perDayCostInr = "₹9.86 / day",
+      perDayHighlight = "JUST ₹9.86 / DAY",
+      discountPercent = 65,
       isLimitedWeekOnly = true,
-      badge = "⚡ 1-WEEK LIMITED PROMO • REMOVING SOON"
+      validityNotice = "⚡ Valid for only this week. After 1 week, this plan will be removed.",
+      badge = "THIS WEEK ONLY"
     ),
     CalPlanItem(
       id = "monthly",
       name = "Monthly Plan (30 Days)",
       subtitle = "Complete Indian macro calibration & meal logs",
-      priceUsd = 1.99,
-      originalPriceUsd = 7.99,
-      perDayCost = "$0.06 / day",
-      perDayHighlight = "🔥 JUST $0.06 / DAY",
-      discountPercent = 75,
-      badge = "POPULAR • 75% OFF"
+      priceUsd = 2.49,
+      originalPriceUsd = 8.49,
+      priceInr = 199.0,
+      originalPriceInr = 699.0,
+      perDayCost = "$0.08 / day",
+      perDayCostInr = "₹6.63 / day",
+      perDayHighlight = "JUST ₹6.63 / DAY",
+      discountPercent = 72,
+      isLimitedWeekOnly = false,
+      badge = "POPULAR"
     ),
     CalPlanItem(
       id = "six_months",
       name = "6 Months Plan",
       subtitle = "Sustainable habit transformation & body recomposition",
-      priceUsd = 24.99,
+      priceUsd = 11.99,
       originalPriceUsd = 49.99,
-      perDayCost = "$0.13 / day",
-      perDayHighlight = "JUST $0.13 / DAY",
-      discountPercent = 50,
-      badge = "50% OFF"
+      priceInr = 999.0,
+      originalPriceInr = 3999.0,
+      perDayCost = "$0.06 / day",
+      perDayCostInr = "₹5.55 / day",
+      perDayHighlight = "JUST ₹5.55 / DAY",
+      discountPercent = 75,
+      isLimitedWeekOnly = false,
+      badge = "SEMESTER PLAN"
     ),
     CalPlanItem(
       id = "yearly",
-      name = "Yearly Unlimited (365 Days)",
-      subtitle = "Full year of MyCal AI dietitian & unlimited camera scans",
-      priceUsd = 19.99,
+      name = "Yearly Plan (365 Days)",
+      subtitle = "Full year of CalSnapix AI Nutrition Assistant & unlimited camera scans",
+      priceUsd = 17.99,
       originalPriceUsd = 99.99,
+      priceInr = 1499.0,
+      originalPriceInr = 8999.0,
       perDayCost = "$0.05 / day",
-      perDayHighlight = "👑 BEST VALUE: JUST $0.05 / DAY",
-      discountPercent = 80,
-      badge = "👑 80% OFF • RECOMMENDED"
+      perDayCostInr = "₹4.11 / day",
+      perDayHighlight = "BEST VALUE: JUST ₹4.11 / DAY",
+      discountPercent = 83,
+      isLimitedWeekOnly = false,
+      badge = "RECOMMENDED • 83% SAVINGS"
     )
   )
 }
@@ -157,7 +182,10 @@ fun PricingPaywallContent(
   val scrollState = rememberScrollState()
 
   var selectedPlanId by remember { mutableStateOf("yearly") }
+  var selectedCurrency by remember { mutableStateOf("INR") }
   var instagramHandle by remember { mutableStateOf("") }
+  var userEmailInput by remember { mutableStateOf("") }
+  var showInstaVerifyDialog by remember { mutableStateOf(false) }
   var isInstagramFollowed by remember(initialInstagramFollowed) { mutableStateOf(initialInstagramFollowed) }
 
   // 20% additional discount multiplier when Instagram is followed
@@ -186,7 +214,7 @@ fun PricingPaywallContent(
           border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.4f))
         ) {
           Text(
-            text = "⚡ LIMITED TIME SAVINGS",
+            text = "TRANSPARENT PRICING",
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = colors.accent,
@@ -212,14 +240,14 @@ fun PricingPaywallContent(
         letterSpacing = (-0.5).sp
       )
       Text(
-        text = "Unlimited AI Indian meal scans, complete micronutrients breakdown, and 24/7 MyCal AI dietitian coaching.",
+        text = "Unlimited AI Indian meal scans, complete micronutrients breakdown, and 24/7 CalSnapix AI Nutrition Assistant.",
         fontSize = 14.sp,
         color = colors.ink2,
         lineHeight = 20.sp
       )
     }
 
-    // 🌟 HIGH-VISIBILITY POP-UP: 24/7 MyCal AI Dietitian Chat Spotlight
+    // 🌟 HIGH-VISIBILITY POP-UP: 24/7 CalSnapix AI Nutrition Assistant Spotlight
     var showChatPopUpDemo by remember { mutableStateOf(false) }
 
     Surface(
@@ -252,7 +280,7 @@ fun PricingPaywallContent(
               Box(contentAlignment = Alignment.Center) {
                 Icon(
                   imageVector = Icons.AutoMirrored.Filled.Chat,
-                  contentDescription = "24/7 AI Dietitian Chat",
+                  contentDescription = "24/7 AI Nutrition Assistant",
                   tint = Color.White,
                   modifier = Modifier.size(20.dp)
                 )
@@ -260,13 +288,13 @@ fun PricingPaywallContent(
             }
             Column {
               Text(
-                text = "💬 24/7 Live AI Dietitian Chat",
-                fontSize = 15.sp,
+                text = "💬 24/7 CalSnapix AI Nutrition Assistant",
+                fontSize = 14.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = colors.ink
               )
               Text(
-                text = "Instant advice on dishes, swaps & dining out",
+                text = "Instant suggestions on dishes & swaps • Non-medical",
                 fontSize = 11.sp,
                 color = colors.ink2
               )
@@ -316,7 +344,7 @@ fun PricingPaywallContent(
               }
             }
 
-            // Dietitian reply bubble
+            // Assistant reply bubble with medical disclaimer
             Row(
               modifier = Modifier.fillMaxWidth(),
               horizontalArrangement = Arrangement.Start
@@ -325,13 +353,21 @@ fun PricingPaywallContent(
                 shape = RoundedCornerShape(topStart = 4.dp, topEnd = 12.dp, bottomStart = 12.dp, bottomEnd = 12.dp),
                 color = colors.surface2
               ) {
-                Text(
-                  text = "🥗 MyCal AI: \"Yes! Adds ~390 kcal & 20g protein, staying right within your remaining daily deficit!\"",
-                  fontSize = 12.sp,
-                  color = colors.ink,
-                  fontWeight = FontWeight.SemiBold,
-                  modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                )
+                Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                  Text(
+                    text = "🥗 CalSnapix AI: \"Yes! Adds ~390 kcal & 20g protein, staying right within your remaining daily deficit!\"",
+                    fontSize = 12.sp,
+                    color = colors.ink,
+                    fontWeight = FontWeight.SemiBold
+                  )
+                  Spacer(modifier = Modifier.height(2.dp))
+                  Text(
+                    text = "AI-generated, not medical advice",
+                    fontSize = 9.sp,
+                    color = colors.ink2,
+                    fontWeight = FontWeight.Normal
+                  )
+                }
               }
             }
           }
@@ -347,7 +383,7 @@ fun PricingPaywallContent(
         ) {
           Icon(Icons.Default.Forum, contentDescription = null, modifier = Modifier.size(16.dp))
           Spacer(modifier = Modifier.width(6.dp))
-          Text("Open 24/7 AI Dietitian Chat Pop-Up", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+          Text("Open AI Nutrition Assistant Demo", fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
       }
     }
@@ -414,7 +450,7 @@ fun PricingPaywallContent(
           }
         }
 
-        // Action Buttons: Open Instagram Profile & Claim 20%
+        // Action Buttons: Open Instagram Profile & Verify 20% Follow
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -437,8 +473,7 @@ fun PricingPaywallContent(
 
           Button(
             onClick = {
-              isInstagramFollowed = true
-              Toast.makeText(context, "🎉 20% Instagram discount applied across all plans!", Toast.LENGTH_SHORT).show()
+              showInstaVerifyDialog = true
             },
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(
@@ -447,7 +482,7 @@ fun PricingPaywallContent(
             ),
             modifier = Modifier.weight(1f).height(44.dp).testTag("claim_instagram_discount_button")
           ) {
-            Text(if (isInstagramFollowed) "✓ 20% Active" else "I Followed! Claim 20%", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(if (isInstagramFollowed) "✓ 20% Verified" else "Verify & Get 20% OFF", fontSize = 11.sp, fontWeight = FontWeight.Bold)
           }
         }
 
@@ -482,7 +517,7 @@ fun PricingPaywallContent(
         title = {
           Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, tint = colors.accent)
-            Text("24/7 MyCal AI Dietitian Chat", fontWeight = FontWeight.Bold, color = colors.ink)
+            Text("CalSnapix AI Nutrition Assistant", fontWeight = FontWeight.Bold, color = colors.ink)
           }
         },
         text = {
@@ -491,7 +526,7 @@ fun PricingPaywallContent(
             verticalArrangement = Arrangement.spacedBy(10.dp)
           ) {
             Text(
-              text = "With CalSnapix Pro, your personal AI nutritionist is always 1 tap away:",
+              text = "With CalSnapix Pro, your personal AI nutrition assistant is always 1 tap away:",
               fontSize = 13.sp,
               color = colors.ink2
             )
@@ -504,8 +539,21 @@ fun PricingPaywallContent(
                 Text("• Ask about any Indian street food, thali or dessert", fontSize = 12.sp, color = colors.ink)
                 Text("• Receive real-time portion adjustments before eating", fontSize = 12.sp, color = colors.ink)
                 Text("• Balanced micronutrient suggestions (Iron, B12, Calcium)", fontSize = 12.sp, color = colors.ink)
-                Text("• Ayurvedic eating window guidance calibrated to your routine", fontSize = 12.sp, color = colors.ink)
+                Text("• Daily meal timing guidance calibrated to your routine", fontSize = 12.sp, color = colors.ink)
               }
+            }
+            Surface(
+              shape = RoundedCornerShape(8.dp),
+              color = colors.bg,
+              border = BorderStroke(1.dp, colors.line)
+            ) {
+              Text(
+                text = "⚠️ AI-generated assistance. CalSnapix does not provide medical advice or clinical diagnosis. Consult a physician for dietary conditions.",
+                fontSize = 10.sp,
+                color = colors.ink2,
+                modifier = Modifier.padding(8.dp),
+                lineHeight = 14.sp
+              )
             }
             Text(
               text = "🌟 Included unlimited in all Pro plans (Daily, Weekly, Monthly, 6-Months & Yearly)!",
@@ -526,29 +574,174 @@ fun PricingPaywallContent(
       )
     }
 
+    // Instagram Follower Verification Modal (Requires Email + Insta Handle)
+    if (showInstaVerifyDialog) {
+      var instaInput by remember { mutableStateOf(instagramHandle) }
+      var emailInput by remember { mutableStateOf(userEmailInput) }
+      var verifyError by remember { mutableStateOf<String?>(null) }
+
+      AlertDialog(
+        onDismissRequest = { showInstaVerifyDialog = false },
+        title = {
+          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("📸", fontSize = 20.sp)
+            Text("Verify Instagram Follow", fontWeight = FontWeight.Bold, color = colors.ink)
+          }
+        },
+        text = {
+          Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+              text = "To activate your exclusive 20% discount code INSTA20, please provide your details so we can verify you follow @_calsnapix on Instagram:",
+              fontSize = 12.sp,
+              color = colors.ink2,
+              lineHeight = 17.sp
+            )
+
+            OutlinedTextField(
+              value = emailInput,
+              onValueChange = {
+                emailInput = it
+                verifyError = null
+              },
+              label = { Text("Your Email ID") },
+              placeholder = { Text("e.g. priya@gmail.com") },
+              singleLine = true,
+              shape = RoundedCornerShape(10.dp),
+              modifier = Modifier.fillMaxWidth().testTag("insta_verify_email_input")
+            )
+
+            OutlinedTextField(
+              value = instaInput,
+              onValueChange = {
+                instaInput = it
+                verifyError = null
+              },
+              label = { Text("Your Instagram Username") },
+              placeholder = { Text("e.g. @priya_fit") },
+              singleLine = true,
+              shape = RoundedCornerShape(10.dp),
+              modifier = Modifier.fillMaxWidth().testTag("insta_verify_handle_input")
+            )
+
+            if (verifyError != null) {
+              Text(
+                text = verifyError!!,
+                color = Color(0xFFEF4444),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold
+              )
+            }
+
+            Surface(
+              shape = RoundedCornerShape(8.dp),
+              color = colors.surface2,
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Text(
+                text = "💡 Make sure you clicked 'Follow @_calsnapix' before verifying.",
+                fontSize = 11.sp,
+                color = colors.ink,
+                modifier = Modifier.padding(8.dp)
+              )
+            }
+          }
+        },
+        confirmButton = {
+          Button(
+            onClick = {
+              val cleanHandle = instaInput.trim().removePrefix("@")
+              val cleanEmail = emailInput.trim()
+              if (!cleanEmail.contains("@") || !cleanEmail.contains(".")) {
+                verifyError = "Please enter a valid email address."
+              } else if (cleanHandle.length < 2) {
+                verifyError = "Please enter your Instagram username."
+              } else {
+                instagramHandle = "@$cleanHandle"
+                userEmailInput = cleanEmail
+                isInstagramFollowed = true
+                showInstaVerifyDialog = false
+                Toast.makeText(context, "🎉 Verified following @_calsnapix! 20% discount applied to all plans.", Toast.LENGTH_LONG).show()
+              }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = colors.accent, contentColor = Color.White)
+          ) {
+            Text("Confirm & Apply 20%", fontWeight = FontWeight.Bold)
+          }
+        },
+        dismissButton = {
+          TextButton(onClick = { showInstaVerifyDialog = false }) {
+            Text("Cancel", color = colors.ink2)
+          }
+        }
+      )
+    }
+
     // 5 Plans List (With PER DAY COST strongly prioritized and highlighted)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-      Text(
-        text = "Select Your Plan",
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Bold,
-        color = colors.ink
-      )
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+          text = "Select Your Plan",
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Bold,
+          color = colors.ink
+        )
+
+        // Regional Currency Selector (India INR vs Global USD)
+        Row(
+          modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(colors.surface2)
+            .padding(2.dp)
+        ) {
+          Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = if (selectedCurrency == "INR") colors.accent else Color.Transparent,
+            modifier = Modifier.clickable { selectedCurrency = "INR" }.testTag("currency_inr_toggle")
+          ) {
+            Text(
+              text = "₹ INR",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              color = if (selectedCurrency == "INR") Color.White else colors.ink2,
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+          }
+          Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = if (selectedCurrency == "USD") colors.accent else Color.Transparent,
+            modifier = Modifier.clickable { selectedCurrency = "USD" }.testTag("currency_usd_toggle")
+          ) {
+            Text(
+              text = "$ USD",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              color = if (selectedCurrency == "USD") Color.White else colors.ink2,
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+          }
+        }
+      }
 
       CalPricingConfig.allPlans.forEach { plan ->
         val isSelected = selectedPlanId == plan.id
-        val finalPriceUsd = plan.priceUsd * discountMultiplier
-        val formattedFinalPrice = String.format(Locale.US, "$%.2f", finalPriceUsd)
-        val formattedOrigPrice = String.format(Locale.US, "$%.2f", plan.originalPriceUsd)
+        val isIndia = selectedCurrency == "INR"
+        val finalPrice = if (isIndia) (plan.priceInr * discountMultiplier) else (plan.priceUsd * discountMultiplier)
+        val origPrice = if (isIndia) plan.originalPriceInr else plan.originalPriceUsd
+        val formattedFinalPrice = if (isIndia) String.format(Locale.US, "₹%.0f", finalPrice) else String.format(Locale.US, "$%.2f", finalPrice)
+        val formattedOrigPrice = if (isIndia) String.format(Locale.US, "₹%.0f", origPrice) else String.format(Locale.US, "$%.2f", origPrice)
 
         // Calculate dynamic per day cost based on whether Instagram discount is active
         val dynamicPerDayText = when (plan.id) {
-          "daily" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd)
-          "weekly" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd / 7.0)
-          "monthly" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd / 30.0)
-          "six_months" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd / 180.0)
-          "yearly" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd / 365.0)
-          else -> plan.perDayCost
+          "daily" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice) else String.format(Locale.US, "$%.2f / day", finalPrice)
+          "weekly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 7.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 7.0)
+          "monthly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 30.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 30.0)
+          "six_months" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 180.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 180.0)
+          "yearly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 365.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 365.0)
+          else -> if (isIndia) plan.perDayCostInr else plan.perDayCost
         }
 
         Surface(
@@ -618,24 +811,6 @@ fun PricingPaywallContent(
               }
             }
 
-            // Limited week only warning banner
-            if (plan.isLimitedWeekOnly) {
-              Spacer(modifier = Modifier.height(6.dp))
-              Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = colors.warn.copy(alpha = 0.15f),
-                border = BorderStroke(1.dp, colors.warn.copy(alpha = 0.5f))
-              ) {
-                Text(
-                  text = "⚡ Available this week only! Will be removed after 1 week.",
-                  fontSize = 10.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = colors.warn,
-                  modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                )
-              }
-            }
-
             Spacer(modifier = Modifier.height(10.dp))
 
             // CRITICAL: THE HIGHLIGHTED PER DAY COST (GIVE HIGHEST IMPORTANCE)
@@ -670,6 +845,42 @@ fun PricingPaywallContent(
               fontSize = 11.sp,
               color = colors.ink2
             )
+
+            // Weekly / Day plan 1-week removal notice
+            if (plan.validityNotice != null) {
+              Spacer(modifier = Modifier.height(8.dp))
+              Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFFEF4444).copy(alpha = 0.12f),
+                border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.4f)),
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Text(
+                  text = plan.validityNotice,
+                  fontSize = 11.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = Color(0xFFDC2626),
+                  modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                )
+              }
+            }
+
+            // Inline Direct Subscription Trigger
+            if (isSelected) {
+              Spacer(modifier = Modifier.height(10.dp))
+              Button(
+                onClick = {
+                  onSubscribeSuccess(plan.id)
+                  Toast.makeText(context, "🎉 Welcome to CalSnapix Pro (${plan.name})!", Toast.LENGTH_LONG).show()
+                  onDismiss?.invoke()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.fillMaxWidth().height(42.dp).testTag("select_plan_inline_${plan.id}")
+              ) {
+                Text("Select & Subscribe (${formattedFinalPrice})", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+              }
+            }
           }
         }
       }
@@ -683,7 +894,7 @@ fun PricingPaywallContent(
     ) {
       Text("✓ Cancel anytime", fontSize = 12.sp, color = colors.ink2)
       Text("✓ Instant Pro activation", fontSize = 12.sp, color = colors.ink2)
-      Text("✓ 100% Secure Checkout", fontSize = 12.sp, color = colors.ink2)
+      Text("✓ Encrypted Secure Checkout", fontSize = 12.sp, color = colors.ink2)
     }
 
     // Primary Subscribe Button

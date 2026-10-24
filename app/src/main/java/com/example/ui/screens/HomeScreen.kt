@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -65,6 +67,7 @@ import com.example.data.gemini.GeminiService
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -103,6 +106,7 @@ fun HomeScreen(
 ) {
   val colors = CalTheme.colors
   val view = LocalView.current
+  val context = LocalContext.current
   val scrollState = rememberScrollState()
 
   var showAddMealDialog by remember { mutableStateOf(false) }
@@ -188,12 +192,12 @@ fun HomeScreen(
           ) {
             Icon(
               imageVector = Icons.Default.AutoAwesome,
-              contentDescription = "MyCal AI",
+              contentDescription = "CalSnapix AI",
               tint = colors.accent,
               modifier = Modifier.size(15.dp)
             )
             Text(
-              text = "MyCal AI",
+              text = "CalSnapix AI",
               fontSize = 12.sp,
               fontWeight = FontWeight.Bold,
               color = colors.accent
@@ -792,20 +796,66 @@ fun HomeScreen(
         }
         Column {
           Text(
-            text = "Digestive Agni Peak",
+            text = "Traditional Meal Window (Ayurveda)",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = colors.ink
           )
           Spacer(modifier = Modifier.height(2.dp))
           Text(
-            text = "Your digestive fire is strongest between 12:30 PM & 2:00 PM. Prioritize nutrient-dense lentils, paneer, and whole grains during lunch for optimal metabolic burn.",
+            text = "Traditional practice, for general lifestyle interest: In Ayurvedic traditions, midday (12:30 PM - 2:00 PM) is considered a primary eating window. Enjoy balanced whole foods during lunch.",
             fontSize = 12.sp,
             color = colors.ink2,
             lineHeight = 17.sp
           )
         }
       }
+    }
+
+    // Legal & Privacy Compliance Links Footer
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 10.dp, bottom = 4.dp),
+      horizontalArrangement = Arrangement.Center,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        text = "Terms & Conditions",
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Medium,
+        color = colors.ink2,
+        modifier = Modifier
+          .clickable {
+            try {
+              context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://claude.ai/artifact/6oxxES7VRyyNnrG9HVxN45")))
+            } catch (e: Exception) {
+              // fallback
+            }
+          }
+          .padding(4.dp)
+      )
+      Text(
+        text = "•",
+        fontSize = 11.sp,
+        color = colors.line,
+        modifier = Modifier.padding(horizontal = 4.dp)
+      )
+      Text(
+        text = "Privacy Policy",
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Medium,
+        color = colors.ink2,
+        modifier = Modifier
+          .clickable {
+            try {
+              context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://claude.ai/artifact/HPtn6GbWs3uTXEYTFEQJ9U")))
+            } catch (e: Exception) {
+              // fallback
+            }
+          }
+          .padding(4.dp)
+      )
     }
 
     Spacer(modifier = Modifier.height(80.dp)) // Space for floating bottom nav

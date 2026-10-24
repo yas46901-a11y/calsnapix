@@ -195,6 +195,7 @@ class SupabaseRepository(private val context: Context) {
     try {
       SupabaseClient.getApiService().deleteMealsByUser("eq.$userId")
       SupabaseClient.getApiService().deleteScannedMealsByUser("eq.$userId")
+      SupabaseClient.getApiService().deleteUserProfileByUser("eq.$userId")
       Result.success(Unit)
     } catch (e: Exception) {
       Log.e(tag, "Error deleting user data from Supabase", e)

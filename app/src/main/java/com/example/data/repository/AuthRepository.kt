@@ -61,7 +61,6 @@ class AuthRepository(context: Context) {
           _currentUser.value = user
           prefs.edit()
             .putBoolean(KEY_IS_LOGGED_IN, true)
-            .putBoolean(KEY_ONBOARDING_COMPLETED, true)
             .putString(KEY_USER_NAME, user.name)
             .putString(KEY_USER_EMAIL, user.email)
             .apply()
@@ -162,6 +161,10 @@ class AuthRepository(context: Context) {
     if (password.length < 6) {
       return@withContext Result.failure(IllegalArgumentException("Password must be at least 6 characters"))
     }
+    val trivialPasswords = setOf("123456", "password", "qwerty", "admin123", "calsnapix", "welcome", "12345678", "abcdef")
+    if (trivialPasswords.contains(password.lowercase(Locale.ROOT))) {
+      return@withContext Result.failure(IllegalArgumentException("Password is too common and easily guessable. Please choose a stronger password."))
+    }
 
     val existing = userDao.getUserByEmail(cleanEmail)
     if (existing != null) {
@@ -211,15 +214,42 @@ class AuthRepository(context: Context) {
       return@withContext Result.failure(IllegalArgumentException("Please enter your password"))
     }
 
+    // Rate Limiting & Account Lockout Protection against Brute Force attacks
+    val lockKey = "lockout_$cleanEmail"
+    val attemptsKey = "attempts_$cleanEmail"
+    val lockUntilMs = prefs.getLong(lockKey, 0L)
+    val now = System.currentTimeMillis()
+
+    if (now < lockUntilMs) {
+      val remainingSeconds = ((lockUntilMs - now) / 1000).coerceAtLeast(1)
+      return@withContext Result.failure(
+        IllegalStateException("Too many failed login attempts. For your security, this account is temporarily locked. Please try again in $remainingSeconds seconds.")
+      )
+    }
+
     val user = userDao.getUserByEmail(cleanEmail)
-      ?: return@withContext Result.failure(IllegalArgumentException("No account found with this email"))
+      ?: run {
+        recordFailedLoginAttempt(cleanEmail)
+        return@withContext Result.failure(IllegalArgumentException("No account found with this email"))
+      }
 
     val testHash = hashPassword(password, user.salt)
     if (testHash != user.passwordHash) {
-      return@withContext Result.failure(IllegalArgumentException("Incorrect password. Please check and try again."))
+      recordFailedLoginAttempt(cleanEmail)
+      val attempts = prefs.getInt(attemptsKey, 1)
+      val remaining = (5 - attempts).coerceAtLeast(0)
+      val warnMessage = if (remaining > 0) {
+        "Incorrect password. $remaining attempt(s) remaining before temporary lockout."
+      } else {
+        "Incorrect password. Account temporarily locked for 5 minutes due to multiple failed attempts."
+      }
+      return@withContext Result.failure(IllegalArgumentException(warnMessage))
     }
 
+    // Successful login: clear failed attempts
     prefs.edit()
+      .remove(attemptsKey)
+      .remove(lockKey)
       .putLong(KEY_LOGGED_IN_USER_ID, user.id)
       .putString(KEY_USER_NAME, user.name)
       .putString(KEY_USER_EMAIL, user.email)
@@ -228,6 +258,19 @@ class AuthRepository(context: Context) {
       .apply()
     _currentUser.value = user
     Result.success(user)
+  }
+
+  private fun recordFailedLoginAttempt(email: String) {
+    val attemptsKey = "attempts_$email"
+    val lockKey = "lockout_$email"
+    val currentAttempts = prefs.getInt(attemptsKey, 0) + 1
+    val editor = prefs.edit().putInt(attemptsKey, currentAttempts)
+    if (currentAttempts >= 5) {
+      // 5-minute lockout
+      editor.putLong(lockKey, System.currentTimeMillis() + 300_000L)
+      editor.putInt(attemptsKey, 0)
+    }
+    editor.apply()
   }
 
   suspend fun logout(): Result<Unit> = withContext(Dispatchers.IO) {
@@ -250,6 +293,7 @@ class AuthRepository(context: Context) {
         .remove(KEY_USER_EMAIL)
         .putBoolean(KEY_IS_LOGGED_IN, false)
         .remove(KEY_ONBOARDING_COMPLETED)
+        .remove(KEY_ONBOARDING_ANSWERS)
         .apply()
       _currentUser.value = null
       Result.success(Unit)

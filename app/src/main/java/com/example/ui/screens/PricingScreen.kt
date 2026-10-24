@@ -89,6 +89,7 @@ fun PricingScreen(
   val scrollState = rememberScrollState()
 
   var selectedPlanId by remember { mutableStateOf(if (uiState.activeSubscriptionPlan != "Free") uiState.activeSubscriptionPlan else "yearly") }
+  var selectedCurrency by remember { mutableStateOf("INR") }
   var showChatPopUpDemo by remember { mutableStateOf(false) }
 
   // Check if 20% Instagram discount is active
@@ -161,7 +162,7 @@ fun PricingScreen(
         letterSpacing = (-0.6).sp
       )
       Text(
-        text = "Unlimited AI Indian meal scans, complete micronutrients breakdown, and 24/7 MyCal AI dietitian chat.",
+        text = "Unlimited AI Indian meal scans, complete micronutrients breakdown, and 24/7 CalSnapix AI Nutrition Assistant.",
         fontSize = 14.sp,
         color = colors.ink2,
         lineHeight = 20.sp
@@ -222,8 +223,13 @@ fun PricingScreen(
             verticalAlignment = Alignment.Bottom
           ) {
             Column {
+              val highlightDailyText = if (selectedCurrency == "INR") {
+                if (isInstagramDiscountActive) "JUST ₹5.59" else "JUST ₹6.99"
+              } else {
+                if (isInstagramDiscountActive) "JUST $0.07" else "JUST $0.09"
+              }
               Text(
-                text = if (isInstagramDiscountActive) "JUST $0.07" else "JUST $0.09",
+                text = highlightDailyText,
                 fontSize = 38.sp,
                 fontWeight = FontWeight.Black,
                 color = colors.accent,
@@ -362,14 +368,14 @@ fun PricingScreen(
         ) {
           Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
-            Text("24/7 MyCal AI Dietitian Chat", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+            Text("24/7 CalSnapix AI Nutrition Assistant", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
           }
           Surface(shape = RoundedCornerShape(6.dp), color = colors.accentSoft) {
-            Text("POP-UP DEMO", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = colors.accent, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+            Text("AI DEMO", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = colors.accent, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
           }
         }
         Text(
-          text = "Included with all Pro plans. Instant feedback on Indian thalis, dining out, and portion control anytime.",
+          text = "Included with all Pro plans. Instant feedback on Indian thalis, dining out, and portion control anytime. AI-generated suggestions, not medical advice.",
           fontSize = 12.sp,
           color = colors.ink2,
           lineHeight = 17.sp
@@ -377,39 +383,70 @@ fun PricingScreen(
       }
     }
 
-    // SECTION TITLE: ALL FIVE SUBSCRIPTION TIERS
+    // SECTION TITLE: ALL FIVE SUBSCRIPTION TIERS WITH REGIONAL CURRENCY SELECTOR
     Row(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically
     ) {
       Text(
-        text = "All 5 Subscription Tiers",
+        text = "All 5 Pro Plans",
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold,
         color = colors.ink
       )
-      Text(
-        text = "Tap to select",
-        fontSize = 12.sp,
-        color = colors.ink2
-      )
+
+      Row(
+        modifier = Modifier
+          .clip(RoundedCornerShape(8.dp))
+          .background(colors.surface2)
+          .padding(2.dp)
+      ) {
+        Surface(
+          shape = RoundedCornerShape(6.dp),
+          color = if (selectedCurrency == "INR") colors.accent else Color.Transparent,
+          modifier = Modifier.clickable { selectedCurrency = "INR" }.testTag("screen_currency_inr_toggle")
+        ) {
+          Text(
+            text = "₹ INR",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (selectedCurrency == "INR") Color.White else colors.ink2,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+          )
+        }
+        Surface(
+          shape = RoundedCornerShape(6.dp),
+          color = if (selectedCurrency == "USD") colors.accent else Color.Transparent,
+          modifier = Modifier.clickable { selectedCurrency = "USD" }.testTag("screen_currency_usd_toggle")
+        ) {
+          Text(
+            text = "$ USD",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (selectedCurrency == "USD") Color.White else colors.ink2,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+          )
+        }
+      }
     }
 
     // 5 SUBSCRIPTION TIERS LIST
     CalPricingConfig.allPlans.forEach { plan ->
       val isSelected = selectedPlanId == plan.id
-      val finalPriceUsd = plan.priceUsd * discountMultiplier
-      val formattedFinalPrice = String.format(Locale.US, "$%.2f", finalPriceUsd)
-      val formattedOrigPrice = String.format(Locale.US, "$%.2f", plan.originalPriceUsd)
+      val isIndia = selectedCurrency == "INR"
+      val finalPrice = if (isIndia) (plan.priceInr * discountMultiplier) else (plan.priceUsd * discountMultiplier)
+      val origPrice = if (isIndia) plan.originalPriceInr else plan.originalPriceUsd
+      val formattedFinalPrice = if (isIndia) String.format(Locale.US, "₹%.0f", finalPrice) else String.format(Locale.US, "$%.2f", finalPrice)
+      val formattedOrigPrice = if (isIndia) String.format(Locale.US, "₹%.0f", origPrice) else String.format(Locale.US, "$%.2f", origPrice)
 
       val dynamicPerDayText = when (plan.id) {
-        "daily" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd)
-        "weekly" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd / 7.0)
-        "monthly" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd / 30.0)
-        "six_months" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd / 180.0)
-        "yearly" -> String.format(Locale.US, "$%.2f / day", finalPriceUsd / 365.0)
-        else -> plan.perDayCost
+        "daily" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice) else String.format(Locale.US, "$%.2f / day", finalPrice)
+        "weekly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 7.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 7.0)
+        "monthly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 30.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 30.0)
+        "six_months" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 180.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 180.0)
+        "yearly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 365.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 365.0)
+        else -> if (isIndia) plan.perDayCostInr else plan.perDayCost
       }
 
       Surface(
@@ -495,22 +532,6 @@ fun PricingScreen(
             }
           }
 
-          // 1-Week Limited Alert banner for daily & weekly
-          if (plan.isLimitedWeekOnly) {
-            Surface(
-              shape = RoundedCornerShape(8.dp),
-              color = colors.warn.copy(alpha = 0.12f),
-              border = BorderStroke(1.dp, colors.warn.copy(alpha = 0.4f))
-            ) {
-              Text(
-                text = "⚡ Available this week only! Removed after 7 days.",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = colors.warn,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-              )
-            }
-          }
 
           // 🌟 PROMINENT PER-DAY COST BOX WITH EMPHASIZED PERCENTAGE DISCOUNT
           Surface(
@@ -562,6 +583,42 @@ fun PricingScreen(
             fontSize = 12.sp,
             color = colors.ink2
           )
+
+          // Weekly / Day plan 1-week removal notice
+          if (plan.validityNotice != null) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Surface(
+              shape = RoundedCornerShape(8.dp),
+              color = Color(0xFFEF4444).copy(alpha = 0.12f),
+              border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.4f)),
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Text(
+                text = plan.validityNotice,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFDC2626),
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+              )
+            }
+          }
+
+          // Inline direct subscribe trigger
+          if (isSelected) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Button(
+              onClick = {
+                onSelectPlan(plan.id)
+                Toast.makeText(context, "🎉 Selected ${plan.name}! Welcome to CalSnapix Pro.", Toast.LENGTH_LONG).show()
+                onBack()
+              },
+              colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
+              shape = RoundedCornerShape(10.dp),
+              modifier = Modifier.fillMaxWidth().height(42.dp).testTag("select_plan_screen_inline_${plan.id}")
+            ) {
+              Text("Select & Subscribe (${formattedFinalPrice})", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            }
+          }
         }
       }
     }
@@ -603,20 +660,20 @@ fun PricingScreen(
       Text("•", color = colors.line)
       Text("✓ Instant activation", fontSize = 11.sp, color = colors.ink2)
       Text("•", color = colors.line)
-      Text("✓ 100% Secure Checkout", fontSize = 11.sp, color = colors.ink2)
+      Text("✓ Encrypted Secure Checkout", fontSize = 11.sp, color = colors.ink2)
     }
 
     Spacer(modifier = Modifier.height(20.dp))
   }
 
-  // 24/7 AI Dietitian Chat Pop-Up Dialog
+  // 24/7 AI Nutrition Assistant Pop-Up Dialog
   if (showChatPopUpDemo) {
     AlertDialog(
       onDismissRequest = { showChatPopUpDemo = false },
       title = {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
           Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, tint = colors.accent)
-          Text("24/7 MyCal AI Dietitian Chat", fontWeight = FontWeight.Bold, color = colors.ink)
+          Text("CalSnapix AI Nutrition Assistant", fontWeight = FontWeight.Bold, color = colors.ink)
         }
       },
       text = {
@@ -625,7 +682,7 @@ fun PricingScreen(
           verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
           Text(
-            text = "Your 24/7 AI Dietitian is included with every Pro plan:",
+            text = "Your 24/7 AI Nutrition Assistant is included with every Pro plan:",
             fontSize = 13.sp,
             color = colors.ink2
           )
@@ -637,9 +694,22 @@ fun PricingScreen(
             Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
               Text("• Instant meal breakdown for rotis, dals, and street snacks", fontSize = 12.sp, color = colors.ink)
               Text("• Dynamic portion recommendations before ordering", fontSize = 12.sp, color = colors.ink)
-              Text("• Ayurvedic eating window reminders based on Agni", fontSize = 12.sp, color = colors.ink)
-              Text("• Micronutrient tracking: Calcium, Iron & B12 guidance", fontSize = 12.sp, color = colors.ink)
+              Text("• Daily meal timing guidance (traditional lifestyle interest)", fontSize = 12.sp, color = colors.ink)
+              Text("• Micronutrient suggestions: Calcium, Iron & B12 guidance", fontSize = 12.sp, color = colors.ink)
             }
+          }
+          Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = colors.bg,
+            border = BorderStroke(1.dp, colors.line)
+          ) {
+            Text(
+              text = "⚠️ AI-generated suggestions, not medical advice. CalSnapix does not diagnose or treat medical conditions. Consult a physician for dietary advice.",
+              fontSize = 10.sp,
+              color = colors.ink2,
+              modifier = Modifier.padding(8.dp),
+              lineHeight = 14.sp
+            )
           }
           Text(
             text = "🌟 Available without limits on Daily, Weekly, Monthly, 6-Month, and Yearly plans!",

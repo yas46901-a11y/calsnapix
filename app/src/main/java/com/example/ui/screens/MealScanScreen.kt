@@ -8,6 +8,8 @@ import android.net.Uri
 import android.provider.Settings
 import android.util.Log
 import android.view.ViewGroup
+import android.widget.Toast
+import com.example.data.security.AiQuotaManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -369,8 +371,18 @@ fun MealScanScreen(
     }
   }
 
+  fun cleanupTemporaryPhoto(uri: Uri?) {
+    if (uri != null && uri.scheme == "file") {
+      try {
+        val file = File(uri.path ?: "")
+        if (file.exists()) file.delete()
+      } catch (_: Exception) {}
+    }
+  }
+
   // Function to perform AI analysis transition
   fun startAiAnalysis(uri: Uri?, dish: ScanResult) {
+    AiQuotaManager.recordSuccessfulScan(context, uiState.isPro)
     screenState = ScanScreenState.Analyzing(photoUri = uri, dishCandidate = dish)
   }
 
@@ -393,9 +405,11 @@ fun MealScanScreen(
       AiAnalysisResultView(
         resultState = current,
         onRetake = {
+          cleanupTemporaryPhoto(current.photoUri)
           screenState = ScanScreenState.Viewfinder
         },
         onLogMeal = { logged ->
+          cleanupTemporaryPhoto(current.photoUri)
           screenState = ScanScreenState.Success(logged)
         },
         onUpdateResult = { updated ->
@@ -462,7 +476,10 @@ fun MealScanScreen(
             cameraControl?.enableTorch(newTorch)
           },
           onCapturePhoto = {
-            if (scanMode == "BARCODE") {
+            val quota = AiQuotaManager.checkCanPerformScan(context, uiState.isPro)
+            if (!quota.allowed) {
+              Toast.makeText(context, quota.message, Toast.LENGTH_LONG).show()
+            } else if (scanMode == "BARCODE") {
               val barcodeItem = barcodeProductsLibrary[barcodeIndex % barcodeProductsLibrary.size]
               val mappedResult = ScanResult(
                 dishName = barcodeItem.productName,
@@ -1355,7 +1372,7 @@ private fun AiScanningProgressView(
               modifier = Modifier.size(16.dp)
             )
             Text(
-              text = "MyCal AI Vision Engine",
+              text = "CalSnapix AI Vision Engine",
               color = Color.White,
               fontSize = 12.sp,
               fontWeight = FontWeight.Bold

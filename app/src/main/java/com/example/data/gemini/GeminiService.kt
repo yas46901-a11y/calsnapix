@@ -92,7 +92,7 @@ object GeminiService {
       val responseText = response.body?.string().orEmpty()
 
       if (!response.isSuccessful) {
-        Log.e(TAG, "Gemini API error code: ${response.code}, body: $responseText")
+        Log.e(TAG, "Gemini API error status code: ${response.code}")
         return@withContext getOfflineLeftoverFallback(ingredients)
       }
 

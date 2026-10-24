@@ -30,6 +30,11 @@ interface SupabaseApiService {
     @Body profile: SupabaseUserProfileDto
   ): Response<ResponseBody>
 
+  @DELETE("rest/v1/user_profiles")
+  suspend fun deleteUserProfileByUser(
+    @Query("user_id") userIdFilter: String
+  ): Response<ResponseBody>
+
   @GET("rest/v1/meals")
   suspend fun getMeals(
     @Query("user_id") userIdFilter: String,

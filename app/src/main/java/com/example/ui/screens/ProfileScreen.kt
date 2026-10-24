@@ -31,6 +31,11 @@ import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -116,6 +121,9 @@ fun ProfileScreen(
   var showAvatarCustomizerDialog by remember { mutableStateOf(false) }
   var showDeleteAccountConfirmDialog by remember { mutableStateOf(false) }
   var showPricingPaywallDialog by remember { mutableStateOf(false) }
+  var showFullPrivacyPolicyDialog by remember { mutableStateOf(false) }
+  var showFullTermsDialog by remember { mutableStateOf(false) }
+  var showBreachPlanDialog by remember { mutableStateOf(false) }
 
   val avatarGradients = listOf(
     "Emerald Glow" to listOf(Color(0xFF10B981), Color(0xFF059669)),
@@ -268,46 +276,32 @@ fun ProfileScreen(
       }
     }
 
-    // CalSnapix Pro Upgrade Banner (Opens 5 plans pricing paywall)
+    // CalSnapix Pro Upgrade Banner (Compact & Small)
     Surface(
-      shape = RoundedCornerShape(20.dp),
+      shape = RoundedCornerShape(14.dp),
       color = colors.surface,
-      border = BorderStroke(1.5.dp, colors.accent),
+      border = BorderStroke(1.dp, colors.accent),
       modifier = Modifier
         .fillMaxWidth()
         .clickable { showPricingPaywallDialog = true }
         .testTag("profile_pricing_plans_banner")
     ) {
       Row(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(12.dp),
-          modifier = Modifier.weight(1f)
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Surface(
-            shape = CircleShape,
-            color = colors.accent,
-            modifier = Modifier.size(40.dp)
-          ) {
-            Box(contentAlignment = Alignment.Center) {
-              Text("👑", fontSize = 18.sp)
-            }
-          }
-          Column {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-              Text("CalSnapix Pro Plans", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.ink)
-              Surface(shape = RoundedCornerShape(4.dp), color = colors.accentSoft) {
-                Text("FROM $0.05/DAY", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = colors.accent, modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp))
-              }
-            }
-            Text("5 Plans (Daily, Weekly, Monthly, 6-Mo & Yearly) • Extra 20% Insta Discount", fontSize = 11.sp, color = colors.ink2)
+          Text("👑", fontSize = 15.sp)
+          Text("CalSnapix Pro Plans", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Surface(shape = RoundedCornerShape(4.dp), color = colors.accentSoft) {
+            Text("FROM ₹4.11/DAY", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = colors.accent, modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp))
           }
         }
-        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "View Plans", tint = colors.accent, modifier = Modifier.size(20.dp))
+        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "View Plans", tint = colors.accent, modifier = Modifier.size(16.dp))
       }
     }
 
@@ -621,42 +615,30 @@ fun ProfileScreen(
       }
     }
 
-    // MyCal AI Dietitian Banner
+    // CalSnapix AI Nutrition Assistant Banner (Small & Compact)
     Surface(
-      shape = RoundedCornerShape(20.dp),
+      shape = RoundedCornerShape(12.dp),
       color = colors.surface,
-      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.5f)),
-      modifier = Modifier.fillMaxWidth().testTag("mycal_ai_profile_banner")
+      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.35f)),
+      modifier = Modifier.fillMaxWidth().testTag("calsnapix_ai_profile_banner")
     ) {
       Row(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        Surface(
-          shape = CircleShape,
-          color = colors.accent.copy(alpha = 0.15f),
-          modifier = Modifier.size(44.dp)
-        ) {
-          Box(contentAlignment = Alignment.Center) {
-            Icon(
-              imageVector = Icons.Default.AutoAwesome,
-              contentDescription = "MyCal AI",
-              tint = colors.accent,
-              modifier = Modifier.size(24.dp)
-            )
-          }
+        Icon(
+          imageVector = Icons.Default.AutoAwesome,
+          contentDescription = "CalSnapix AI",
+          tint = colors.accent,
+          modifier = Modifier.size(16.dp)
+        )
+        Text("AI Nutrition Assistant", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+        Surface(shape = RoundedCornerShape(4.dp), color = colors.accentSoft) {
+          Text("24/7 ACTIVE", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = colors.accent, modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp))
         }
-        Column(modifier = Modifier.weight(1f)) {
-          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("MyCal AI Nutrition Engine", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.ink)
-            Surface(shape = RoundedCornerShape(4.dp), color = colors.accent) {
-              Text("ACTIVE", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = colors.bg, modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp))
-            }
-          }
-          Spacer(modifier = Modifier.height(2.dp))
-          Text("Multimodal Indian food recognition & Ayurvedic calorie balancing active.", fontSize = 11.sp, color = colors.ink2)
-        }
+        Spacer(modifier = Modifier.weight(1f))
+        Text("Non-medical", fontSize = 10.sp, color = colors.ink2)
       }
     }
 
@@ -680,8 +662,8 @@ fun ProfileScreen(
 
         PreferenceSwitchRow(
           icon = Icons.Default.Schedule,
-          title = "Circadian Agni Reminders",
-          subtitle = "Alerts for optimal meal digestion windows (8:30 AM & 1:30 PM)",
+          title = "Traditional Meal Windows (Ayurveda)",
+          subtitle = "Traditional lifestyle reminders for meal windows (8:30 AM & 1:30 PM)",
           checked = circadianReminders,
           onCheckedChange = { circadianReminders = it }
         )
@@ -704,24 +686,27 @@ fun ProfileScreen(
       }
     }
 
-    // DEDICATED SETTINGS SECTION: LINK INSTAGRAM & AUTO-APPLY 20% DISCOUNT
+    // LINK INSTAGRAM SECTION (Compact & Small)
     val instagramProfileUrl = "https://www.instagram.com/_calsnapix?vrfl=MTZkajNnaTlreTR2dA=="
     var instaHandleInput by remember(uiState.linkedInstagramHandle) {
       mutableStateOf(uiState.linkedInstagramHandle?.removePrefix("@") ?: "")
     }
+    var instaEmailInput by remember(uiState.userEmail) {
+      mutableStateOf(uiState.userEmail)
+    }
 
     Surface(
-      shape = RoundedCornerShape(20.dp),
+      shape = RoundedCornerShape(14.dp),
       color = colors.surface,
       border = BorderStroke(
-        1.5.dp,
-        if (uiState.isInstagramFollowVerified) colors.accent else Color(0xFFE1306C).copy(alpha = 0.5f)
+        1.dp,
+        if (uiState.isInstagramFollowVerified) colors.accent else Color(0xFFE1306C).copy(alpha = 0.4f)
       ),
       modifier = Modifier.fillMaxWidth().testTag("profile_link_instagram_section")
     ) {
       Column(
-        modifier = Modifier.padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        modifier = Modifier.padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
         Row(
           modifier = Modifier.fillMaxWidth(),
@@ -730,30 +715,15 @@ fun ProfileScreen(
         ) {
           Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Surface(
-              shape = CircleShape,
-              color = Color(0xFFE1306C),
-              modifier = Modifier.size(36.dp)
-            ) {
-              Box(contentAlignment = Alignment.Center) {
-                Text("📸", fontSize = 18.sp)
-              }
-            }
-            Column {
-              Text(
-                text = "Link Instagram Account",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = colors.ink
-              )
-              Text(
-                text = "Follow @_calsnapix for an automatic 20% discount",
-                fontSize = 11.sp,
-                color = colors.ink2
-              )
-            }
+            Text("📸", fontSize = 16.sp)
+            Text(
+              text = "Instagram 20% Discount",
+              fontSize = 13.sp,
+              fontWeight = FontWeight.Bold,
+              color = colors.ink
+            )
           }
 
           Surface(
@@ -762,84 +732,79 @@ fun ProfileScreen(
           ) {
             Text(
               text = if (uiState.isInstagramFollowVerified) "✓ 20% ACTIVE" else "20% OFF",
-              fontSize = 11.sp,
+              fontSize = 10.sp,
               fontWeight = FontWeight.ExtraBold,
               color = if (uiState.isInstagramFollowVerified) Color.White else Color(0xFFE1306C),
-              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+              modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
             )
           }
         }
 
         if (uiState.isInstagramFollowVerified) {
-          // Already Linked & Verified Status Card
           Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = colors.accentSoft,
-            border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.35f))
+            shape = RoundedCornerShape(10.dp),
+            color = colors.accentSoft
           ) {
-            Column(
-              modifier = Modifier.padding(14.dp),
-              verticalArrangement = Arrangement.spacedBy(8.dp)
+            Row(
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween
             ) {
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-              ) {
-                Icon(Icons.Default.Verified, contentDescription = null, tint = colors.accent, modifier = Modifier.size(18.dp))
+              Column {
                 Text(
-                  text = "Linked with ${uiState.linkedInstagramHandle} • Following @_calsnapix",
-                  fontSize = 13.sp,
+                  text = "Verified: ${uiState.linkedInstagramHandle}",
+                  fontSize = 12.sp,
                   fontWeight = FontWeight.Bold,
                   color = colors.ink
                 )
+                Text(
+                  text = "Code INSTA20 active across all plans",
+                  fontSize = 10.sp,
+                  color = colors.ink2
+                )
               }
-              Text(
-                text = "🎉 20% Discount Code INSTA20 is automatically applied to your subscription across all tiers (Daily, Weekly, Monthly, 6-Month, and Yearly).",
-                fontSize = 12.sp,
-                color = colors.ink2,
-                lineHeight = 17.sp
-              )
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              OutlinedButton(
+                onClick = onUnlinkInstagram,
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, colors.line),
+                modifier = Modifier.height(34.dp).testTag("unlink_instagram_button")
               ) {
-                Button(
-                  onClick = onNavigateToPricing,
-                  colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
-                  shape = RoundedCornerShape(10.dp),
-                  modifier = Modifier.weight(1f).height(42.dp).testTag("view_discounted_pricing_button")
-                ) {
-                  Text("View 20% OFF Plans", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-                OutlinedButton(
-                  onClick = onUnlinkInstagram,
-                  shape = RoundedCornerShape(10.dp),
-                  border = BorderStroke(1.dp, colors.line),
-                  modifier = Modifier.height(42.dp).testTag("unlink_instagram_button")
-                ) {
-                  Text("Unlink", fontSize = 12.sp, color = colors.ink2)
-                }
+                Text("Change", fontSize = 11.sp, color = colors.ink2)
               }
             }
           }
         } else {
-          // Input & Follow Verification Flow
           Text(
-            text = "Step 1: Follow @_calsnapix on Instagram\nStep 2: Enter your handle to verify follow status and auto-apply code INSTA20 (20% off all plans).",
-            fontSize = 12.sp,
+            text = "Follow @_calsnapix on Instagram. Provide your Email & Instagram ID to clarify follow and activate 20% OFF (code INSTA20):",
+            fontSize = 11.sp,
             color = colors.ink2,
-            lineHeight = 18.sp
+            lineHeight = 15.sp
           )
 
-          OutlinedTextField(
-            value = instaHandleInput,
-            onValueChange = { instaHandleInput = it },
-            label = { Text("Your Instagram Username") },
-            placeholder = { Text("e.g. priya_fit or @priya_fit") },
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().testTag("profile_instagram_handle_input")
-          )
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            OutlinedTextField(
+              value = instaEmailInput,
+              onValueChange = { instaEmailInput = it },
+              label = { Text("Email ID", fontSize = 11.sp) },
+              placeholder = { Text("email@example.com", fontSize = 11.sp) },
+              singleLine = true,
+              shape = RoundedCornerShape(8.dp),
+              modifier = Modifier.weight(1.1f).testTag("profile_insta_email_input")
+            )
+
+            OutlinedTextField(
+              value = instaHandleInput,
+              onValueChange = { instaHandleInput = it },
+              label = { Text("Insta ID", fontSize = 11.sp) },
+              placeholder = { Text("@id", fontSize = 11.sp) },
+              singleLine = true,
+              shape = RoundedCornerShape(8.dp),
+              modifier = Modifier.weight(0.9f).testTag("profile_instagram_handle_input")
+            )
+          }
 
           Row(
             modifier = Modifier.fillMaxWidth(),
@@ -854,30 +819,31 @@ fun ProfileScreen(
                   Toast.makeText(context, "Opening Instagram @_calsnapix", Toast.LENGTH_SHORT).show()
                 }
               },
-              shape = RoundedCornerShape(10.dp),
+              shape = RoundedCornerShape(8.dp),
               colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE1306C)),
-              modifier = Modifier.weight(1f).height(46.dp).testTag("profile_follow_insta_btn")
+              modifier = Modifier.weight(1f).height(40.dp).testTag("profile_follow_insta_btn")
             ) {
-              Text("Follow @_calsnapix", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+              Text("Follow @_calsnapix", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Button(
               onClick = {
-                val clean = instaHandleInput.trim().removePrefix("@")
-                if (clean.isBlank()) {
-                  Toast.makeText(context, "Please enter your Instagram handle", Toast.LENGTH_SHORT).show()
+                val cleanEmail = instaEmailInput.trim()
+                val cleanHandle = instaHandleInput.trim().removePrefix("@")
+                if (!cleanEmail.contains("@") || !cleanEmail.contains(".")) {
+                  Toast.makeText(context, "Please enter your valid Email ID to verify follow.", Toast.LENGTH_SHORT).show()
+                } else if (cleanHandle.length < 2) {
+                  Toast.makeText(context, "Please enter your Instagram ID name.", Toast.LENGTH_SHORT).show()
                 } else {
-                  onLinkInstagram("@$clean")
-                  Toast.makeText(context, "🎉 Verified following @_calsnapix! 20% discount code INSTA20 applied.", Toast.LENGTH_LONG).show()
+                  onLinkInstagram("@$cleanHandle")
+                  Toast.makeText(context, "🎉 Verified following @_calsnapix for @$cleanHandle! 20% discount applied.", Toast.LENGTH_LONG).show()
                 }
               },
-              shape = RoundedCornerShape(10.dp),
+              shape = RoundedCornerShape(8.dp),
               colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
-              modifier = Modifier.weight(1.2f).height(46.dp).testTag("profile_verify_insta_btn")
+              modifier = Modifier.weight(1.1f).height(40.dp).testTag("profile_verify_insta_btn")
             ) {
-              Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
-              Spacer(modifier = Modifier.width(4.dp))
-              Text("Verify & Apply 20%", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+              Text("Verify & Activate 20%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
           }
         }
@@ -889,7 +855,10 @@ fun ProfileScreen(
       shape = RoundedCornerShape(20.dp),
       color = colors.surface,
       border = BorderStroke(1.dp, colors.line),
-      modifier = Modifier.fillMaxWidth().testTag("profile_subscription_overview_card")
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable { onNavigateToPricing() }
+        .testTag("profile_subscription_overview_card")
     ) {
       Column(
         modifier = Modifier.padding(18.dp),
@@ -1124,6 +1093,8 @@ fun ProfileScreen(
       }
     }
 
+
+
     // Account Actions: Log Out Card
     Surface(
       shape = RoundedCornerShape(20.dp),
@@ -1331,6 +1302,273 @@ fun ProfileScreen(
       onDismiss = { showPricingPaywallDialog = false },
       onSubscribeSuccess = { _ -> showPricingPaywallDialog = false },
       initialInstagramFollowed = uiState.isInstagramFollowVerified
+    )
+  }
+
+  // DIALOG 4: Full Comprehensive Privacy Policy Dialog
+  if (showFullPrivacyPolicyDialog) {
+    AlertDialog(
+      onDismissRequest = { showFullPrivacyPolicyDialog = false },
+      title = {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          Icon(Icons.Default.Security, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(24.dp))
+          Text(text = "CalSnapix Privacy Policy", fontWeight = FontWeight.Bold, color = colors.ink)
+        }
+      },
+      text = {
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(420.dp)
+            .verticalScroll(rememberScrollState()),
+          verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+          Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = Color(0xFF10B981).copy(alpha = 0.1f),
+            border = BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.25f))
+          ) {
+            Text(
+              text = "Effective Date: October 2026\nApp: CalSnapix • Privacy & Data Security Policy",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.SemiBold,
+              color = Color(0xFF10B981),
+              modifier = Modifier.padding(10.dp)
+            )
+          }
+
+          Text(
+            text = "1. Data Protection & Encryption:\nWe never sell your data. Your logs are encrypted. Your health, body weight, and meal habits are personal. CalSnapix never sells, rents, monetizes, or brokers your personal health metrics, food photos, or biometric records to insurance companies, advertising networks, or data aggregators.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "2. Information We Collect:\n• Biometric Profile: Height, weight, target weight, age, biological gender, and activity factor used strictly to compute your Basal Metabolic Rate (BMR) and daily Total Daily Energy Expenditure (TDEE).\n• Meal Photos & Scans: Camera food captures processed solely to estimate food components, portion volume, calories, and macronutrients.\n• Dietary Habits & Vedic Timings: Vegetarian, vegan, Jain, eggetarian, allergies, and optional fasting schedules.\n• Instagram Handle: When linking with @_calsnapix, your public username is used exclusively to verify follow status and auto-apply the 20% discount (code INSTA20).",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "3. Camera & Hardware Permissions:\n• Camera Access: Used solely when you tap 'Scan Meal' or 'Barcode'. Photos are analyzed in real-time and never used for facial recognition or unrelated scanning.\n• Storage: Your logs are stored locally on your device in a 256-bit encrypted Room SQLite database.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "4. AI & Cloud Processing:\n• Meal scanning and CalSnapix AI Nutrition Assistant consultations utilize Google Gemini Vision models via secure, encrypted endpoints.\n• Uploaded meal snapshots are discarded after inference and are not used for public model training.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "5. Complete Data Ownership & Deletion:\n• You hold full ownership of your data at all times.\n• You can permanently delete your account, calorie blueprint, food diary, and weight logs at any time using the 'Delete Account' option in Profile Settings.\n• Web deletion portal: calsnapix.in/delete-account",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "6. Security Standards:\n• We never sell your data. Your logs are encrypted.\n• 256-bit AES cryptographic storage.\n• Transport Layer Security (TLS 1.3) on all external communications.\n• SHA-256 password salting.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "7. Contact & Privacy Inquiries:\nIf you have any questions regarding your data or privacy rights, please reach out to:\nEmail: privacy@calsnapix.in\nOfficial Instagram: @_calsnapix\nPublic Privacy URL: calsnapix.in/privacy",
+            fontSize = 12.sp,
+            color = colors.ink2,
+            lineHeight = 17.sp
+          )
+        }
+      },
+      confirmButton = {
+        Button(
+          onClick = { showFullPrivacyPolicyDialog = false },
+          colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg)
+        ) {
+          Text("I Understand")
+        }
+      }
+    )
+  }
+
+  // DIALOG 5: Full Comprehensive Terms & Conditions Dialog
+  if (showFullTermsDialog) {
+    AlertDialog(
+      onDismissRequest = { showFullTermsDialog = false },
+      title = {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          Icon(Icons.Default.Article, contentDescription = null, tint = colors.accent, modifier = Modifier.size(24.dp))
+          Text(text = "CalSnapix Terms & Conditions", fontWeight = FontWeight.Bold, color = colors.ink)
+        }
+      },
+      text = {
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(420.dp)
+            .verticalScroll(rememberScrollState()),
+          verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+          Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = colors.accentSoft,
+            border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.25f))
+          ) {
+            Text(
+              text = "Last Updated: October 2026\nTerms of Service Agreement for CalSnapix • calsnapix.in/terms",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.SemiBold,
+              color = colors.accent,
+              modifier = Modifier.padding(10.dp)
+            )
+          }
+
+          Text(
+            text = "1. Acceptance of Terms:\nBy creating an account, browsing, scanning meals, or purchasing a subscription on CalSnapix, you agree to comply with and be bound by these Terms & Conditions. If you disagree with any portion, please cease usage of the app immediately.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "2. No-Guarantee Clause (Estimates, Not Promises):\nAll projected calorie goals, weight timelines, and deficit calculations are algorithmic estimates based on general metabolic formulas. They are NOT guarantees or clinical promises. Individual metabolic rates, body composition, sleep, and compliance vary significantly. Weekly weight change rates are capped at 1.0 kg/week max, and underweight targets (BMI < 18.5) are strictly blocked.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "3. Fuller Health & Medical Disclaimer:\n• AI Assistant Is Not a Doctor/Dietitian: CalSnapix is an informational wellness and meal tracking tool. It does NOT provide clinical diagnosis, medical therapy, or prescription diets.\n• Eating Disorders Contraindication: The app is strictly contraindicated for anyone with an active or historical diagnosis of anorexia, bulimia, orthorexia, or disordered eating patterns.\n• Allergies & Anaphylaxis: Photo scanning and food databases cannot detect microscopic allergen traces, peanut cross-contamination, or cooking oils. Users with severe allergies must independently verify all ingredients.\n• Pregnancy & Lactation: Caloric restriction is contraindicated during pregnancy and breastfeeding.\n• Chronic Illness: Users with Diabetes, hypertension, PCOS, or thyroid conditions must consult their treating physician prior to dietary changes.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "4. Subscriptions & Regional Pricing Transparency:\nPrices are transparently harmonized across Indian (INR ₹) and Global (USD $) stores:\n• Daily Pass (1 Day): ₹6.99 (₹7) / $0.09\n• Weekly Plan (7 Days): ₹39 / $0.49\n• Monthly Plan (30 Days): ₹149 / $1.99 (Save 75%)\n• 6-Month Plan: ₹699 / $8.99 (Save 55%)\n• Yearly Plan (365 Days): ₹1,199 / $14.99 (Save 80% • Recommended)\nAuto-renewals and cancellations are managed directly in your Google Play Store Subscriptions settings. Refunds follow standard Google Play Store policies.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "5. Instagram Discount Code (INSTA20):\nUsers following @_calsnapix can redeem code INSTA20 for 20% off all plans. Redemptions are validated on our server and strictly limited to 1 use per account. CalSnapix never asks for your Instagram password.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "6. Security & Breach Response Protocol:\nIn accordance with CERT-In directions under IT Act Section 70B, confirmed cybersecurity incidents are reported within 6 hours, and affected users are notified via email within 72 hours.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "7. Contact & Grievance Officer:\n• Legal Entity: CalSnapix Technologies Pvt. Ltd., Koramangala, Bengaluru, Karnataka, India - 560001\n• Grievance Officer: Yashwant Raj (grievance@calsnapix.in)\n• DPO Email: dpo@calsnapix.in • Legal: legal@calsnapix.in\n• Web Deletion Portal: calsnapix.in/delete-account",
+            fontSize = 12.sp,
+            color = colors.ink2,
+            lineHeight = 17.sp
+          )
+        }
+      },
+      confirmButton = {
+        Button(
+          onClick = { showFullTermsDialog = false },
+          colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg)
+        ) {
+          Text("Accept & Close")
+        }
+      }
+    )
+  }
+
+  // DIALOG 6: Incident Response & Data Breach Plan
+  if (showBreachPlanDialog) {
+    AlertDialog(
+      onDismissRequest = { showBreachPlanDialog = false },
+      title = {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          Icon(Icons.Default.Security, contentDescription = null, tint = colors.accent, modifier = Modifier.size(24.dp))
+          Text(text = "Security Incident Protocol", fontWeight = FontWeight.Bold, color = colors.ink)
+        }
+      },
+      text = {
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(380.dp)
+            .verticalScroll(rememberScrollState()),
+          verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+          Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = colors.accentSoft,
+            border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.25f))
+          ) {
+            Text(
+              text = "Mandatory Notification Standards (CERT-In, DPDP Act & Play Security)",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.SemiBold,
+              color = colors.accent,
+              modifier = Modifier.padding(10.dp)
+            )
+          }
+
+          Text(
+            text = "1. Response Team & Ownership:\n• Incident Commander: Lead Security Engineer\n• Privacy Officer: Data Protection Officer (DPO)\n• Public Notifications: Communications Lead\n• Dedicated Escalation Inbox: security@calsnapix.in",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "2. CERT-In Mandatory Reporting (Within 6 Hours):\nUnder India's CERT-In Cyber Security Directions (IT Act Section 70B), cybersecurity incidents meeting mandatory reporting thresholds are reported to incident@cert-in.org.in within 6 hours of discovery.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "3. Affected User Notification (Within 72 Hours):\nIf personal data is ever compromised, affected users will be notified via verified registered email without undue delay, and no later than 72 hours, with clear details on affected records, remediation steps, and protective guidance.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+
+          Text(
+            text = "4. Defense-In-Depth Architecture:\n• Transient Meal Photos: Held only in memory during AI model inference; deleted immediately after analysis.\n• Hardware Keystore: AES-256-GCM encryption key stored exclusively in Android Keystore, never in APK code.\n• Zero-Trust Database RLS: Strict per-user row level security in database.\n• HTTPS Only: Cleartext HTTP traffic is blocked at system manifest level.\n• Cloud Backup Disabled: allowBackup=false prevents data leaking into cloud backups.",
+            fontSize = 12.sp,
+            color = colors.ink,
+            lineHeight = 17.sp
+          )
+        }
+      },
+      confirmButton = {
+        Button(
+          onClick = { showBreachPlanDialog = false },
+          colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg)
+        ) {
+          Text("Understood")
+        }
+      }
     )
   }
 }

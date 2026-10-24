@@ -40,6 +40,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,7 +50,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,12 +99,14 @@ fun AuthScreen(
   onPasteOAuthCallback: (String) -> Unit = {},
   modifier: Modifier = Modifier
 ) {
+  val context = LocalContext.current
   var mode by remember { mutableStateOf(AuthMode.LOGIN) }
   var name by remember { mutableStateOf("") }
   var email by remember { mutableStateOf("") }
   var password by remember { mutableStateOf("") }
   var confirmPassword by remember { mutableStateOf("") }
   var passwordVisible by remember { mutableStateOf(false) }
+  var is18OrOlder by remember { mutableStateOf(false) }
   var localValidationErr by remember { mutableStateOf<String?>(null) }
   var showPrivacyDialog by remember { mutableStateOf(false) }
   var showTermsDialog by remember { mutableStateOf(false) }
@@ -353,12 +359,36 @@ fun AuthScreen(
               onDone = {
                 if (password != confirmPassword) {
                   localValidationErr = "Passwords do not match"
+                } else if (!is18OrOlder) {
+                  localValidationErr = "You must be 18 years of age or older to register (DPDP Act requirement)"
                 } else {
                   onSignUp(name, email, password)
                 }
               }
             )
           )
+
+          // Age Check (Required under India Digital Personal Data Protection Act)
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .clickable { is18OrOlder = !is18OrOlder }
+              .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            Checkbox(
+              checked = is18OrOlder,
+              onCheckedChange = { is18OrOlder = it },
+              colors = CheckboxDefaults.colors(checkedColor = AhaarPrimaryContainer)
+            )
+            Text(
+              text = "I confirm that I am 18 years of age or older (Required under India DPDP Act)",
+              fontSize = 12.sp,
+              color = MaterialTheme.colorScheme.onSurface,
+              lineHeight = 16.sp
+            )
+          }
         }
 
         // Error message banner
@@ -408,6 +438,8 @@ fun AuthScreen(
                 localValidationErr = "Password must be at least 6 characters"
               } else if (password != confirmPassword) {
                 localValidationErr = "Passwords do not match"
+              } else if (!is18OrOlder) {
+                localValidationErr = "You must be 18 years of age or older to create an account (DPDP Act requirement)"
               } else {
                 onSignUp(name, email, password)
               }
@@ -571,7 +603,13 @@ fun AuthScreen(
           color = AhaarPrimary,
           fontSize = 11.sp,
           modifier = Modifier
-            .clickable { showTermsDialog = true }
+            .clickable {
+              try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://claude.ai/artifact/6oxxES7VRyyNnrG9HVxN45")))
+              } catch (e: Exception) {
+                showTermsDialog = true
+              }
+            }
             .padding(4.dp)
             .testTag("terms_link")
         )
@@ -587,7 +625,13 @@ fun AuthScreen(
           color = AhaarPrimary,
           fontSize = 11.sp,
           modifier = Modifier
-            .clickable { showPrivacyDialog = true }
+            .clickable {
+              try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://claude.ai/artifact/HPtn6GbWs3uTXEYTFEQJ9U")))
+              } catch (e: Exception) {
+                showPrivacyDialog = true
+              }
+            }
             .padding(4.dp)
             .testTag("privacy_link")
         )
@@ -637,13 +681,13 @@ fun AuthScreen(
               lineHeight = 17.sp
             )
             Text(
-              text = "5. Subscription & Billing Plans:\nCalSnapix Pro plans (Daily Pass, Weekly, Monthly, 6-Months, and Yearly) grant full access to unlimited AI meal scans, complete micronutrient metrics, and 24/7 MyCal AI dietitian chat. Subscriptions can be managed and cancelled anytime.",
+              text = "5. Subscription & Billing Plans:\nCalSnapix Pro plans (Daily Pass, Weekly, Monthly, 6-Months, and Yearly) grant full access to unlimited AI meal scans, complete micronutrient metrics, and 24/7 CalSnapix AI Nutrition Assistant. Subscriptions can be managed and cancelled anytime.",
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               lineHeight = 17.sp
             )
             Text(
-              text = "6. Intellectual Property & Modifications:\nAll algorithms, branding, and UI designs of CalSnapix are proprietary. We reserve the right to improve features and revise terms with appropriate notice.",
+              text = "6. Intellectual Property & Modifications:\nAll algorithms, branding, and UI designs of CalSnapix are proprietary. Public policies: calsnapix.in/terms",
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               lineHeight = 17.sp
@@ -674,13 +718,13 @@ fun AuthScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
           ) {
             Text(
-              text = "Effective Date: October 2026\nApp: CalSnapix • Indian Nutrition & Wellness",
+              text = "Effective Date: October 2026\nApp: CalSnapix • Privacy & Data Security",
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = AhaarPrimary
             )
             Text(
-              text = "1. Zero-Knowledge Nutrition Privacy:\nYour health, body weight, and meal habits are personal. CalSnapix never sells, rents, monetizes, or brokers your personal health data to insurance companies, data brokers, or third-party advertisers.",
+              text = "1. Data Protection & Encryption:\nWe never sell your data. Your logs are encrypted. Your health, body weight, and meal habits are personal. CalSnapix never sells, rents, monetizes, or brokers your personal health data to insurance companies, data brokers, or third-party advertisers.",
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurface,
               lineHeight = 17.sp
@@ -698,7 +742,7 @@ fun AuthScreen(
               lineHeight = 17.sp
             )
             Text(
-              text = "4. Your Absolute Right to Erasure:\nYou maintain full ownership of your data. You may permanently delete your account, meal records, and biometric history at any time from your profile with instantaneous data wipe.",
+              text = "4. Your Absolute Right to Erasure:\nYou maintain full ownership of your data. You may permanently delete your account, meal records, and biometric history at any time from your profile with instantaneous data wipe. Web deletion: calsnapix.in/delete-account",
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               lineHeight = 17.sp
@@ -728,7 +772,7 @@ fun AuthScreen(
         modifier = Modifier.size(16.dp)
       )
       Text(
-        text = "256-Bit Cryptographic Storage • Privacy Protected",
+        text = "We never sell your data. Your logs are encrypted.",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = 10.sp
