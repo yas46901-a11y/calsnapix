@@ -56,10 +56,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.TrackChanges
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Lock
@@ -596,35 +602,9 @@ fun OnboardingFlowScreen(
                 onTogglePermission = { localNotificationsAllowed = it }
               )
 
-              // 16. Referral code screen
-              16 -> Step21Referral(
-                code = localReferralCodeInput,
-                onCodeChange = {
-                  localReferralCodeInput = it.take(10).uppercase()
-                  referralSuccessMessage = null
-                  referralErrorMessage = null
-                },
-                onApply = {
-                  referralIsChecking = true
-                  referralSuccessMessage = null
-                  referralErrorMessage = null
-                  coroutineScope.launch {
-                    delay(500)
-                    val res = onApplyReferral(localReferralCodeInput)
-                    referralIsChecking = false
-                    if (res.isSuccess) {
-                      referralSuccessMessage = res.getOrNull()
-                      referralDiscountPercent = uiState.appliedDiscountPercent.coerceAtLeast(50)
-                    } else {
-                      referralErrorMessage = res.exceptionOrNull()?.message ?: "Invalid or expired referral code"
-                    }
-                  }
-                },
-                onSkip = { handleContinue() },
-                isChecking = referralIsChecking,
-                successMessage = referralSuccessMessage,
-                errorMessage = referralErrorMessage,
-                discountPercent = referralDiscountPercent
+              // 16. 100% Free Access Confirmation Screen
+              16 -> Step16FreeCommitment(
+                onContinue = { handleContinue() }
               )
 
               // 17. "Setting everything up..." Loading screen (4-5s)
@@ -2870,25 +2850,38 @@ private fun Step20Trust() {
 }
 
 // -------------------------------------------------------------
-// STEP 21: Referral Code Screen with Instant Validation & Confetti
+// STEP 16: 100% Free Access Commitment Screen
 // -------------------------------------------------------------
 @Composable
-private fun Step21Referral(
-  code: String,
-  onCodeChange: (String) -> Unit,
-  onApply: () -> Unit,
-  onSkip: () -> Unit,
-  isChecking: Boolean,
-  successMessage: String?,
-  errorMessage: String?,
-  discountPercent: Int
+private fun Step16FreeCommitment(
+  onContinue: () -> Unit
 ) {
   val colors = CalTheme.colors
-  val isValid = successMessage != null && errorMessage == null
 
   Column(modifier = Modifier.fillMaxWidth()) {
+    Surface(
+      shape = RoundedCornerShape(999.dp),
+      color = colors.accentSoft,
+      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.4f)),
+      modifier = Modifier.padding(bottom = 12.dp)
+    ) {
+      Row(
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = colors.accent, modifier = Modifier.size(14.dp))
+        Text(
+          text = "100% FREE FOREVER",
+          fontSize = 11.sp,
+          fontWeight = FontWeight.ExtraBold,
+          color = colors.accent
+        )
+      }
+    }
+
     Text(
-      text = "Have a referral code?",
+      text = "All features are 100% free",
       fontSize = 32.sp,
       lineHeight = 38.sp,
       fontWeight = FontWeight.Bold,
@@ -2896,181 +2889,55 @@ private fun Step21Referral(
     )
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-      text = "Enter a friend's code to unlock up to 50% off CalSnapix Pro and start tracking ghar ka khana.",
+      text = "CalSnapix is committed to making healthy nutrition accessible to everyone. No paywalls, no subscriptions, and no credit card required.",
       fontSize = 15.sp,
       lineHeight = 22.sp,
       color = colors.ink2
     )
 
-    Spacer(modifier = Modifier.height(32.dp))
+    Spacer(modifier = Modifier.height(24.dp))
 
-    // Single large input (auto-uppercase, 6-10 chars)
-    OutlinedTextField(
-      value = code,
-      onValueChange = { input ->
-        val filtered = input.filter { it.isLetterOrDigit() }.take(10).uppercase()
-        onCodeChange(filtered)
-      },
-      placeholder = {
-        Text(
-          text = "YASH50",
-          fontSize = 24.sp,
-          fontWeight = FontWeight.Bold,
-          letterSpacing = 2.sp,
-          color = colors.ink2.copy(alpha = 0.4f),
-          modifier = Modifier.fillMaxWidth(),
-          textAlign = TextAlign.Center
-        )
-      },
-      textStyle = androidx.compose.ui.text.TextStyle(
-        fontSize = 24.sp,
-        fontWeight = FontWeight.ExtraBold,
-        letterSpacing = 2.sp,
-        textAlign = TextAlign.Center,
-        color = colors.ink
-      ),
-      colors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = if (isValid) colors.accent else colors.ink,
-        unfocusedBorderColor = if (isValid) colors.accent else colors.line,
-        focusedContainerColor = colors.surface,
-        unfocusedContainerColor = colors.surface
-      ),
-      shape = RoundedCornerShape(20.dp),
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(72.dp)
-        .testTag("referral_code_input"),
-      singleLine = true,
-      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
-      keyboardActions = KeyboardActions(onDone = {
-        if (code.length in 6..10 && !isChecking) onApply()
-      })
-    )
-
-    Spacer(modifier = Modifier.height(18.dp))
-
-    // Apply Button
-    Button(
-      onClick = onApply,
-      enabled = code.length in 6..10 && !isChecking && !isValid,
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(52.dp)
-        .testTag("apply_referral_button"),
-      shape = RoundedCornerShape(999.dp),
-      colors = ButtonDefaults.buttonColors(
-        containerColor = colors.accent,
-        contentColor = colors.bg,
-        disabledContainerColor = colors.line,
-        disabledContentColor = colors.ink2.copy(alpha = 0.5f)
-      )
-    ) {
-      if (isChecking) {
-        CircularProgressIndicator(
-          color = colors.bg,
-          strokeWidth = 2.5.dp,
-          modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Text("Checking code...", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-      } else if (isValid) {
-        Icon(
-          imageVector = Icons.Default.CheckCircle,
-          contentDescription = null,
-          tint = colors.bg,
-          modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("Applied Successfully", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-      } else {
-        Text("Apply", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-      }
-    }
-
-    // Valid State: Confetti Burst & 50% OFF unlocked badge
-    if (isValid) {
-      Spacer(modifier = Modifier.height(20.dp))
-      Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        // Subtle confetti particles burst
-        ReferralConfettiBurst()
-
+    // 4 Unlocked Benefits
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+      listOf(
+        "Unlimited AI Indian Food Photo Scans" to "Snap rotis, dals, sabzis, and thalis for instant nutrition breakdown",
+        "High-Precision Barcode & QR Scanner" to "Scan packaged groceries, snacks, and nutrition QR labels with ease",
+        "24/7 AI Nutrition Assistant" to "Friendly suggestions, meal timing tips, and portion sizing guidance",
+        "Ayurvedic Meal Timings & Hydration" to "Traditional Vedic meal windows and 8-glass daily water reminders"
+      ).forEach { (title, subtitle) ->
         Surface(
           shape = RoundedCornerShape(16.dp),
-          color = colors.accentSoft,
-          border = BorderStroke(1.5.dp, colors.accent),
+          color = colors.surface,
+          border = BorderStroke(1.dp, colors.line),
           modifier = Modifier.fillMaxWidth()
         ) {
           Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
           ) {
-            Surface(
-              shape = CircleShape,
-              color = colors.accent,
-              modifier = Modifier.size(36.dp)
-            ) {
-              Box(contentAlignment = Alignment.Center) {
-                Icon(
-                  imageVector = Icons.Default.Check,
-                  contentDescription = null,
-                  tint = colors.bg,
-                  modifier = Modifier.size(20.dp)
-                )
-              }
-            }
-            Column {
-              Text(
-                text = "${if (discountPercent > 0) discountPercent else 50}% OFF UNLOCKED",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = colors.accent
-              )
-              Text(
-                text = successMessage ?: "Referral discount will be applied at checkout.",
-                fontSize = 13.sp,
-                color = colors.ink
-              )
+            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
+            Column(modifier = Modifier.weight(1f)) {
+              Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colors.ink)
+              Text(subtitle, fontSize = 11.sp, color = colors.ink2, lineHeight = 15.sp)
             }
           }
         }
       }
     }
 
-    // Invalid / Expired / Already Used State
-    if (errorMessage != null) {
-      Spacer(modifier = Modifier.height(16.dp))
-      Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = colors.danger.copy(alpha = 0.12f),
-        border = BorderStroke(1.dp, colors.danger.copy(alpha = 0.3f)),
-        modifier = Modifier.fillMaxWidth()
-      ) {
-        Text(
-          text = errorMessage,
-          fontSize = 13.sp,
-          fontWeight = FontWeight.Medium,
-          color = colors.danger,
-          modifier = Modifier.padding(14.dp)
-        )
-      }
-    }
+    Spacer(modifier = Modifier.height(28.dp))
 
-    Spacer(modifier = Modifier.height(20.dp))
-
-    // Skip Button
-    TextButton(
-      onClick = onSkip,
+    Button(
+      onClick = onContinue,
+      colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
+      shape = RoundedCornerShape(999.dp),
       modifier = Modifier
-        .align(Alignment.CenterHorizontally)
-        .testTag("referral_skip_button")
+        .fillMaxWidth()
+        .height(54.dp)
+        .testTag("free_commitment_continue_btn")
     ) {
-      Text(
-        text = if (isValid) "Continue with discount →" else "I don't have a code",
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = if (isValid) colors.accent else colors.ink2
-      )
+      Text("Continue (Free)", fontSize = 16.sp, fontWeight = FontWeight.Bold)
     }
   }
 }
@@ -3741,34 +3608,46 @@ private fun Step24CreateAccount(
             verticalArrangement = Arrangement.spacedBy(10.dp)
           ) {
             Text(
-              text = "Last Updated: October 2026\nApp: CalSnapix • Indian Nutrition & Wellness\nPublic URL: calsnapix.in/terms",
+              text = "Last Updated: October 2026\nApp: CalSnapix • Indian Nutrition & Wellness\nOfficial Link: https://calsnapix.in/terms",
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = colors.accent
             )
             Text(
-              text = "1. Acceptance of Terms:\nBy creating an account or signing in, you agree to these Terms. CalSnapix is intended for personal nutritional tracking and habit building.",
+              text = "1. Acceptance of Terms:\nBy creating an account, signing in, or using CalSnapix, you accept and agree to be bound by these Terms and Conditions in full. CalSnapix is intended for personal nutritional tracking and healthy habit building.",
               fontSize = 12.sp,
               color = colors.ink,
               lineHeight = 17.sp
             )
             Text(
-              text = "2. Non-Medical Disclaimer:\nCalSnapix provides AI-estimated calories, macronutrients, and Ayurvedic digestion windows for lifestyle wellness only. It is not clinical medical advice.",
+              text = "2. Non-Medical & Lifestyle Disclaimer:\nCalSnapix provides AI-estimated calories, macronutrients, and Ayurvedic digestion windows for lifestyle wellness, educational, and fitness awareness only. It is not clinical medical advice, dietetics consultation, or medical treatment. Always consult a physician or registered dietitian before beginning any radical diet program.",
               fontSize = 12.sp,
               color = colors.ink2,
               lineHeight = 17.sp
             )
             Text(
-              text = "3. AI Meal Recognition:\nPhoto meal analysis and barcode queries provide guidance based on Indian and global food composition databases. Cooking styles and oils vary.",
+              text = "3. AI Meal Recognition & Food Scanning:\nPhoto meal recognition, portion sizing, and barcode/QR lookups provide close nutritional approximations based on Indian food composition databases (ICMR-NIN) and global databases. Actual preparation methods, oils, and recipes may produce nutritional variations.",
               fontSize = 12.sp,
               color = colors.ink2,
               lineHeight = 17.sp
             )
             Text(
-              text = "4. Data Ownership & Erasure:\nYou retain full ownership of your records. You may permanently delete your account and wipe all logs at any time from your profile or via calsnapix.in/delete-account.",
+              text = "4. User Data Ownership & Full Erasure:\nYou retain full ownership of your logs, weight history, and meal data. You may permanently delete your account and wipe all personal logs from the server at any time under Profile > Delete Account or by visiting https://calsnapix.in/delete-account.",
               fontSize = 12.sp,
               color = colors.ink2,
               lineHeight = 17.sp
+            )
+            Text(
+              text = "5. 100% Free Forever Service Commitment:\nCalSnapix is committed to delivering free, accessible nutrition and wellness tools for everyone. There are NO hidden fees, NO paywalls, NO subscriptions, NO trial expiration periods, and NO referral requirements. All features—including AI meal scanning, barcode/QR reading, and 24/7 AI coaching—are completely free.",
+              fontSize = 12.sp,
+              color = colors.accent,
+              fontWeight = FontWeight.SemiBold,
+              lineHeight = 17.sp
+            )
+            Text(
+              text = "6. Contact & Legal Enquiries:\nFor questions regarding these terms, reach our team at legal@calsnapix.in or support@calsnapix.in.",
+              fontSize = 11.sp,
+              color = colors.ink2
             )
           }
         },
@@ -3796,28 +3675,39 @@ private fun Step24CreateAccount(
             verticalArrangement = Arrangement.spacedBy(10.dp)
           ) {
             Text(
-              text = "Effective Date: October 2026\nApp: CalSnapix • Encrypted Nutrition Privacy\nPublic URL: calsnapix.in/privacy",
+              text = "Effective Date: October 2026\nApp: CalSnapix • Encrypted Nutrition Privacy\nOfficial Link: https://calsnapix.in/privacy",
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = colors.accent
             )
             Text(
-              text = "1. Privacy Commitment:\nWe never sell your data. Your logs are encrypted. We do not sell, broker, or rent your biometric data, weight history, or meal photos to third parties or advertising networks.",
+              text = "1. Our Privacy Commitment:\nWe never sell, rent, or monetize your personal data. We do not profile you for behavioral advertisements, and your logs are protected by AES-256 encryption.",
               fontSize = 12.sp,
               color = colors.ink,
               lineHeight = 17.sp
             )
             Text(
-              text = "2. Information We Process:\n• Biometric inputs (age, weight, height) strictly to compute BMR & TDEE.\n• Meal logs & camera scans analyzed transiently for nutrient estimation.\n• Barcode numbers looked up against nutritional reference tables.",
+              text = "2. Detailed Breakdown: What We Collect & Why We Need It:",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold,
+              color = colors.accent
+            )
+            Text(
+              text = "• Biometric Data (Age, Biological Gender, Height, Weight, Activity Level, Pace):\nWhy: Strictly essential to compute your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE) using the scientifically verified Mifflin-St Jeor formula, tailored to Indian metabolic baselines.\n\n• Dietary Preferences & Food Allergies:\nWhy: To filter out dangerous allergens (e.g., peanuts, gluten, dairy), suggest safe Indian recipe substitutions, and personalize meal recommendations according to your lifestyle.\n\n• Real-Time Camera Meal Photos:\nWhy: Transiently processed by our AI vision model solely to identify food items, estimate portion sizes, and calculate calories & macronutrients. Photos are NEVER stored for advertising, user profiling, or facial/biometric recognition.\n\n• Barcode & QR Code Scans:\nWhy: Scanned barcode numbers and QR nutrition tokens are queried against certified Indian and global food databases in real time to display manufacturer nutritional facts.\n\n• Name & Email Address:\nWhy: Used exclusively for secure account authentication, password recovery, and synchronizing your personal logs across devices.\n\n• Encrypted Local & Cloud Storage:\nWhy: Provides lightning-fast offline access to your meal logs, water intake, and daily history, with encrypted cloud backup for seamless cross-device sync.",
               fontSize = 12.sp,
               color = colors.ink2,
               lineHeight = 17.sp
             )
             Text(
-              text = "3. Data Security & Erasure:\nProtected with 256-bit encryption. Complete one-tap account deletion is permanently available under Profile > Delete Account or web deletion at calsnapix.in/delete-account.",
+              text = "3. Data Retention & Complete Erasure:\nYou have full control over your data. You may delete individual logs or permanently wipe your entire account and associated records with a single tap in Profile > Delete Account or at https://calsnapix.in/delete-account.",
               fontSize = 12.sp,
               color = colors.ink2,
               lineHeight = 17.sp
+            )
+            Text(
+              text = "4. Data Protection Officer & Queries:\nFor questions regarding our privacy practices or data subject requests, contact our Data Protection team at privacy@calsnapix.in or support@calsnapix.in.",
+              fontSize = 11.sp,
+              color = colors.ink2
             )
           }
         },
@@ -3836,10 +3726,8 @@ private fun Step24CreateAccount(
 
 // -------------------------------------------------------------
 // -------------------------------------------------------------
-// PRICING CONFIGURATION & STEP 25 PAYWALL
+// STEP 20: 100% Free Forever Activation & Feature Showcase
 // -------------------------------------------------------------
-// -------------------------------------------------------------
-// STEP 20: Paywall (All 5 Plans with per-day highlight & Instagram discount)
 // -------------------------------------------------------------
 @Composable
 private fun Step25Paywall(
@@ -3849,26 +3737,178 @@ private fun Step25Paywall(
 ) {
   val colors = CalTheme.colors
 
-  Column(modifier = Modifier.fillMaxWidth()) {
-    PricingPaywallContent(
-      onSubscribeSuccess = { _ -> onStartTrial() },
-      onDismiss = null
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 4.dp),
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    // Top celebration badge
+    Surface(
+      shape = RoundedCornerShape(999.dp),
+      color = colors.accent.copy(alpha = 0.12f),
+      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.3f)),
+      modifier = Modifier.padding(bottom = 12.dp)
+    ) {
+      Row(
+        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Icon(
+          imageVector = Icons.Default.CheckCircle,
+          contentDescription = null,
+          tint = colors.accent,
+          modifier = Modifier.size(16.dp)
+        )
+        Text(
+          text = "100% FREE FOREVER",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold,
+          color = colors.accent,
+          letterSpacing = 0.8.sp
+        )
+      }
+    }
+
+    Text(
+      text = "All Features Unlocked!",
+      fontSize = 24.sp,
+      fontWeight = FontWeight.Black,
+      color = colors.ink,
+      textAlign = TextAlign.Center
     )
+
+    Spacer(modifier = Modifier.height(6.dp))
+
+    Text(
+      text = "CalSnapix is completely free for all users. Zero subscriptions, zero paywalls, zero fees—now and always.",
+      fontSize = 14.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center,
+      lineHeight = 20.sp,
+      modifier = Modifier.padding(horizontal = 12.dp)
+    )
+
+    Spacer(modifier = Modifier.height(20.dp))
+
+    // Unlocked Features Card
+    Surface(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(20.dp),
+      color = colors.surface,
+      border = BorderStroke(1.dp, colors.line)
+    ) {
+      Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+      ) {
+        val features = listOf(
+          Triple(Icons.Default.CameraAlt, "Unlimited AI Food Scanning", "Instant calorie & macro analysis of Indian meals with your camera"),
+          Triple(Icons.Default.QrCodeScanner, "High-Precision QR & Barcodes", "Scan Indian packaged foods, snacks, and nutrition labels instantly"),
+          Triple(Icons.Default.SmartToy, "24/7 AI Nutrition Coach", "Unlimited real-time advice, meal suggestions & Ayurvedic insights"),
+          Triple(Icons.Default.TrackChanges, "Personalized Calorie & Macro Target", "Dynamic goals tailored to your height, weight & fitness pace"),
+          Triple(Icons.Default.Lock, "Complete Privacy & Zero Tracking", "Bank-grade encryption. We never sell your personal data or photos")
+        )
+
+        features.forEach { (icon, title, desc) ->
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+          ) {
+            Surface(
+              shape = RoundedCornerShape(10.dp),
+              color = colors.accent.copy(alpha = 0.12f),
+              modifier = Modifier.size(36.dp)
+            ) {
+              Box(contentAlignment = Alignment.Center) {
+                Icon(
+                  imageVector = icon,
+                  contentDescription = null,
+                  tint = colors.accent,
+                  modifier = Modifier.size(20.dp)
+                )
+              }
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = colors.ink
+              )
+              Text(
+                text = desc,
+                fontSize = 12.sp,
+                color = colors.ink2,
+                lineHeight = 16.sp
+              )
+            }
+
+            Icon(
+              imageVector = Icons.Default.Check,
+              contentDescription = null,
+              tint = colors.accent,
+              modifier = Modifier
+                .size(20.dp)
+                .align(Alignment.CenterVertically)
+            )
+          }
+        }
+      }
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+
+    // Primary CTA Button
+    Button(
+      onClick = onStartTrial,
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(56.dp)
+        .testTag("start_using_calsnapix_free_button"),
+      shape = RoundedCornerShape(999.dp),
+      colors = ButtonDefaults.buttonColors(
+        containerColor = colors.ink,
+        contentColor = colors.bg
+      )
+    ) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        Text(
+          text = "Start Using CalSnapix Free",
+          fontSize = 17.sp,
+          fontWeight = FontWeight.Bold
+        )
+        Icon(
+          imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+          contentDescription = null,
+          modifier = Modifier.size(18.dp)
+        )
+      }
+    }
 
     Spacer(modifier = Modifier.height(10.dp))
 
-    // Free Version Option
-    TextButton(
-      onClick = onContinueFree,
-      modifier = Modifier
-        .align(Alignment.CenterHorizontally)
-        .testTag("continue_free_version_button")
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
+      Icon(
+        imageVector = Icons.Default.VerifiedUser,
+        contentDescription = null,
+        tint = colors.accent,
+        modifier = Modifier.size(14.dp)
+      )
       Text(
-        text = "Or continue with Free Version",
-        fontSize = 14.sp,
-        color = colors.ink2,
-        fontWeight = FontWeight.Medium
+        text = "No credit card required • 100% Free Forever",
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Medium,
+        color = colors.ink2
       )
     }
   }

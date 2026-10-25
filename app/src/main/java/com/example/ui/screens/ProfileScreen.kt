@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.RestartAlt
@@ -276,15 +277,15 @@ fun ProfileScreen(
       }
     }
 
-    // CalSnapix Pro Upgrade Banner (Compact & Small)
+    // CalSnapix 100% Free Status Banner
     Surface(
       shape = RoundedCornerShape(14.dp),
       color = colors.surface,
-      border = BorderStroke(1.dp, colors.accent),
+      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.5f)),
       modifier = Modifier
         .fillMaxWidth()
-        .clickable { showPricingPaywallDialog = true }
-        .testTag("profile_pricing_plans_banner")
+        .clickable { onNavigateToPricing() }
+        .testTag("profile_free_status_banner")
     ) {
       Row(
         modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -295,13 +296,13 @@ fun ProfileScreen(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Text("👑", fontSize = 15.sp)
-          Text("CalSnapix Pro Plans", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Text("✨", fontSize = 15.sp)
+          Text("CalSnapix Free Access", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.ink)
           Surface(shape = RoundedCornerShape(4.dp), color = colors.accentSoft) {
-            Text("FROM ₹4.11/DAY", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = colors.accent, modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp))
+            Text("100% FREE FOREVER", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = colors.accent, modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp))
           }
         }
-        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "View Plans", tint = colors.accent, modifier = Modifier.size(16.dp))
+        Icon(Icons.Default.CheckCircle, contentDescription = "Free Access Active", tint = colors.accent, modifier = Modifier.size(16.dp))
       }
     }
 
@@ -686,171 +687,7 @@ fun ProfileScreen(
       }
     }
 
-    // LINK INSTAGRAM SECTION (Compact & Small)
-    val instagramProfileUrl = "https://www.instagram.com/_calsnapix?vrfl=MTZkajNnaTlreTR2dA=="
-    var instaHandleInput by remember(uiState.linkedInstagramHandle) {
-      mutableStateOf(uiState.linkedInstagramHandle?.removePrefix("@") ?: "")
-    }
-    var instaEmailInput by remember(uiState.userEmail) {
-      mutableStateOf(uiState.userEmail)
-    }
-
-    Surface(
-      shape = RoundedCornerShape(14.dp),
-      color = colors.surface,
-      border = BorderStroke(
-        1.dp,
-        if (uiState.isInstagramFollowVerified) colors.accent else Color(0xFFE1306C).copy(alpha = 0.4f)
-      ),
-      modifier = Modifier.fillMaxWidth().testTag("profile_link_instagram_section")
-    ) {
-      Column(
-        modifier = Modifier.padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Text("📸", fontSize = 16.sp)
-            Text(
-              text = "Instagram 20% Discount",
-              fontSize = 13.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink
-            )
-          }
-
-          Surface(
-            shape = RoundedCornerShape(999.dp),
-            color = if (uiState.isInstagramFollowVerified) colors.accent else Color(0xFFE1306C).copy(alpha = 0.15f)
-          ) {
-            Text(
-              text = if (uiState.isInstagramFollowVerified) "✓ 20% ACTIVE" else "20% OFF",
-              fontSize = 10.sp,
-              fontWeight = FontWeight.ExtraBold,
-              color = if (uiState.isInstagramFollowVerified) Color.White else Color(0xFFE1306C),
-              modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
-            )
-          }
-        }
-
-        if (uiState.isInstagramFollowVerified) {
-          Surface(
-            shape = RoundedCornerShape(10.dp),
-            color = colors.accentSoft
-          ) {
-            Row(
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-              Column {
-                Text(
-                  text = "Verified: ${uiState.linkedInstagramHandle}",
-                  fontSize = 12.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = colors.ink
-                )
-                Text(
-                  text = "Code INSTA20 active across all plans",
-                  fontSize = 10.sp,
-                  color = colors.ink2
-                )
-              }
-              OutlinedButton(
-                onClick = onUnlinkInstagram,
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, colors.line),
-                modifier = Modifier.height(34.dp).testTag("unlink_instagram_button")
-              ) {
-                Text("Change", fontSize = 11.sp, color = colors.ink2)
-              }
-            }
-          }
-        } else {
-          Text(
-            text = "Follow @_calsnapix on Instagram. Provide your Email & Instagram ID to clarify follow and activate 20% OFF (code INSTA20):",
-            fontSize = 11.sp,
-            color = colors.ink2,
-            lineHeight = 15.sp
-          )
-
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-          ) {
-            OutlinedTextField(
-              value = instaEmailInput,
-              onValueChange = { instaEmailInput = it },
-              label = { Text("Email ID", fontSize = 11.sp) },
-              placeholder = { Text("email@example.com", fontSize = 11.sp) },
-              singleLine = true,
-              shape = RoundedCornerShape(8.dp),
-              modifier = Modifier.weight(1.1f).testTag("profile_insta_email_input")
-            )
-
-            OutlinedTextField(
-              value = instaHandleInput,
-              onValueChange = { instaHandleInput = it },
-              label = { Text("Insta ID", fontSize = 11.sp) },
-              placeholder = { Text("@id", fontSize = 11.sp) },
-              singleLine = true,
-              shape = RoundedCornerShape(8.dp),
-              modifier = Modifier.weight(0.9f).testTag("profile_instagram_handle_input")
-            )
-          }
-
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Button(
-              onClick = {
-                try {
-                  val intent = Intent(Intent.ACTION_VIEW, Uri.parse(instagramProfileUrl))
-                  context.startActivity(intent)
-                } catch (e: Exception) {
-                  Toast.makeText(context, "Opening Instagram @_calsnapix", Toast.LENGTH_SHORT).show()
-                }
-              },
-              shape = RoundedCornerShape(8.dp),
-              colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE1306C)),
-              modifier = Modifier.weight(1f).height(40.dp).testTag("profile_follow_insta_btn")
-            ) {
-              Text("Follow @_calsnapix", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            }
-
-            Button(
-              onClick = {
-                val cleanEmail = instaEmailInput.trim()
-                val cleanHandle = instaHandleInput.trim().removePrefix("@")
-                if (!cleanEmail.contains("@") || !cleanEmail.contains(".")) {
-                  Toast.makeText(context, "Please enter your valid Email ID to verify follow.", Toast.LENGTH_SHORT).show()
-                } else if (cleanHandle.length < 2) {
-                  Toast.makeText(context, "Please enter your Instagram ID name.", Toast.LENGTH_SHORT).show()
-                } else {
-                  onLinkInstagram("@$cleanHandle")
-                  Toast.makeText(context, "🎉 Verified following @_calsnapix for @$cleanHandle! 20% discount applied.", Toast.LENGTH_LONG).show()
-                }
-              },
-              shape = RoundedCornerShape(8.dp),
-              colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
-              modifier = Modifier.weight(1.1f).height(40.dp).testTag("profile_verify_insta_btn")
-            ) {
-              Text("Verify & Activate 20%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            }
-          }
-        }
-      }
-    }
-
-    // DEDICATED SUBSCRIPTION & PRICING ACCESS CARD
+    // 100% FREE FOREVER MEMBERSHIP CARD
     Surface(
       shape = RoundedCornerShape(20.dp),
       color = colors.surface,
@@ -858,7 +695,7 @@ fun ProfileScreen(
       modifier = Modifier
         .fillMaxWidth()
         .clickable { onNavigateToPricing() }
-        .testTag("profile_subscription_overview_card")
+        .testTag("profile_free_membership_card")
     ) {
       Column(
         modifier = Modifier.padding(18.dp),
@@ -880,7 +717,7 @@ fun ProfileScreen(
             ) {
               Box(contentAlignment = Alignment.Center) {
                 Icon(
-                  imageVector = Icons.Default.ElectricBolt,
+                  imageVector = Icons.Default.CheckCircle,
                   contentDescription = null,
                   tint = colors.accent,
                   modifier = Modifier.size(20.dp)
@@ -889,13 +726,13 @@ fun ProfileScreen(
             }
             Column {
               Text(
-                text = "Subscription & Plans",
+                text = "CalSnapix Membership",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = colors.ink
               )
               Text(
-                text = "Current plan: ${if (uiState.activeSubscriptionPlan == "Free") "Free Version (3 scans/day)" else "CalSnapix Pro (${uiState.activeSubscriptionPlan.replaceFirstChar { it.uppercase() }})"}",
+                text = "All features unlocked • 100% Free Forever",
                 fontSize = 12.sp,
                 color = colors.ink2
               )
@@ -904,13 +741,13 @@ fun ProfileScreen(
 
           Surface(
             shape = RoundedCornerShape(999.dp),
-            color = if (uiState.activeSubscriptionPlan != "Free") colors.accent else colors.surface2
+            color = colors.accent
           ) {
             Text(
-              text = if (uiState.activeSubscriptionPlan != "Free") "PRO ACTIVE" else "FREE TIER",
+              text = "FREE FOREVER",
               fontSize = 10.sp,
               fontWeight = FontWeight.Bold,
-              color = if (uiState.activeSubscriptionPlan != "Free") Color.White else colors.ink,
+              color = Color.White,
               modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
             )
           }
@@ -927,10 +764,10 @@ fun ProfileScreen(
             verticalAlignment = Alignment.CenterVertically
           ) {
             Column {
-              Text("5 TIERS AVAILABLE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colors.ink2)
+              Text("ZERO SUBSCRIPTIONS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colors.ink2)
               Text(
-                text = if (uiState.isInstagramFollowVerified) "From $0.07 / day (20% OFF)" else "From $0.09 / day",
-                fontSize = 16.sp,
+                text = "Unlimited Scans & AI Free",
+                fontSize = 15.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = colors.accent
               )
@@ -942,7 +779,7 @@ fun ProfileScreen(
               shape = RoundedCornerShape(10.dp),
               modifier = Modifier.testTag("open_pricing_screen_button")
             ) {
-              Text("View 5 Plans", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+              Text("View Free Features", fontSize = 12.sp, fontWeight = FontWeight.Bold)
               Spacer(modifier = Modifier.width(4.dp))
               Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(14.dp))
             }
@@ -951,143 +788,60 @@ fun ProfileScreen(
       }
     }
 
-    // Invite Friends & Earn 20% OFF Card
-    val clipboardManager = LocalClipboardManager.current
-    val referralCode = remember(uiState.userName) {
-      val base = uiState.userName.filter { it.isLetter() }.take(4).uppercase()
-      if (base.length >= 2) "${base}20" else "YASH20"
-    }
-
+    // PRIVACY POLICY & TERMS TRANSPARENCY CARD
     Surface(
       shape = RoundedCornerShape(20.dp),
       color = colors.surface,
       border = BorderStroke(1.dp, colors.line),
-      modifier = Modifier.fillMaxWidth().testTag("invite_friends_card")
+      modifier = Modifier.fillMaxWidth().testTag("profile_legal_transparency_card")
     ) {
       Column(
         modifier = Modifier.padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
       ) {
         Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Surface(
-              shape = CircleShape,
-              color = colors.accentSoft,
-              modifier = Modifier.size(36.dp)
-            ) {
-              Box(contentAlignment = Alignment.Center) {
-                Icon(
-                  imageVector = Icons.Default.CardGiftcard,
-                  contentDescription = null,
-                  tint = colors.accent,
-                  modifier = Modifier.size(20.dp)
-                )
-              }
-            }
-            Column {
-              Text(
-                text = "Invite Friends & Get 20% OFF",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = colors.ink
-              )
-              Text(
-                text = "Share with up to 3 friends: they get 20% OFF & you get 20% OFF renewal!",
-                fontSize = 11.sp,
-                color = colors.ink2
-              )
-            }
-          }
-
-          Surface(
-            shape = RoundedCornerShape(999.dp),
-            color = colors.accentSoft
-          ) {
-            Text(
-              text = "20% OFF",
-              fontSize = 11.sp,
-              color = colors.accent,
-              fontWeight = FontWeight.Bold,
-              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-          }
+          Icon(
+            imageVector = Icons.Default.Security,
+            contentDescription = null,
+            tint = colors.accent,
+            modifier = Modifier.size(20.dp)
+          )
+          Text(
+            text = "Privacy & Legal Details",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = colors.ink
+          )
         }
 
-        Surface(
-          shape = RoundedCornerShape(12.dp),
-          color = colors.bg,
-          border = BorderStroke(1.dp, colors.line)
+        Text(
+          text = "Learn exactly what data we collect (biometrics, meal photos, barcodes) and why it is needed to calculate your personalized nutrition targets.",
+          fontSize = 12.sp,
+          color = colors.ink2,
+          lineHeight = 17.sp
+        )
+
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(horizontal = 14.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+          OutlinedButton(
+            onClick = { showFullPrivacyPolicyDialog = true },
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.weight(1f).testTag("open_privacy_dialog_btn")
           ) {
-            Column {
-              Text(
-                text = "Your Referral Code",
-                fontSize = 10.sp,
-                color = colors.ink2
-              )
-              Text(
-                text = referralCode,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.sp,
-                color = colors.accent
-              )
-            }
+            Text("Privacy Policy", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-              IconButton(
-                onClick = {
-                  clipboardManager.setText(AnnotatedString(referralCode))
-                  Toast.makeText(context, "Code copied: $referralCode (20% OFF)", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.testTag("copy_referral_code_button")
-              ) {
-                Icon(
-                  imageVector = Icons.Default.ContentCopy,
-                  contentDescription = "Copy Code",
-                  tint = colors.accent,
-                  modifier = Modifier.size(20.dp)
-                )
-              }
-
-              Button(
-                onClick = {
-                  val sendIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(
-                      Intent.EXTRA_TEXT,
-                      "Hey! Join me on CalSnapix for effortless calorie & macro tracking. Use my referral code $referralCode to unlock 20% OFF your plan: https://calsnapix.in"
-                    )
-                    type = "text/plain"
-                  }
-                  context.startActivity(Intent.createChooser(sendIntent, "Share CalSnapix Referral"))
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.testTag("share_referral_code_button")
-              ) {
-                Icon(
-                  imageVector = Icons.Default.Share,
-                  contentDescription = null,
-                  modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Share", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-              }
-            }
+          OutlinedButton(
+            onClick = { showFullTermsDialog = true },
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.weight(1f).testTag("open_terms_dialog_btn")
+          ) {
+            Text("Terms of Service", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.ink)
           }
         }
       }
@@ -1300,8 +1054,7 @@ fun ProfileScreen(
   if (showPricingPaywallDialog) {
     PricingPaywallDialog(
       onDismiss = { showPricingPaywallDialog = false },
-      onSubscribeSuccess = { _ -> showPricingPaywallDialog = false },
-      initialInstagramFollowed = uiState.isInstagramFollowVerified
+      onSubscribeSuccess = { _ -> showPricingPaywallDialog = false }
     )
   }
 
@@ -1348,7 +1101,7 @@ fun ProfileScreen(
           )
 
           Text(
-            text = "2. Information We Collect:\n• Biometric Profile: Height, weight, target weight, age, biological gender, and activity factor used strictly to compute your Basal Metabolic Rate (BMR) and daily Total Daily Energy Expenditure (TDEE).\n• Meal Photos & Scans: Camera food captures processed solely to estimate food components, portion volume, calories, and macronutrients.\n• Dietary Habits & Vedic Timings: Vegetarian, vegan, Jain, eggetarian, allergies, and optional fasting schedules.\n• Instagram Handle: When linking with @_calsnapix, your public username is used exclusively to verify follow status and auto-apply the 20% discount (code INSTA20).",
+            text = "2. Exact Data We Collect & Exactly Why We Collect It (In Detail):\n\n• Biometric Metrics (Age, Gender, Height, Current Weight, Goal Weight):\nWHY WE COLLECT THIS: We use these measurements strictly to calculate your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE) using the Mifflin-St Jeor formula. This enables CalSnapix to compute your personalized daily caloric requirement and macronutrient targets (Protein, Carbs, Fats). Without this data, safe, customized nutrition targets cannot be generated.\n\n• Food Preferences & Dietary Restrictions (Vegetarian, Vegan, Jain, Eggetarian, Allergies):\nWHY WE COLLECT THIS: Used to filter recommended Indian recipes, avoid non-compliant ingredients, and tailor Ayurvedic digestion windows to your religious, ethical, or medical choices.\n\n• Real-Time Food Photos & Camera Frames:\nWHY WE COLLECT THIS: Requested only in real-time when you trigger the camera scanner. Images are analyzed transiently by Gemini AI to detect foods, portion sizes, and calculate macronutrients. Photos are NEVER stored permanently on remote advertising servers, never used for facial recognition, and never sold to third parties.\n\n• Barcode & QR Code Scans:\nWHY WE COLLECT THIS: Only the numerical EAN/UPC barcode or nutritional QR text is queried against nutritional databases to automatically fetch product brand names, calories, and macronutrients.\n\n• User Account Credentials (Name & Email Address):\nWHY WE COLLECT THIS: Required solely for secure account authentication, password recovery, and cross-device sync of your daily meal logs and streak. Your email is never sold, shared, or used for unsolicited marketing.\n\n• Device Hardware & Local Storage:\nWHY WE COLLECT THIS: To store your daily logged meals, water glasses, and streaks locally in a 256-bit AES encrypted Room SQLite database for fast offline availability.",
             fontSize = 12.sp,
             color = colors.ink,
             lineHeight = 17.sp
@@ -1383,7 +1136,7 @@ fun ProfileScreen(
           )
 
           Text(
-            text = "7. Contact & Privacy Inquiries:\nIf you have any questions regarding your data or privacy rights, please reach out to:\nEmail: privacy@calsnapix.in\nOfficial Instagram: @_calsnapix\nPublic Privacy URL: calsnapix.in/privacy",
+            text = "7. Contact & Privacy Inquiries:\nIf you have any questions regarding your data or privacy rights, please reach out to:\nEmail: privacy@calsnapix.in\nPublic Privacy URL: calsnapix.in/privacy",
             fontSize = 12.sp,
             color = colors.ink2,
             lineHeight = 17.sp
@@ -1428,7 +1181,7 @@ fun ProfileScreen(
             border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.25f))
           ) {
             Text(
-              text = "Last Updated: October 2026\nTerms of Service Agreement for CalSnapix • calsnapix.in/terms",
+              text = "Last Updated: October 2026\nTerms of Service Agreement for CalSnapix • 100% Free Service • calsnapix.in/terms",
               fontSize = 11.sp,
               fontWeight = FontWeight.SemiBold,
               color = colors.accent,
@@ -1437,7 +1190,7 @@ fun ProfileScreen(
           }
 
           Text(
-            text = "1. Acceptance of Terms:\nBy creating an account, browsing, scanning meals, or purchasing a subscription on CalSnapix, you agree to comply with and be bound by these Terms & Conditions. If you disagree with any portion, please cease usage of the app immediately.",
+            text = "1. Acceptance of Terms:\nBy creating an account, browsing, scanning meals, or using CalSnapix, you agree to comply with and be bound by these Terms & Conditions. If you disagree with any portion, please cease usage of the app immediately.",
             fontSize = 12.sp,
             color = colors.ink,
             lineHeight = 17.sp
@@ -1458,28 +1211,21 @@ fun ProfileScreen(
           )
 
           Text(
-            text = "4. Subscriptions & Regional Pricing Transparency:\nPrices are transparently harmonized across Indian (INR ₹) and Global (USD $) stores:\n• Daily Pass (1 Day): ₹6.99 (₹7) / $0.09\n• Weekly Plan (7 Days): ₹39 / $0.49\n• Monthly Plan (30 Days): ₹149 / $1.99 (Save 75%)\n• 6-Month Plan: ₹699 / $8.99 (Save 55%)\n• Yearly Plan (365 Days): ₹1,199 / $14.99 (Save 80% • Recommended)\nAuto-renewals and cancellations are managed directly in your Google Play Store Subscriptions settings. Refunds follow standard Google Play Store policies.",
+            text = "4. 100% Free Service Commitment:\nCalSnapix is 100% free for all users. There are zero subscription fees, zero recurring charges, and zero paywalls. Unlimited AI food recognition, barcode & QR scanning, calorie budgeting, and nutritional guidance are completely unlocked without payment.",
             fontSize = 12.sp,
             color = colors.ink,
             lineHeight = 17.sp
           )
 
           Text(
-            text = "5. Instagram Discount Code (INSTA20):\nUsers following @_calsnapix can redeem code INSTA20 for 20% off all plans. Redemptions are validated on our server and strictly limited to 1 use per account. CalSnapix never asks for your Instagram password.",
+            text = "5. Security & Breach Response Protocol:\nIn accordance with CERT-In directions under IT Act Section 70B, confirmed cybersecurity incidents are reported within 6 hours, and affected users are notified via email within 72 hours.",
             fontSize = 12.sp,
             color = colors.ink,
             lineHeight = 17.sp
           )
 
           Text(
-            text = "6. Security & Breach Response Protocol:\nIn accordance with CERT-In directions under IT Act Section 70B, confirmed cybersecurity incidents are reported within 6 hours, and affected users are notified via email within 72 hours.",
-            fontSize = 12.sp,
-            color = colors.ink,
-            lineHeight = 17.sp
-          )
-
-          Text(
-            text = "7. Contact & Grievance Officer:\n• Legal Entity: CalSnapix Technologies Pvt. Ltd., Koramangala, Bengaluru, Karnataka, India - 560001\n• Grievance Officer: Yashwant Raj (grievance@calsnapix.in)\n• DPO Email: dpo@calsnapix.in • Legal: legal@calsnapix.in\n• Web Deletion Portal: calsnapix.in/delete-account",
+            text = "6. Contact & Grievance Officer:\n• Legal Entity: CalSnapix Technologies Pvt. Ltd., Koramangala, Bengaluru, Karnataka, India - 560001\n• Grievance Officer: Yashwant Raj (grievance@calsnapix.in)\n• DPO Email: dpo@calsnapix.in • Legal: legal@calsnapix.in\n• Web Deletion Portal: calsnapix.in/delete-account",
             fontSize = 12.sp,
             color = colors.ink2,
             lineHeight = 17.sp

@@ -27,34 +27,14 @@ object AiQuotaManager {
 
   /**
    * Checks if the user is allowed to perform an AI meal scan or ask AI.
-   * Verified Pro users have unlimited access. Free users are capped at 5 per day.
+   * CalSnapix is 100% free with unlimited AI scans and barcode lookups for all users.
    */
-  fun checkCanPerformScan(context: Context, isPro: Boolean): QuotaResult {
-    if (isPro) {
-      return QuotaResult(allowed = true, remainingScans = -1, isPro = true)
-    }
-
-    val prefs = getPrefs(context)
-    val today = getTodayDateString()
-    val lastDate = prefs.getString(KEY_LAST_SCAN_DATE, "") ?: ""
-    val currentCount = if (lastDate == today) {
-      prefs.getInt(KEY_DAILY_SCAN_COUNT, 0)
-    } else {
-      0
-    }
-
-    val remaining = (FREE_TIER_DAILY_SCAN_LIMIT - currentCount).coerceAtLeast(0)
-    val allowed = currentCount < FREE_TIER_DAILY_SCAN_LIMIT
-
+  fun checkCanPerformScan(context: Context, isPro: Boolean = true): QuotaResult {
     return QuotaResult(
-      allowed = allowed,
-      remainingScans = remaining,
-      isPro = false,
-      message = if (!allowed) {
-        "Daily free AI meal scan limit reached (5/5). Upgrade to CalSnapix Pro for unlimited scans."
-      } else {
-        "$remaining daily free scans remaining."
-      }
+      allowed = true,
+      remainingScans = -1,
+      isPro = true,
+      message = "Unlimited AI meal scans unlocked for free!"
     )
   }
 

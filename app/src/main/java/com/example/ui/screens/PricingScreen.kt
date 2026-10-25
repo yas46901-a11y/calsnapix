@@ -1,11 +1,6 @@
 package com.example.ui.screens
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,77 +23,77 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ElectricBolt
-import androidx.compose.material.icons.filled.Forum
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.AhaarUiState
-import com.example.ui.components.CalPlanItem
-import com.example.ui.components.CalPricingConfig
 import com.example.ui.theme.CalTheme
-import java.util.Locale
 
 /**
- * Dedicated Full-Screen Pricing View displaying the 5 subscription tiers:
- * Daily ($0.09), Weekly ($0.90), Monthly ($1.99), 6-Month ($24.99), and Yearly ($19.99).
- * Highlights the daily cost of 0.09 and visually emphasizes the percentage discounts
- * for longer-term plans, along with the 20% Instagram follow discount integration.
+ * CalSnapix Free Forever Screen:
+ * Displays all features as completely 100% free with zero subscriptions,
+ * zero fees, no pricing, and no Instagram or referral requirements.
  */
 @Composable
 fun PricingScreen(
   uiState: AhaarUiState,
   onBack: () -> Unit,
-  onSelectPlan: (String) -> Unit,
-  onOpenInstagram: () -> Unit,
+  onSelectPlan: (String) -> Unit = {},
+  onOpenInstagram: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   BackHandler { onBack() }
 
   val colors = CalTheme.colors
-  val context = LocalContext.current
   val scrollState = rememberScrollState()
 
-  var selectedPlanId by remember { mutableStateOf(if (uiState.activeSubscriptionPlan != "Free") uiState.activeSubscriptionPlan else "yearly") }
-  var selectedCurrency by remember { mutableStateOf("INR") }
-  var showChatPopUpDemo by remember { mutableStateOf(false) }
-
-  // Check if 20% Instagram discount is active
-  val isInstagramDiscountActive = uiState.isInstagramFollowVerified || uiState.activeSubscriptionDiscountPercent > 0
-  val discountMultiplier = if (isInstagramDiscountActive) 0.80 else 1.0
-
-  val activePlan = remember(selectedPlanId) {
-    CalPricingConfig.allPlans.find { it.id == selectedPlanId } ?: CalPricingConfig.allPlans.last()
-  }
+  val freeFeatures = listOf(
+    Triple(
+      "Unlimited AI Food Scans",
+      "Instant calorie and macro estimation for rotis, dals, sabzis, thalis, and snacks with CameraX.",
+      Icons.Default.AutoAwesome
+    ),
+    Triple(
+      "High-Precision Barcode & QR Scanner",
+      "Quickly scan packaged foods, groceries, beverages, and nutritional QR codes with instant nutrient breakdown.",
+      Icons.Default.QrCodeScanner
+    ),
+    Triple(
+      "24/7 AI Nutrition Assistant",
+      "Get friendly, non-medical dietary suggestions, portion guidance, and answers to your food questions anytime.",
+      Icons.Default.ElectricBolt
+    ),
+    Triple(
+      "Ayurvedic Meal Windows & Water Log",
+      "Traditional lifestyle circadian meal reminders and full daily 8-glass hydration tracking.",
+      Icons.Default.Favorite
+    ),
+    Triple(
+      "100% Private & Locally Encrypted",
+      "No data selling, no advertising trackers, and complete one-tap account and data erasure anytime.",
+      Icons.Default.Security
+    )
+  )
 
   Column(
     modifier = modifier
@@ -109,7 +104,7 @@ fun PricingScreen(
       .padding(horizontal = 20.dp, vertical = 12.dp),
     verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
-    // Top Bar with Back Arrow & Title
+    // Top Bar
     Row(
       modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
@@ -141,9 +136,9 @@ fun PricingScreen(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-          Icon(Icons.Default.ElectricBolt, contentDescription = null, tint = colors.accent, modifier = Modifier.size(14.dp))
+          Icon(Icons.Default.CheckCircle, contentDescription = null, tint = colors.accent, modifier = Modifier.size(14.dp))
           Text(
-            text = "PRO MEMBERSHIP",
+            text = "100% FREE FOREVER",
             fontSize = 11.sp,
             fontWeight = FontWeight.ExtraBold,
             color = colors.accent
@@ -152,581 +147,158 @@ fun PricingScreen(
       }
     }
 
-    // Header Headline
+    // Headline
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
       Text(
-        text = "Choose Your Pro Plan",
+        text = "CalSnapix is Free",
         fontSize = 30.sp,
         fontWeight = FontWeight.ExtraBold,
         color = colors.ink,
         letterSpacing = (-0.6).sp
       )
       Text(
-        text = "Unlimited AI Indian meal scans, complete micronutrients breakdown, and 24/7 CalSnapix AI Nutrition Assistant.",
+        text = "All features are completely unlocked for everyone. No subscriptions, no trials, and no hidden charges.",
         fontSize = 14.sp,
         color = colors.ink2,
         lineHeight = 20.sp
       )
     }
 
-    // 🌟 MASTER HIGHLIGHT: PROMINENT DAILY COST CALLOUT (0.09 / DAY BASELINE)
+    // Free Access Spotlight Card
     Surface(
-      shape = RoundedCornerShape(20.dp),
+      shape = RoundedCornerShape(22.dp),
       color = colors.ink,
       modifier = Modifier
         .fillMaxWidth()
-        .shadow(6.dp, RoundedCornerShape(20.dp))
-        .testTag("daily_cost_spotlight_banner")
+        .shadow(6.dp, RoundedCornerShape(22.dp))
+        .testTag("free_access_spotlight_card")
     ) {
-      Box(modifier = Modifier.fillMaxWidth()) {
-        // Decorative background aura
-        Box(
-          modifier = Modifier
-            .size(120.dp)
-            .align(Alignment.TopEnd)
-            .clip(CircleShape)
-            .background(colors.accent.copy(alpha = 0.18f))
-        )
-
-        Column(
-          modifier = Modifier.padding(20.dp),
-          verticalArrangement = Arrangement.spacedBy(8.dp)
+      Column(
+        modifier = Modifier.padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = colors.accent
           ) {
-            Surface(
-              shape = RoundedCornerShape(6.dp),
-              color = colors.accent
-            ) {
-              Text(
-                text = "⚡ START TODAY",
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Black,
-                color = colors.bg,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-              )
-            }
             Text(
-              text = "MICRO-PRICING GUARANTEE",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = Color.White.copy(alpha = 0.7f),
-              letterSpacing = 0.5.sp
+              text = "FREE FOREVER",
+              fontSize = 10.sp,
+              fontWeight = FontWeight.Black,
+              color = colors.bg,
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
             )
           }
-
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
-          ) {
-            Column {
-              val highlightDailyText = if (selectedCurrency == "INR") {
-                if (isInstagramDiscountActive) "JUST ₹5.59" else "JUST ₹6.99"
-              } else {
-                if (isInstagramDiscountActive) "JUST $0.07" else "JUST $0.09"
-              }
-              Text(
-                text = highlightDailyText,
-                fontSize = 38.sp,
-                fontWeight = FontWeight.Black,
-                color = colors.accent,
-                letterSpacing = (-1).sp
-              )
-              Text(
-                text = "per day • less than a cup of chai ☕",
-                fontSize = 13.sp,
-                color = Color.White.copy(alpha = 0.85f),
-                fontWeight = FontWeight.Medium
-              )
-            }
-
-            Surface(
-              shape = RoundedCornerShape(12.dp),
-              color = Color.White.copy(alpha = 0.12f),
-              border = BorderStroke(1.dp, Color.White.copy(alpha = 0.25f))
-            ) {
-              Column(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-              ) {
-                Text("UP TO", fontSize = 9.sp, color = Color.White.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
-                Text(
-                  text = if (isInstagramDiscountActive) "84% OFF" else "80% OFF",
-                  fontSize = 16.sp,
-                  fontWeight = FontWeight.Black,
-                  color = Color.White
-                )
-              }
-            }
-          }
+          Text(
+            text = "NO SUBSCRIPTION NEEDED",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White.copy(alpha = 0.7f),
+            letterSpacing = 0.5.sp
+          )
         }
+
+        Text(
+          text = "₹0 • Free For All",
+          fontSize = 28.sp,
+          fontWeight = FontWeight.ExtraBold,
+          color = Color.White
+        )
+
+        Text(
+          text = "Every user gets unlimited AI food photo recognition, QR & barcode scanning, and customized Indian nutrition tracking with zero fees.",
+          fontSize = 13.sp,
+          color = Color.White.copy(alpha = 0.85f),
+          lineHeight = 18.sp
+        )
       }
     }
 
-    // Instagram Verified 20% Discount Status Banner
-    if (isInstagramDiscountActive) {
-      Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = colors.accentSoft,
-        border = BorderStroke(1.5.dp, colors.accent),
-        modifier = Modifier.fillMaxWidth().testTag("active_instagram_discount_banner")
-      ) {
-        Row(
-          modifier = Modifier.padding(14.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-          Surface(shape = CircleShape, color = colors.accent, modifier = Modifier.size(32.dp)) {
-            Box(contentAlignment = Alignment.Center) {
-              Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-            }
-          }
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = "🎉 Extra 20% Instagram Discount Active",
-              fontSize = 13.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink
-            )
-            Text(
-              text = "Follower of @_calsnapix (${uiState.linkedInstagramHandle ?: "Verified"}) • Code INSTA20 applied",
-              fontSize = 11.sp,
-              color = colors.ink2
-            )
-          }
-        }
-      }
-    } else {
-      // Prompt to link Instagram and get 20% OFF
-      Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = Color(0xFFE1306C).copy(alpha = 0.08f),
-        border = BorderStroke(1.2.dp, Color(0xFFE1306C).copy(alpha = 0.35f)),
-        modifier = Modifier
-          .fillMaxWidth()
-          .clickable { onOpenInstagram() }
-          .testTag("follow_instagram_prompt_card")
-      ) {
-        Row(
-          modifier = Modifier.padding(14.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
+    // Feature Cards
+    Text(
+      text = "What's Included (100% Free)",
+      fontSize = 18.sp,
+      fontWeight = FontWeight.Bold,
+      color = colors.ink
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+      freeFeatures.forEach { (title, desc, icon) ->
+        Surface(
+          shape = RoundedCornerShape(16.dp),
+          color = colors.surface,
+          border = BorderStroke(1.dp, colors.line),
+          modifier = Modifier.fillMaxWidth()
         ) {
           Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
           ) {
-            Text("📸", fontSize = 22.sp)
-            Column {
+            Surface(
+              shape = CircleShape,
+              color = colors.accentSoft,
+              modifier = Modifier.size(36.dp)
+            ) {
+              Box(contentAlignment = Alignment.Center) {
+                Icon(
+                  imageVector = icon,
+                  contentDescription = null,
+                  tint = colors.accent,
+                  modifier = Modifier.size(20.dp)
+                )
+              }
+            }
+
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
               Text(
-                text = "Want an additional 20% OFF?",
-                fontSize = 13.sp,
+                text = title,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = colors.ink
               )
               Text(
-                text = "Follow @_calsnapix on Instagram to unlock code INSTA20",
-                fontSize = 11.sp,
-                color = colors.ink2
+                text = desc,
+                fontSize = 12.sp,
+                color = colors.ink2,
+                lineHeight = 17.sp
               )
             }
-          }
-          Surface(shape = RoundedCornerShape(8.dp), color = Color(0xFFE1306C)) {
-            Text(
-              text = "FOLLOW",
-              fontSize = 10.sp,
-              fontWeight = FontWeight.ExtraBold,
-              color = Color.White,
-              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+
+            Icon(
+              imageVector = Icons.Default.CheckCircle,
+              contentDescription = "Included Free",
+              tint = colors.accent,
+              modifier = Modifier.size(18.dp)
             )
           }
         }
       }
     }
 
-    // 🌟 24/7 AI DIETITIAN CHAT POP-UP SHOWCASE
-    Surface(
-      shape = RoundedCornerShape(18.dp),
-      color = colors.surface,
-      border = BorderStroke(1.5.dp, colors.accent.copy(alpha = 0.6f)),
-      modifier = Modifier
-        .fillMaxWidth()
-        .clickable { showChatPopUpDemo = true }
-        .testTag("pricing_chat_spotlight_card")
-    ) {
-      Column(
-        modifier = Modifier.padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
-            Text("24/7 CalSnapix AI Nutrition Assistant", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
-          }
-          Surface(shape = RoundedCornerShape(6.dp), color = colors.accentSoft) {
-            Text("AI DEMO", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = colors.accent, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
-          }
-        }
-        Text(
-          text = "Included with all Pro plans. Instant feedback on Indian thalis, dining out, and portion control anytime. AI-generated suggestions, not medical advice.",
-          fontSize = 12.sp,
-          color = colors.ink2,
-          lineHeight = 17.sp
-        )
-      }
-    }
+    Spacer(modifier = Modifier.height(10.dp))
 
-    // SECTION TITLE: ALL FIVE SUBSCRIPTION TIERS WITH REGIONAL CURRENCY SELECTOR
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Text(
-        text = "All 5 Pro Plans",
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        color = colors.ink
-      )
-
-      Row(
-        modifier = Modifier
-          .clip(RoundedCornerShape(8.dp))
-          .background(colors.surface2)
-          .padding(2.dp)
-      ) {
-        Surface(
-          shape = RoundedCornerShape(6.dp),
-          color = if (selectedCurrency == "INR") colors.accent else Color.Transparent,
-          modifier = Modifier.clickable { selectedCurrency = "INR" }.testTag("screen_currency_inr_toggle")
-        ) {
-          Text(
-            text = "₹ INR",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (selectedCurrency == "INR") Color.White else colors.ink2,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-          )
-        }
-        Surface(
-          shape = RoundedCornerShape(6.dp),
-          color = if (selectedCurrency == "USD") colors.accent else Color.Transparent,
-          modifier = Modifier.clickable { selectedCurrency = "USD" }.testTag("screen_currency_usd_toggle")
-        ) {
-          Text(
-            text = "$ USD",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (selectedCurrency == "USD") Color.White else colors.ink2,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-          )
-        }
-      }
-    }
-
-    // 5 SUBSCRIPTION TIERS LIST
-    CalPricingConfig.allPlans.forEach { plan ->
-      val isSelected = selectedPlanId == plan.id
-      val isIndia = selectedCurrency == "INR"
-      val finalPrice = if (isIndia) (plan.priceInr * discountMultiplier) else (plan.priceUsd * discountMultiplier)
-      val origPrice = if (isIndia) plan.originalPriceInr else plan.originalPriceUsd
-      val formattedFinalPrice = if (isIndia) String.format(Locale.US, "₹%.0f", finalPrice) else String.format(Locale.US, "$%.2f", finalPrice)
-      val formattedOrigPrice = if (isIndia) String.format(Locale.US, "₹%.0f", origPrice) else String.format(Locale.US, "$%.2f", origPrice)
-
-      val dynamicPerDayText = when (plan.id) {
-        "daily" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice) else String.format(Locale.US, "$%.2f / day", finalPrice)
-        "weekly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 7.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 7.0)
-        "monthly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 30.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 30.0)
-        "six_months" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 180.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 180.0)
-        "yearly" -> if (isIndia) String.format(Locale.US, "₹%.2f / day", finalPrice / 365.0) else String.format(Locale.US, "$%.2f / day", finalPrice / 365.0)
-        else -> if (isIndia) plan.perDayCostInr else plan.perDayCost
-      }
-
-      Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = if (isSelected) colors.surface else colors.surface2,
-        border = BorderStroke(
-          if (isSelected) 2.5.dp else 1.dp,
-          if (isSelected) colors.accent else colors.line
-        ),
-        shadowElevation = if (isSelected) 4.dp else 0.dp,
-        modifier = Modifier
-          .fillMaxWidth()
-          .clickable { selectedPlanId = plan.id }
-          .testTag("pricing_tier_${plan.id}")
-      ) {
-        Column(
-          modifier = Modifier.padding(16.dp),
-          verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-          // Top Row: Name, Radio, Discount Badge, and Final Total Price
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-              // Custom Radio Indicator
-              Surface(
-                shape = CircleShape,
-                color = if (isSelected) colors.accent else Color.Transparent,
-                border = BorderStroke(2.dp, if (isSelected) colors.accent else colors.ink2),
-                modifier = Modifier.size(22.dp)
-              ) {
-                if (isSelected) {
-                  Box(contentAlignment = Alignment.Center) {
-                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color.White))
-                  }
-                }
-              }
-
-              Column {
-                Text(
-                  text = plan.name,
-                  fontSize = 17.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = colors.ink
-                )
-                if (plan.badge != null) {
-                  Spacer(modifier = Modifier.height(2.dp))
-                  Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = if (isSelected) colors.accent else colors.ink
-                  ) {
-                    Text(
-                      text = plan.badge,
-                      fontSize = 9.sp,
-                      fontWeight = FontWeight.ExtraBold,
-                      color = Color.White,
-                      modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                  }
-                }
-              }
-            }
-
-            // Price column
-            Column(horizontalAlignment = Alignment.End) {
-              Text(
-                text = formattedOrigPrice,
-                fontSize = 12.sp,
-                color = colors.ink2,
-                textDecoration = TextDecoration.LineThrough
-              )
-              Text(
-                text = formattedFinalPrice,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Black,
-                color = if (isSelected) colors.accent else colors.ink
-              )
-            }
-          }
-
-
-          // 🌟 PROMINENT PER-DAY COST BOX WITH EMPHASIZED PERCENTAGE DISCOUNT
-          Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = if (isSelected) colors.accent else colors.accentSoft,
-            modifier = Modifier.fillMaxWidth()
-          ) {
-            Row(
-              modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-              horizontalArrangement = Arrangement.SpaceBetween,
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-              ) {
-                Text(
-                  text = "DAILY COST:",
-                  fontSize = 11.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = if (isSelected) Color.White else colors.ink
-                )
-                Text(
-                  text = dynamicPerDayText,
-                  fontSize = 16.sp,
-                  fontWeight = FontWeight.Black,
-                  color = if (isSelected) Color.White else colors.accent
-                )
-              }
-
-              // Visual Percentage Discount Highlight
-              Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = if (isSelected) Color.White else colors.ink
-              ) {
-                Text(
-                  text = if (isInstagramDiscountActive) "SAVE ${plan.discountPercent + 4}%" else "SAVE ${plan.discountPercent}%",
-                  fontSize = 11.sp,
-                  fontWeight = FontWeight.Black,
-                  color = if (isSelected) colors.accent else colors.bg,
-                  modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                )
-              }
-            }
-          }
-
-          Text(
-            text = plan.subtitle,
-            fontSize = 12.sp,
-            color = colors.ink2
-          )
-
-          // Weekly / Day plan 1-week removal notice
-          if (plan.validityNotice != null) {
-            Spacer(modifier = Modifier.height(6.dp))
-            Surface(
-              shape = RoundedCornerShape(8.dp),
-              color = Color(0xFFEF4444).copy(alpha = 0.12f),
-              border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.4f)),
-              modifier = Modifier.fillMaxWidth()
-            ) {
-              Text(
-                text = plan.validityNotice,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFDC2626),
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-              )
-            }
-          }
-
-          // Inline direct subscribe trigger
-          if (isSelected) {
-            Spacer(modifier = Modifier.height(10.dp))
-            Button(
-              onClick = {
-                onSelectPlan(plan.id)
-                Toast.makeText(context, "🎉 Selected ${plan.name}! Welcome to CalSnapix Pro.", Toast.LENGTH_LONG).show()
-                onBack()
-              },
-              colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
-              shape = RoundedCornerShape(10.dp),
-              modifier = Modifier.fillMaxWidth().height(42.dp).testTag("select_plan_screen_inline_${plan.id}")
-            ) {
-              Text("Select & Subscribe (${formattedFinalPrice})", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-            }
-          }
-        }
-      }
-    }
-
-    // Action CTA Button
+    // Primary Action Button
     Button(
-      onClick = {
-        onSelectPlan(selectedPlanId)
-        Toast.makeText(context, "🎉 Selected ${activePlan.name}! Welcome to CalSnapix Pro.", Toast.LENGTH_LONG).show()
-        onBack()
-      },
+      onClick = onBack,
       colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
       shape = RoundedCornerShape(16.dp),
       modifier = Modifier
         .fillMaxWidth()
-        .height(56.dp)
-        .testTag("pricing_screen_subscribe_button")
+        .height(54.dp)
+        .testTag("pricing_screen_continue_button")
     ) {
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        Icon(Icons.Default.ElectricBolt, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
-        Text(
-          text = "Continue with ${activePlan.name}",
-          fontSize = 16.sp,
-          fontWeight = FontWeight.Bold
-        )
-      }
-    }
-
-    // Guarantee & Trust
-    Row(
-      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-      horizontalArrangement = Arrangement.SpaceAround,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Text("✓ Cancel anytime", fontSize = 11.sp, color = colors.ink2)
-      Text("•", color = colors.line)
-      Text("✓ Instant activation", fontSize = 11.sp, color = colors.ink2)
-      Text("•", color = colors.line)
-      Text("✓ Encrypted Secure Checkout", fontSize = 11.sp, color = colors.ink2)
+      Text(
+        text = "Start Tracking (Free)",
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold
+      )
     }
 
     Spacer(modifier = Modifier.height(20.dp))
-  }
-
-  // 24/7 AI Nutrition Assistant Pop-Up Dialog
-  if (showChatPopUpDemo) {
-    AlertDialog(
-      onDismissRequest = { showChatPopUpDemo = false },
-      title = {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, tint = colors.accent)
-          Text("CalSnapix AI Nutrition Assistant", fontWeight = FontWeight.Bold, color = colors.ink)
-        }
-      },
-      text = {
-        Column(
-          modifier = Modifier.verticalScroll(rememberScrollState()),
-          verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-          Text(
-            text = "Your 24/7 AI Nutrition Assistant is included with every Pro plan:",
-            fontSize = 13.sp,
-            color = colors.ink2
-          )
-          Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = colors.surface2,
-            modifier = Modifier.fillMaxWidth()
-          ) {
-            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-              Text("• Instant meal breakdown for rotis, dals, and street snacks", fontSize = 12.sp, color = colors.ink)
-              Text("• Dynamic portion recommendations before ordering", fontSize = 12.sp, color = colors.ink)
-              Text("• Daily meal timing guidance (traditional lifestyle interest)", fontSize = 12.sp, color = colors.ink)
-              Text("• Micronutrient suggestions: Calcium, Iron & B12 guidance", fontSize = 12.sp, color = colors.ink)
-            }
-          }
-          Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = colors.bg,
-            border = BorderStroke(1.dp, colors.line)
-          ) {
-            Text(
-              text = "⚠️ AI-generated suggestions, not medical advice. CalSnapix does not diagnose or treat medical conditions. Consult a physician for dietary advice.",
-              fontSize = 10.sp,
-              color = colors.ink2,
-              modifier = Modifier.padding(8.dp),
-              lineHeight = 14.sp
-            )
-          }
-          Text(
-            text = "🌟 Available without limits on Daily, Weekly, Monthly, 6-Month, and Yearly plans!",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = colors.accent
-          )
-        }
-      },
-      confirmButton = {
-        Button(
-          onClick = { showChatPopUpDemo = false },
-          colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg)
-        ) {
-          Text("Got It")
-        }
-      }
-    )
   }
 }

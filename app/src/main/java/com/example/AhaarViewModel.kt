@@ -510,12 +510,11 @@ data class AhaarUiState(
   val onboardingStep: Int = 0,
   val onboardingAnswersJson: String = "{}",
   val linkedInstagramHandle: String? = null,
-  val isInstagramFollowVerified: Boolean = false,
-  val activeSubscriptionPlan: String = "Free",
+  val activeSubscriptionPlan: String = "Free Forever",
   val activeSubscriptionDiscountCode: String? = null,
   val activeSubscriptionDiscountPercent: Int = 0
 ) {
-  val isPro: Boolean get() = activeSubscriptionPlan != "Free" && activeSubscriptionPlan.isNotBlank()
+  val isPro: Boolean get() = true
 }
 
 class AhaarViewModel(application: Application) : AndroidViewModel(application) {
@@ -554,12 +553,7 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     viewModelScope.launch {
-      val entitlement = BillingSecurityService.verifyEntitlementOnStartup(application, _uiState.value.userId)
-      if (entitlement.isPro) {
-        _uiState.update { it.copy(activeSubscriptionPlan = entitlement.planId) }
-      } else {
-        _uiState.update { it.copy(activeSubscriptionPlan = "Free") }
-      }
+      _uiState.update { it.copy(activeSubscriptionPlan = "Free Forever") }
     }
 
     viewModelScope.launch {
@@ -784,11 +778,10 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
           authError = "Your account and all associated wellness data have been permanently deleted.",
           userName = "Guest",
           userEmail = "",
-          activeSubscriptionPlan = "Free",
+          activeSubscriptionPlan = "Free Forever",
           activeSubscriptionDiscountCode = null,
           activeSubscriptionDiscountPercent = 0,
           linkedInstagramHandle = null,
-          isInstagramFollowVerified = false,
           todayMeals = emptyList(),
           scannedMealLogs = emptyList(),
           currentCaloriesConsumed = 0,
@@ -1695,7 +1688,6 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
     _uiState.update { current ->
       current.copy(
         linkedInstagramHandle = formattedHandle,
-        isInstagramFollowVerified = true,
         activeSubscriptionDiscountCode = discountCode,
         activeSubscriptionDiscountPercent = couponResult.discountPercent
       )
@@ -1707,7 +1699,6 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
     _uiState.update { current ->
       current.copy(
         linkedInstagramHandle = null,
-        isInstagramFollowVerified = false,
         activeSubscriptionDiscountCode = if (current.activeSubscriptionDiscountCode == "INSTA20") null else current.activeSubscriptionDiscountCode,
         activeSubscriptionDiscountPercent = if (current.activeSubscriptionDiscountCode == "INSTA20") 0 else current.activeSubscriptionDiscountPercent
       )

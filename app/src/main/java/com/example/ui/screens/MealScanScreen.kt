@@ -16,12 +16,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
+import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -110,6 +115,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import com.example.ui.theme.CalTheme
 import androidx.compose.ui.text.font.FontWeight
@@ -207,20 +213,54 @@ data class BarcodeItem(
   val protein: Int,
   val carbs: Int,
   val fat: Int,
-  val details: String
+  val details: String,
+  val isQrCode: Boolean = false
 )
 
 val barcodeProductsLibrary = listOf(
   BarcodeItem(
     code = "8901262010123",
-    productName = "Fresh Farm Milk (Toned)",
-    brand = "Fresh Dairy",
+    productName = "Amul Taaza Homogenised Toned Milk",
+    brand = "Amul",
     calories = 116,
     serving = "200 ml (1 glass)",
     protein = 7,
-    carbs = 9,
-    fat = 5,
-    details = "Cold-pasteurised pure farm dairy milk fortified with Vitamin A & D3."
+    carbs = 10,
+    fat = 6,
+    details = "Cold-pasteurised pure dairy milk enriched with natural calcium, phosphorus & Vitamin D."
+  ),
+  BarcodeItem(
+    code = "8901063012119",
+    productName = "Britannia 100% Whole Wheat Bread",
+    brand = "Britannia",
+    calories = 140,
+    serving = "2 slices (60 g)",
+    protein = 6,
+    carbs = 26,
+    fat = 2,
+    details = "Zero maida, baked with stoneground wheat bran and germ for sustained morning energy."
+  ),
+  BarcodeItem(
+    code = "8901058852119",
+    productName = "Maggi 2-Minute Masala Noodles",
+    brand = "Nestlé Maggi",
+    calories = 310,
+    serving = "1 single pack (70 g)",
+    protein = 7,
+    carbs = 44,
+    fat = 12,
+    details = "Classic Indian instant wheat noodles fortified with iron and signature roasted spice tastemaker."
+  ),
+  BarcodeItem(
+    code = "8901719101014",
+    productName = "Parle-G Original Glucose Biscuits",
+    brand = "Parle",
+    calories = 135,
+    serving = "4 biscuits (30 g)",
+    protein = 2,
+    carbs = 23,
+    fat = 4,
+    details = "India's iconic tea-time biscuit with natural wheat flour, cane sugar and milk solids."
   ),
   BarcodeItem(
     code = "8901030383789",
@@ -235,7 +275,7 @@ val barcodeProductsLibrary = listOf(
   ),
   BarcodeItem(
     code = "8901725181222",
-    productName = "Epigamia Greek Yogurt (Natural Probiotic)",
+    productName = "Epigamia Natural Greek Yogurt",
     brand = "Epigamia",
     calories = 85,
     serving = "90 g cup",
@@ -243,6 +283,28 @@ val barcodeProductsLibrary = listOf(
     carbs = 6,
     fat = 3,
     details = "Strained artisanal curd packed with live active probiotic cultures and 2x natural protein."
+  ),
+  BarcodeItem(
+    code = "8901648001021",
+    productName = "Mother Dairy Fresh Paneer",
+    brand = "Mother Dairy",
+    calories = 265,
+    serving = "100 g block",
+    protein = 18,
+    carbs = 4,
+    fat = 21,
+    details = "Fresh soft cottage cheese high in casein protein and leucine for healthy muscle repair."
+  ),
+  BarcodeItem(
+    code = "8904004401821",
+    productName = "Haldiram's Roasted Diet Bhel",
+    brand = "Haldiram's",
+    calories = 120,
+    serving = "35 g snack bowl",
+    protein = 4,
+    carbs = 20,
+    fat = 3,
+    details = "Air-puffed roasted rice flakes, lentils, and rock salt spices. 70% less fat than fried bhujia."
   ),
   BarcodeItem(
     code = "8901058852331",
@@ -254,6 +316,41 @@ val barcodeProductsLibrary = listOf(
     carbs = 10,
     fat = 11,
     details = "Omega-3 rich flax, chia, pumpkin, and watermelon seeds roasted with rock salt."
+  ),
+  BarcodeItem(
+    code = "8901207010118",
+    productName = "Dabur 100% Pure Raw Honey",
+    brand = "Dabur",
+    calories = 64,
+    serving = "1 tbsp (20 g)",
+    protein = 0,
+    carbs = 16,
+    fat = 0,
+    details = "Unadulterated NMR-tested forest honey with natural antimicrobial and antioxidant pollen."
+  ),
+  BarcodeItem(
+    code = "QR_CALSNAPIX_SPROUTS",
+    productName = "Organic Moong & Chana Sprouts Bowl",
+    brand = "CalSnapix Certified QR",
+    calories = 145,
+    serving = "150 g bowl",
+    protein = 11,
+    carbs = 22,
+    fat = 2,
+    details = "QR Nutrition Tag verified: Sprouted moong, kala chana, lemon juice, chaat masala, and fresh coriander.",
+    isQrCode = true
+  ),
+  BarcodeItem(
+    code = "QR_CALSNAPIX_RAGI",
+    productName = "Traditional Spiced Ragi Buttermilk",
+    brand = "CalSnapix Certified QR",
+    calories = 95,
+    serving = "250 ml glass",
+    protein = 5,
+    carbs = 14,
+    fat = 2,
+    details = "QR Nutrition Tag verified: Roasted finger millet flour churned with fresh chaas, ginger, and curry leaves.",
+    isQrCode = true
   )
 )
 
@@ -328,6 +425,8 @@ fun MealScanScreen(
   var cameraControl by remember { mutableStateOf<CameraControl?>(null) }
   var cameraBindingError by remember { mutableStateOf<String?>(null) }
   var demoDishIndex by remember { mutableIntStateOf(0) }
+  var currentZoom by remember { mutableFloatStateOf(0f) }
+  var qrSubMode by remember { mutableStateOf("QR") } // "QR" or "BARCODE"
 
   // Screen scanning state
   var screenState by remember { mutableStateOf<ScanScreenState>(ScanScreenState.Viewfinder) }
@@ -447,6 +546,14 @@ fun MealScanScreen(
         CameraXLiveViewfinder(
           lensFacing = lensFacing,
           isTorchOn = isTorchOn,
+          currentZoom = currentZoom,
+          onSetZoom = { z ->
+            currentZoom = z
+            cameraControl?.setLinearZoom(z)
+          },
+          qrSubMode = qrSubMode,
+          onSetQrSubMode = { qrSubMode = it },
+          cameraControl = cameraControl,
           imageCapture = imageCapture,
           cameraBindingError = cameraBindingError,
           scanMode = scanMode,
@@ -481,6 +588,7 @@ fun MealScanScreen(
               Toast.makeText(context, quota.message, Toast.LENGTH_LONG).show()
             } else if (scanMode == "BARCODE") {
               val barcodeItem = barcodeProductsLibrary[barcodeIndex % barcodeProductsLibrary.size]
+              val tagType = if (barcodeItem.isQrCode) "QR Code" else "Barcode"
               val mappedResult = ScanResult(
                 dishName = barcodeItem.productName,
                 calories = barcodeItem.calories,
@@ -488,7 +596,7 @@ fun MealScanScreen(
                 proteinGrams = barcodeItem.protein,
                 carbsGrams = barcodeItem.carbs,
                 fatGrams = barcodeItem.fat,
-                chefNote = "Scanned Barcode: ${barcodeItem.code} (${barcodeItem.brand}). ${barcodeItem.details}",
+                chefNote = "Scanned $tagType: ${barcodeItem.code} (${barcodeItem.brand}). ${barcodeItem.details}",
                 imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDfZ4mY8nK1vP9xW_sL2kP1vN8mJ5t=s600"
               )
               startAiAnalysis(null, mappedResult)
@@ -528,6 +636,7 @@ fun MealScanScreen(
             if (scanMode == "BARCODE") {
               barcodeIndex = (barcodeIndex + 1) % barcodeProductsLibrary.size
               val barcodeItem = barcodeProductsLibrary[barcodeIndex]
+              val tagType = if (barcodeItem.isQrCode) "QR Code" else "Barcode"
               val mappedResult = ScanResult(
                 dishName = barcodeItem.productName,
                 calories = barcodeItem.calories,
@@ -535,7 +644,7 @@ fun MealScanScreen(
                 proteinGrams = barcodeItem.protein,
                 carbsGrams = barcodeItem.carbs,
                 fatGrams = barcodeItem.fat,
-                chefNote = "Scanned Barcode: ${barcodeItem.code} (${barcodeItem.brand}). ${barcodeItem.details}",
+                chefNote = "Scanned $tagType: ${barcodeItem.code} (${barcodeItem.brand}). ${barcodeItem.details}",
                 imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDfZ4mY8nK1vP9xW_sL2kP1vN8mJ5t=s600"
               )
               startAiAnalysis(null, mappedResult)
@@ -549,6 +658,7 @@ fun MealScanScreen(
             startAiAnalysis(null, selectedDish)
           },
           onSelectBarcode = { barcodeItem ->
+            val tagType = if (barcodeItem.isQrCode) "QR Code" else "Barcode"
             val mappedResult = ScanResult(
               dishName = barcodeItem.productName,
               calories = barcodeItem.calories,
@@ -556,7 +666,7 @@ fun MealScanScreen(
               proteinGrams = barcodeItem.protein,
               carbsGrams = barcodeItem.carbs,
               fatGrams = barcodeItem.fat,
-              chefNote = "Scanned Barcode: ${barcodeItem.code} (${barcodeItem.brand}). ${barcodeItem.details}",
+              chefNote = "Scanned $tagType: ${barcodeItem.code} (${barcodeItem.brand}). ${barcodeItem.details}",
               imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDfZ4mY8nK1vP9xW_sL2kP1vN8mJ5t=s600"
             )
             startAiAnalysis(null, mappedResult)
@@ -581,7 +691,7 @@ fun MealScanScreen(
     )
   }
 
-  // Barcode Typer & Manual Lookup Dialog
+  // Barcode & QR Code Typer / Lookup Dialog
   if (showBarcodeTyperDialog) {
     var typedBarcode by remember { mutableStateOf("") }
     var customProductName by remember { mutableStateOf("") }
@@ -590,8 +700,15 @@ fun MealScanScreen(
     var customProtein by remember { mutableStateOf("8") }
     var customCarbs by remember { mutableStateOf("20") }
     var customFat by remember { mutableStateOf("5") }
+    var filterCategory by remember { mutableStateOf("ALL") } // "ALL", "BARCODE", "QR"
 
     val matchedBarcode = barcodeProductsLibrary.find { it.code == typedBarcode.trim() }
+
+    val filteredList = when (filterCategory) {
+      "QR" -> barcodeProductsLibrary.filter { it.isQrCode }
+      "BARCODE" -> barcodeProductsLibrary.filter { !it.isQrCode }
+      else -> barcodeProductsLibrary
+    }
 
     AlertDialog(
       onDismissRequest = { showBarcodeTyperDialog = false },
@@ -602,7 +719,7 @@ fun MealScanScreen(
           horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
           Icon(Icons.Default.QrCodeScanner, contentDescription = null, tint = Color(0xFF22C55E))
-          Text("Type Barcode", fontWeight = FontWeight.Bold, color = Color(0xFFF1F5F9))
+          Text("Type / Paste QR & Barcode", fontWeight = FontWeight.Bold, color = Color(0xFFF1F5F9))
         }
       },
       text = {
@@ -611,7 +728,7 @@ fun MealScanScreen(
           verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
           Text(
-            text = "Type or paste any barcode number (or pick a packaged food):",
+            text = "Enter any barcode number or QR nutrition token:",
             fontSize = 12.sp,
             color = Color(0xFF94A3B8)
           )
@@ -620,7 +737,7 @@ fun MealScanScreen(
             value = typedBarcode,
             onValueChange = { input ->
               typedBarcode = input
-              val found = barcodeProductsLibrary.find { it.code == input.trim() }
+              val found = barcodeProductsLibrary.find { it.code.equals(input.trim(), ignoreCase = true) }
               if (found != null) {
                 customProductName = found.productName
                 customBrand = found.brand
@@ -630,8 +747,8 @@ fun MealScanScreen(
                 customFat = found.fat.toString()
               }
             },
-            label = { Text("Barcode Number", color = Color(0xFF94A3B8)) },
-            placeholder = { Text("e.g. 8901262010123", color = Color(0xFF64748B)) },
+            label = { Text("Barcode Number or QR Token", color = Color(0xFF94A3B8)) },
+            placeholder = { Text("e.g. 8901262010123 or QR_CALSNAPIX_SPROUTS", color = Color(0xFF64748B)) },
             colors = OutlinedTextFieldDefaults.colors(
               focusedTextColor = Color(0xFFF1F5F9),
               unfocusedTextColor = Color(0xFFF1F5F9),
@@ -641,13 +758,32 @@ fun MealScanScreen(
             modifier = Modifier.fillMaxWidth().testTag("barcode_typer_input")
           )
 
-          // Demo quick pick chips
-          Text("Quick Indian Packaged Brands:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF94A3B8))
+          // Category filter pills
+          Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("ALL" to "All Codes", "BARCODE" to "Packaged Foods", "QR" to "QR Nutrition Tags").forEach { (id, label) ->
+              val isSel = filterCategory == id
+              Surface(
+                shape = RoundedCornerShape(999.dp),
+                color = if (isSel) Color(0xFF22C55E) else Color(0xFF1E293B),
+                modifier = Modifier.clickable { filterCategory = id }
+              ) {
+                Text(
+                  text = label,
+                  fontSize = 11.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = if (isSel) Color.Black else Color(0xFF94A3B8),
+                  modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                )
+              }
+            }
+          }
+
+          // Quick pick chips
           Row(
             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
           ) {
-            barcodeProductsLibrary.forEach { sample ->
+            filteredList.forEach { sample ->
               val isSel = typedBarcode == sample.code
               Surface(
                 shape = RoundedCornerShape(8.dp),
@@ -664,7 +800,7 @@ fun MealScanScreen(
                 }
               ) {
                 Text(
-                  text = sample.productName.take(18) + "...",
+                  text = (if (sample.isQrCode) "[QR] " else "") + sample.productName.take(18) + "...",
                   fontSize = 11.sp,
                   color = if (isSel) Color.Black else Color(0xFFF1F5F9),
                   modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -690,7 +826,7 @@ fun MealScanScreen(
             OutlinedTextField(
               value = customProductName,
               onValueChange = { customProductName = it },
-              label = { Text("Product Name", color = Color(0xFF94A3B8)) },
+              label = { Text("Product / Food Name", color = Color(0xFF94A3B8)) },
               placeholder = { Text("e.g. Rolled Oats 100g", color = Color(0xFF64748B)) },
               colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color(0xFFF1F5F9),
@@ -733,11 +869,13 @@ fun MealScanScreen(
       confirmButton = {
         Button(
           onClick = {
-            val name = customProductName.ifBlank { matchedBarcode?.productName ?: "Barcode #$typedBarcode" }
+            val name = customProductName.ifBlank { matchedBarcode?.productName ?: "Scanned Item #$typedBarcode" }
             val kcal = customCalories.toIntOrNull() ?: matchedBarcode?.calories ?: 150
             val p = customProtein.toIntOrNull() ?: matchedBarcode?.protein ?: 8
             val c = customCarbs.toIntOrNull() ?: matchedBarcode?.carbs ?: 20
             val f = customFat.toIntOrNull() ?: matchedBarcode?.fat ?: 5
+            val isQr = matchedBarcode?.isQrCode == true || typedBarcode.contains("QR", ignoreCase = true)
+            val tagType = if (isQr) "QR Code" else "Barcode"
 
             val mapped = ScanResult(
               dishName = name,
@@ -746,7 +884,7 @@ fun MealScanScreen(
               proteinGrams = p,
               carbsGrams = c,
               fatGrams = f,
-              chefNote = "Scanned/Typed Barcode: $typedBarcode. Verified nutritional breakdown.",
+              chefNote = "Scanned $tagType: $typedBarcode. Verified nutritional breakdown.",
               imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDfZ4mY8nK1vP9xW_sL2kP1vN8mJ5t=s600"
             )
             showBarcodeTyperDialog = false
@@ -756,7 +894,7 @@ fun MealScanScreen(
           shape = RoundedCornerShape(999.dp),
           modifier = Modifier.testTag("submit_barcode_button")
         ) {
-          Text("Scan This Product", fontWeight = FontWeight.Bold)
+          Text("Scan This Item", fontWeight = FontWeight.Bold)
         }
       },
       dismissButton = {
@@ -769,13 +907,18 @@ fun MealScanScreen(
 }
 
 /**
- * CameraX Live Viewfinder with custom viewfinder overlays, torch control, flip control,
- * shutter button, and simulated fallback.
+ * CameraX Live Viewfinder with tap-to-focus, 1x/2x linear zoom, custom viewfinder overlays,
+ * sweeping laser reticle, and simulated fallback.
  */
 @Composable
 private fun CameraXLiveViewfinder(
   lensFacing: Int,
   isTorchOn: Boolean,
+  currentZoom: Float,
+  onSetZoom: (Float) -> Unit,
+  qrSubMode: String,
+  onSetQrSubMode: (String) -> Unit,
+  cameraControl: CameraControl?,
   imageCapture: ImageCapture,
   cameraBindingError: String?,
   scanMode: String,
@@ -797,10 +940,47 @@ private fun CameraXLiveViewfinder(
   val context = LocalContext.current
   val lifecycleOwner = LocalLifecycleOwner.current
 
+  // Laser animation for QR / Barcode
+  val infiniteTransition = rememberInfiniteTransition(label = "scanner_laser")
+  val laserOffset by infiniteTransition.animateFloat(
+    initialValue = 0.08f,
+    targetValue = 0.92f,
+    animationSpec = infiniteRepeatable(
+      animation = tween(durationMillis = 1800, easing = LinearEasing),
+      repeatMode = RepeatMode.Reverse
+    ),
+    label = "laser_sweep"
+  )
+
+  // Tap-to-focus state
+  var tapFocusOffset by remember { mutableStateOf<Offset?>(null) }
+  var isFocusing by remember { mutableStateOf(false) }
+
+  LaunchedEffect(tapFocusOffset) {
+    if (tapFocusOffset != null) {
+      isFocusing = true
+      delay(1200)
+      isFocusing = false
+    }
+  }
+
   Box(
     modifier = Modifier
       .fillMaxSize()
       .background(Color.Black)
+      .pointerInput(Unit) {
+        detectTapGestures { offset ->
+          tapFocusOffset = offset
+          try {
+            val factory = SurfaceOrientedMeteringPointFactory(size.width.toFloat(), size.height.toFloat())
+            val point = factory.createPoint(offset.x, offset.y)
+            val action = FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE).build()
+            cameraControl?.startFocusAndMetering(action)
+          } catch (e: Exception) {
+            Log.w("CameraFocus", "Tap to focus error", e)
+          }
+        }
+      }
   ) {
     // CameraX Preview AndroidView
     if (cameraBindingError == null) {
@@ -812,8 +992,6 @@ private fun CameraXLiveViewfinder(
               ViewGroup.LayoutParams.MATCH_PARENT
             )
             scaleType = PreviewView.ScaleType.FILL_CENTER
-            // Use COMPATIBLE (TextureView) mode instead of PERFORMANCE (SurfaceView)
-            // This prevents SurfaceView BufferQueue abandoned / dequeueBuffer crashes during screen transitions
             implementationMode = PreviewView.ImplementationMode.COMPATIBLE
           }
 
@@ -855,9 +1033,7 @@ private fun CameraXLiveViewfinder(
             Log.w("CameraX", "Error unbinding camera on release", e)
           }
         },
-        update = {
-          // Triggered on recomposition if needed
-        },
+        update = {},
         modifier = Modifier.fillMaxSize()
       )
     } else {
@@ -880,6 +1056,19 @@ private fun CameraXLiveViewfinder(
             .background(Color.Black.copy(alpha = 0.45f))
         )
       }
+    }
+
+    // Tap-to-Focus Indicator
+    if (isFocusing && tapFocusOffset != null) {
+      val density = LocalDensity.current
+      val dpX = with(density) { tapFocusOffset!!.x.toDp() }
+      val dpY = with(density) { tapFocusOffset!!.y.toDp() }
+      Box(
+        modifier = Modifier
+          .offset(x = dpX - 26.dp, y = dpY - 26.dp)
+          .size(52.dp)
+          .border(2.dp, Color(0xFF22C55E), CircleShape)
+      )
     }
 
     // Top Controls Bar (Torch, Mode Switcher, Flip Camera)
@@ -910,7 +1099,7 @@ private fun CameraXLiveViewfinder(
         }
       }
 
-      // Mode Switcher Pill (Meal AI vs Barcode Scanner)
+      // Mode Switcher Pill (Meal AI vs QR & Barcode Scanner)
       Surface(
         shape = RoundedCornerShape(50),
         color = Color.Black.copy(alpha = 0.75f),
@@ -967,7 +1156,7 @@ private fun CameraXLiveViewfinder(
                 modifier = Modifier.size(14.dp)
               )
               Text(
-                text = "Barcode",
+                text = "QR & Barcode",
                 color = if (scanMode == "BARCODE") Color(0xFF0E0F0C) else Color.White.copy(alpha = 0.8f),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
@@ -997,47 +1186,190 @@ private fun CameraXLiveViewfinder(
       }
     }
 
+    // Secondary submode toggle when in QR & Barcode mode
+    if (scanMode == "BARCODE") {
+      Row(
+        modifier = Modifier
+          .align(Alignment.TopCenter)
+          .padding(top = 80.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Surface(
+          shape = RoundedCornerShape(999.dp),
+          color = if (qrSubMode == "QR") Color(0xFF22C55E) else Color.Black.copy(alpha = 0.65f),
+          border = BorderStroke(1.dp, if (qrSubMode == "QR") Color(0xFF22C55E) else Color.White.copy(alpha = 0.3f)),
+          modifier = Modifier
+            .clickable { onSetQrSubMode("QR") }
+            .testTag("submode_qr_tab")
+        ) {
+          Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            Icon(
+              imageVector = Icons.Default.QrCodeScanner,
+              contentDescription = null,
+              tint = if (qrSubMode == "QR") Color.Black else Color.White,
+              modifier = Modifier.size(14.dp)
+            )
+            Text(
+              text = "QR Code (2D)",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold,
+              color = if (qrSubMode == "QR") Color.Black else Color.White
+            )
+          }
+        }
+
+        Surface(
+          shape = RoundedCornerShape(999.dp),
+          color = if (qrSubMode == "BARCODE") Color(0xFF22C55E) else Color.Black.copy(alpha = 0.65f),
+          border = BorderStroke(1.dp, if (qrSubMode == "BARCODE") Color(0xFF22C55E) else Color.White.copy(alpha = 0.3f)),
+          modifier = Modifier
+            .clickable { onSetQrSubMode("BARCODE") }
+            .testTag("submode_barcode_tab")
+        ) {
+          Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            Icon(
+              imageVector = Icons.Default.CameraAlt,
+              contentDescription = null,
+              tint = if (qrSubMode == "BARCODE") Color.Black else Color.White,
+              modifier = Modifier.size(14.dp)
+            )
+            Text(
+              text = "Barcode (1D)",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold,
+              color = if (qrSubMode == "BARCODE") Color.Black else Color.White
+            )
+          }
+        }
+      }
+    }
+
+    // Zoom Controls (1x | 2x) on the right edge
+    Surface(
+      shape = RoundedCornerShape(999.dp),
+      color = Color.Black.copy(alpha = 0.65f),
+      border = BorderStroke(1.dp, Color.White.copy(alpha = 0.25f)),
+      modifier = Modifier
+        .align(Alignment.CenterEnd)
+        .padding(end = 16.dp)
+    ) {
+      Column(
+        modifier = Modifier.padding(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        Surface(
+          shape = CircleShape,
+          color = if (currentZoom > 0f) Color(0xFF22C55E) else Color.Transparent,
+          modifier = Modifier
+            .size(36.dp)
+            .clickable { onSetZoom(0.35f) }
+            .testTag("zoom_2x_button")
+        ) {
+          Box(contentAlignment = Alignment.Center) {
+            Text(
+              text = "2x",
+              color = if (currentZoom > 0f) Color.Black else Color.White,
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold
+            )
+          }
+        }
+        Surface(
+          shape = CircleShape,
+          color = if (currentZoom == 0f) Color.White else Color.Transparent,
+          modifier = Modifier
+            .size(36.dp)
+            .clickable { onSetZoom(0f) }
+            .testTag("zoom_1x_button")
+        ) {
+          Box(contentAlignment = Alignment.Center) {
+            Text(
+              text = "1x",
+              color = if (currentZoom == 0f) Color.Black else Color.White,
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold
+            )
+          }
+        }
+      }
+    }
+
     // Viewfinder Scanning Reticle (Center)
     if (scanMode == "BARCODE") {
+      val isQr = qrSubMode == "QR"
+      val boxWidth = if (isQr) 240.dp else 280.dp
+      val boxHeight = if (isQr) 240.dp else 160.dp
+
       Box(
         modifier = Modifier
-          .width(280.dp)
-          .height(180.dp)
+          .width(boxWidth)
+          .height(boxHeight)
           .align(Alignment.Center)
-          .border(2.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(16.dp))
+          .border(1.5.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(20.dp))
       ) {
-        // Laser scanning beam
+        // High-Tech Corner Target Brackets in Emerald
+        Box(
+          modifier = Modifier
+            .size(32.dp)
+            .align(Alignment.TopStart)
+            .border(BorderStroke(4.dp, Color(0xFF22C55E)), RoundedCornerShape(topStart = 20.dp))
+        )
+        Box(
+          modifier = Modifier
+            .size(32.dp)
+            .align(Alignment.TopEnd)
+            .border(BorderStroke(4.dp, Color(0xFF22C55E)), RoundedCornerShape(topEnd = 20.dp))
+        )
+        Box(
+          modifier = Modifier
+            .size(32.dp)
+            .align(Alignment.BottomStart)
+            .border(BorderStroke(4.dp, Color(0xFF22C55E)), RoundedCornerShape(bottomStart = 20.dp))
+        )
+        Box(
+          modifier = Modifier
+            .size(32.dp)
+            .align(Alignment.BottomEnd)
+            .border(BorderStroke(4.dp, Color(0xFF22C55E)), RoundedCornerShape(bottomEnd = 20.dp))
+        )
+
+        // Animated Sweeping Laser with radiant gradient trail
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .height(2.dp)
+            .height(3.dp)
+            .align(Alignment.TopCenter)
+            .offset(y = boxHeight * laserOffset)
+            .background(
+              Brush.horizontalGradient(
+                colors = listOf(
+                  Color.Transparent,
+                  Color(0xFF22C55E),
+                  Color(0xFF86EFAC),
+                  Color(0xFF22C55E),
+                  Color.Transparent
+                )
+              )
+            )
+        )
+
+        // Center crosshair / guide dot
+        Box(
+          modifier = Modifier
+            .size(10.dp)
             .align(Alignment.Center)
-            .background(Color(0xFFFF3333))
-        )
-        // Corner brackets
-        Box(
-          modifier = Modifier
-            .size(28.dp)
-            .align(Alignment.TopStart)
-            .border(BorderStroke(4.dp, Color(0xFF00E676)), RoundedCornerShape(topStart = 16.dp))
-        )
-        Box(
-          modifier = Modifier
-            .size(28.dp)
-            .align(Alignment.TopEnd)
-            .border(BorderStroke(4.dp, Color(0xFF00E676)), RoundedCornerShape(topEnd = 16.dp))
-        )
-        Box(
-          modifier = Modifier
-            .size(28.dp)
-            .align(Alignment.BottomStart)
-            .border(BorderStroke(4.dp, Color(0xFF00E676)), RoundedCornerShape(bottomStart = 16.dp))
-        )
-        Box(
-          modifier = Modifier
-            .size(28.dp)
-            .align(Alignment.BottomEnd)
-            .border(BorderStroke(4.dp, Color(0xFF00E676)), RoundedCornerShape(bottomEnd = 16.dp))
+            .clip(CircleShape)
+            .background(Color(0xFF22C55E).copy(alpha = 0.8f))
         )
       }
     } else {
@@ -1047,42 +1379,30 @@ private fun CameraXLiveViewfinder(
           .align(Alignment.Center)
           .border(2.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(24.dp))
       ) {
-        // Thin White Corner Brackets (Zero orange)
+        // Thin White Corner Brackets
         Box(
           modifier = Modifier
             .size(36.dp)
             .align(Alignment.TopStart)
-            .border(
-              BorderStroke(2.dp, Color.White),
-              RoundedCornerShape(topStart = 24.dp)
-            )
+            .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(topStart = 24.dp))
         )
         Box(
           modifier = Modifier
             .size(36.dp)
             .align(Alignment.TopEnd)
-            .border(
-              BorderStroke(2.dp, Color.White),
-              RoundedCornerShape(topEnd = 24.dp)
-            )
+            .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(topEnd = 24.dp))
         )
         Box(
           modifier = Modifier
             .size(36.dp)
             .align(Alignment.BottomStart)
-            .border(
-              BorderStroke(2.dp, Color.White),
-              RoundedCornerShape(bottomStart = 24.dp)
-            )
+            .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(bottomStart = 24.dp))
         )
         Box(
           modifier = Modifier
             .size(36.dp)
             .align(Alignment.BottomEnd)
-            .border(
-              BorderStroke(2.dp, Color.White),
-              RoundedCornerShape(bottomEnd = 24.dp)
-            )
+            .border(BorderStroke(2.dp, Color.White), RoundedCornerShape(bottomEnd = 24.dp))
         )
 
         // Center crosshair
@@ -1096,7 +1416,7 @@ private fun CameraXLiveViewfinder(
       }
     }
 
-    // Bottom Action Controls (Gallery, Shutter Button, Switch Sample Dish & Horizontal Carousel)
+    // Bottom Action Controls
     Column(
       modifier = Modifier
         .fillMaxWidth()
@@ -1115,15 +1435,62 @@ private fun CameraXLiveViewfinder(
       verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
       if (scanMode == "BARCODE") {
-        // Hint text
-        Text(
-          text = "Align barcode with scanner line • Instant nutrition breakdown",
-          color = Color.White.copy(alpha = 0.8f),
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Medium
-        )
+        // Live Detected Item Floating Card
+        Surface(
+          shape = RoundedCornerShape(14.dp),
+          color = Color(0xFF141925).copy(alpha = 0.95f),
+          border = BorderStroke(1.dp, Color(0xFF22C55E).copy(alpha = 0.6f)),
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(10.dp),
+              modifier = Modifier.weight(1f)
+            ) {
+              Icon(
+                imageVector = if (currentBarcodeItem.isQrCode) Icons.Default.QrCodeScanner else Icons.Default.CameraAlt,
+                contentDescription = null,
+                tint = Color(0xFF22C55E),
+                modifier = Modifier.size(20.dp)
+              )
+              Column {
+                Text(
+                  text = currentBarcodeItem.productName,
+                  fontSize = 13.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = Color.White,
+                  maxLines = 1
+                )
+                Text(
+                  text = "${currentBarcodeItem.brand} • ${currentBarcodeItem.calories} kcal • Tap shutter to log",
+                  fontSize = 11.sp,
+                  color = Color(0xFF94A3B8),
+                  maxLines = 1
+                )
+              }
+            }
+            Surface(
+              shape = RoundedCornerShape(8.dp),
+              color = Color(0xFF22C55E).copy(alpha = 0.2f),
+              modifier = Modifier.clickable { onSwitchDemoDish() }
+            ) {
+              Text(
+                text = "Next Item",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF22C55E),
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+              )
+            }
+          }
+        }
       } else {
-        // High-Quality Camera Guide (suggestions removed per user request)
+        // High-Quality Camera Guide
         Surface(
           shape = RoundedCornerShape(999.dp),
           color = Color.Black.copy(alpha = 0.65f),
@@ -1141,7 +1508,7 @@ private fun CameraXLiveViewfinder(
               modifier = Modifier.size(16.dp)
             )
             Text(
-              text = "Position any meal in camera frame • High-Precision AI Scan",
+              text = "Position meal in camera frame • Tap screen to focus",
               color = Color.White,
               fontSize = 12.sp,
               fontWeight = FontWeight.Medium
@@ -1174,7 +1541,7 @@ private fun CameraXLiveViewfinder(
           }
         }
 
-        // 2. Barcode Typer / Keyboard lookup button
+        // 2. Barcode & QR Typer button
         Surface(
           shape = CircleShape,
           color = Color(0xFF1E293B).copy(alpha = 0.85f),
@@ -1187,21 +1554,25 @@ private fun CameraXLiveViewfinder(
           ) {
             Icon(
               imageVector = Icons.Default.Keyboard,
-              contentDescription = "Type Barcode",
+              contentDescription = "Type Barcode or QR Code",
               tint = Color(0xFF22C55E),
               modifier = Modifier.size(22.dp)
             )
           }
         }
 
-        // 3. Big White Camera Shutter / Scan Button (Apple Health / Cal AI style)
+        // 3. Shutter / Scan Button with glowing green ring for QR mode
         Box(
           modifier = Modifier
             .size(76.dp)
-            .border(3.5.dp, Color.White, CircleShape)
+            .border(
+              width = 3.5.dp,
+              color = if (scanMode == "BARCODE") Color(0xFF22C55E) else Color.White,
+              shape = CircleShape
+            )
             .padding(4.dp)
             .clip(CircleShape)
-            .background(Color.White)
+            .background(if (scanMode == "BARCODE") Color(0xFF22C55E) else Color.White)
             .clickable(onClick = onCapturePhoto)
             .testTag("camera_shutter_button"),
           contentAlignment = Alignment.Center
@@ -1210,9 +1581,19 @@ private fun CameraXLiveViewfinder(
             modifier = Modifier
               .size(60.dp)
               .clip(CircleShape)
-              .background(Color.White)
-              .border(1.dp, Color(0xFFE4E2DA), CircleShape)
-          )
+              .background(if (scanMode == "BARCODE") Color(0xFF22C55E) else Color.White)
+              .border(1.dp, Color(0xFFE4E2DA), CircleShape),
+            contentAlignment = Alignment.Center
+          ) {
+            if (scanMode == "BARCODE") {
+              Icon(
+                imageVector = Icons.Default.QrCodeScanner,
+                contentDescription = null,
+                tint = Color.Black,
+                modifier = Modifier.size(26.dp)
+              )
+            }
+          }
         }
 
         // 4. Voice Log button
@@ -1235,7 +1616,7 @@ private fun CameraXLiveViewfinder(
           }
         }
 
-        // 5. Demo meal switcher (for testing without live meals)
+        // 5. Item switcher (for testing)
         Surface(
           shape = CircleShape,
           color = Color.White.copy(alpha = 0.2f),
@@ -1247,7 +1628,7 @@ private fun CameraXLiveViewfinder(
           ) {
             Icon(
               imageVector = Icons.Default.Refresh,
-              contentDescription = if (scanMode == "BARCODE") "Next Demo Barcode" else "Try Demo Indian Dish",
+              contentDescription = if (scanMode == "BARCODE") "Next QR/Barcode" else "Try Demo Indian Dish",
               tint = Color.White,
               modifier = Modifier.size(22.dp)
             )

@@ -681,7 +681,7 @@ fun AuthScreen(
               lineHeight = 17.sp
             )
             Text(
-              text = "5. Subscription & Billing Plans:\nCalSnapix Pro plans (Daily Pass, Weekly, Monthly, 6-Months, and Yearly) grant full access to unlimited AI meal scans, complete micronutrient metrics, and 24/7 CalSnapix AI Nutrition Assistant. Subscriptions can be managed and cancelled anytime.",
+              text = "5. 100% Free Forever Service:\nCalSnapix is completely 100% free for all users. There are zero subscriptions, zero paid tiers, zero hidden fees, and zero in-app purchases. Unlimited AI food scans, barcode & QR lookups, Ayurvedic digestion windows, and 24/7 AI nutrition assistant are provided freely without charge.",
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               lineHeight = 17.sp
@@ -718,7 +718,7 @@ fun AuthScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
           ) {
             Text(
-              text = "Effective Date: October 2026\nApp: CalSnapix • Privacy & Data Security",
+              text = "Effective Date: October 2026\nApp: CalSnapix • Privacy & Data Security (100% Free)",
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = AhaarPrimary
@@ -730,7 +730,7 @@ fun AuthScreen(
               lineHeight = 17.sp
             )
             Text(
-              text = "2. Data We Collect:\n• Biometric Profile: Age, biological gender, height, current weight, and goal weight strictly to calculate your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE).\n• Food & Meal Logs: Consumed foods, portion sizes, and macro records to generate your nutrition charts.\n• Camera & Photo Access: Used in real-time exclusively to analyze meals via the CameraX live viewfinder. Photos are analyzed transiently and not retained on remote advertising servers.\n• Barcode Scans: Only the numerical EAN/UPC product code is queried against nutritional databases.",
+              text = "2. Exact Data We Collect & Exactly Why We Collect It (In Detail):\n\n• Biometrics (Age, Gender, Height, Weight & Goal Weight):\nWHY WE COLLECT THIS: We use these strictly to calculate your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE) via the Mifflin-St Jeor formula to determine your safe, daily calorie and macronutrient targets. Without these, customized nutrition goals cannot be computed.\n\n• Dietary Habits & Allergies (Veg, Non-Veg, Jain, Allergens):\nWHY WE COLLECT THIS: To recommend suitable Indian meals, filter out non-permissible ingredients, and prevent accidental allergen exposure.\n\n• Camera Access & Food Photos:\nWHY WE COLLECT THIS: Accessed in real-time exclusively when you use the Camera scanner. Photos are analyzed transiently by Gemini AI to detect dishes and calculate calories/macros. Photos are never stored permanently, never used for facial recognition, and never sold.\n\n• Barcode & QR Code Scans:\nWHY WE COLLECT THIS: Numerical EAN/UPC barcodes and nutritional QR text are queried against composition databases to auto-populate product calories, protein, carbs, and fats.\n\n• Name & Email Address:\nWHY WE COLLECT THIS: Required solely for secure account login, password reset, and backing up your nutrition logs across your devices.",
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               lineHeight = 17.sp
