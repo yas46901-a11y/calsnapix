@@ -33,11 +33,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -78,11 +80,30 @@ import coil.compose.AsyncImage
 import com.example.AhaarUiState
 import com.example.AppDestination
 import com.example.model.LoggedMeal
+import com.example.data.notification.MealReminderManager
+import com.example.ui.components.DailyActivityTrackerCard
+import com.example.data.gamification.AchievementBadge
+import com.example.ui.components.DailyWaterConsumptionTracker
+import com.example.ui.components.GamificationBadgesCard
+import com.example.ui.components.GlassBackgroundOrbs
+import com.example.ui.components.MacroDistributionDashboard
+import com.example.ui.components.MealReminderSettingsCard
+import com.example.ui.components.RegionalDietTipsCard
+import com.example.ui.components.ShareProgressDialog
 import com.example.ui.components.VoiceLogDialog
+import com.example.ui.components.IndianGreetingBadge
+import com.example.ui.components.IndianMandalaMotif
+import com.example.ui.components.IndianRangoliDivider
+import com.example.ui.components.IndianToranBorder
 import com.example.ui.theme.CalCard
 import com.example.ui.theme.CalPrimaryButton
 import com.example.ui.theme.CalSecondaryButton
 import com.example.ui.theme.CalTheme
+import com.example.ui.components.ScanContextualTooltipBanner
+import com.example.ui.components.ScanGuideChip
+import com.example.ui.components.ScanTooltipStep
+import com.example.ui.components.PREF_KEY_SEEN_MEAL_SCAN_TOOLTIPS
+import android.content.Context
 import java.text.SimpleDateFormat
 import androidx.compose.ui.graphics.Brush
 import java.util.Date
@@ -98,10 +119,21 @@ fun HomeScreen(
   uiState: AhaarUiState,
   onNavigate: (AppDestination) -> Unit,
   onLogWater: () -> Unit,
+  onLogWaterBottle: () -> Unit = {},
   onUndoWater: () -> Unit = {},
+  onToggleWaterGlass: (Int) -> Unit = {},
+  onUpdateWaterGoal: (Int) -> Unit = {},
   onAddCustomMeal: (LoggedMeal) -> Unit,
   onDeleteMeal: (String) -> Unit,
   onUpdateCalorieGoal: (Int) -> Unit,
+  onSelectRegion: (String) -> Unit = {},
+  onUpdateStepGoal: (Int) -> Unit = {},
+  onAddManualSteps: (Int) -> Unit = {},
+  onRefreshStepData: () -> Unit = {},
+  onStartStepTracking: () -> Unit = {},
+  reminderManager: MealReminderManager? = null,
+  onSimulateStreak: (Int) -> Unit = {},
+  onSimulateWeeklyMacro: (Int) -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val colors = CalTheme.colors
@@ -113,12 +145,32 @@ fun HomeScreen(
   var showVoiceLogDialog by remember { mutableStateOf(false) }
   var showGoalDialog by remember { mutableStateOf(false) }
   var showMyCalAiDialog by remember { mutableStateOf(false) }
+  var showShareDialog by remember { mutableStateOf(false) }
+  var initialShareBadge by remember { mutableStateOf<AchievementBadge?>(null) }
   var newMealTitle by remember { mutableStateOf("") }
   var newMealCalories by remember { mutableStateOf("350") }
   var newMealProtein by remember { mutableStateOf("16") }
   var newMealCarbs by remember { mutableStateOf("45") }
   var newMealFat by remember { mutableStateOf("12") }
   var newMealType by remember { mutableStateOf("Lunch") }
+
+  // Contextual meal & food scanning tooltips
+  val tooltipPrefs = remember { context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE) }
+  var hasSeenTooltips by remember {
+    mutableStateOf(tooltipPrefs.getBoolean(PREF_KEY_SEEN_MEAL_SCAN_TOOLTIPS, false))
+  }
+  var showTooltips by remember {
+    mutableStateOf(!hasSeenTooltips)
+  }
+  var currentTooltipStep by remember {
+    mutableStateOf(ScanTooltipStep.LAUNCH_SCANNER)
+  }
+
+  fun dismissTooltips() {
+    showTooltips = false
+    hasSeenTooltips = true
+    tooltipPrefs.edit().putBoolean(PREF_KEY_SEEN_MEAL_SCAN_TOOLTIPS, true).apply()
+  }
 
   // Calorie calculations
   val targetKcal = uiState.dailyCalorieTarget
@@ -140,12 +192,22 @@ fun HomeScreen(
   Column(
     modifier = modifier
       .fillMaxSize()
-      .background(colors.bg)
+      .background(Color.Transparent)
       .verticalScroll(scrollState)
       .padding(horizontal = CalTheme.sidePadding, vertical = 12.dp),
     verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
-    // 1. Clean Header: Greeting + Date & Avatar (No redundant CalSnapix cards)
+    val hourOfDay = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
+    val (indianGreeting, indianSubtip) = remember(hourOfDay) {
+      when (hourOfDay) {
+        in 4..11 -> Pair("Namaste, ${uiState.userName.substringBefore(" ")} 🙏", "Subhodhaya! Ushapan & morning warm water")
+        in 12..16 -> Pair("Shubh Dopahar, ${uiState.userName.substringBefore(" ")} ☀️", "Balanced Ghar ka Khana — enjoy your thali")
+        in 17..20 -> Pair("Shubh Sandhya, ${uiState.userName.substringBefore(" ")} 🌅", "Mindful Shaam ki Chai & roasted makhana")
+        else -> Pair("Shubh Ratri, ${uiState.userName.substringBefore(" ")} 🌙", "Restful digestive recovery for the night")
+      }
+    }
+
+    // 1. Clean Header: Indian Greeting + Date & Avatar
     Row(
       modifier = Modifier
         .fillMaxWidth()
@@ -155,15 +217,15 @@ fun HomeScreen(
     ) {
       Column {
         Text(
-          text = "Good day, ${uiState.userName.substringBefore(" ")}",
-          fontSize = 26.sp,
+          text = indianGreeting,
+          fontSize = 23.sp,
           fontWeight = FontWeight.Bold,
           color = colors.ink,
           letterSpacing = (-0.5).sp
         )
         Text(
-          text = todayFormatted,
-          fontSize = 14.sp,
+          text = "$todayFormatted • $indianSubtip",
+          fontSize = 12.sp,
           fontWeight = FontWeight.Normal,
           color = colors.ink2
         )
@@ -171,8 +233,14 @@ fun HomeScreen(
 
       Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
       ) {
+        ScanGuideChip(
+          onClick = {
+            showTooltips = true
+            currentTooltipStep = ScanTooltipStep.LAUNCH_SCANNER
+          }
+        )
         // MyCal AI Dietitian Smart Button
         Surface(
           shape = RoundedCornerShape(999.dp),
@@ -362,13 +430,21 @@ fun HomeScreen(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
       ) {
+        IndianToranBorder(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .padding(bottom = 6.dp),
+          scallops = 14
+        )
+
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "CALORIES",
+            text = "CALORIES (KCAL)",
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = colors.ink2,
@@ -396,11 +472,18 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // Center Ring
+        // Center Ring with Sacred Mandala Background
         Box(
           modifier = Modifier.size(200.dp),
           contentAlignment = Alignment.Center
         ) {
+          IndianMandalaMotif(
+            size = 170.dp,
+            petals = 12,
+            animated = true,
+            alphaMultiplier = 0.35f
+          )
+
           val ringTrackColor = colors.surface2
           val ringProgressColor = colors.accent
 
@@ -489,19 +572,46 @@ fun HomeScreen(
           )
           Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-              .clip(RoundedCornerShape(6.dp))
-              .background(colors.accentSoft)
-              .clickable { onNavigate(AppDestination.NUTRITION_TRACKING) }
-              .padding(horizontal = 8.dp, vertical = 3.dp)
-              .testTag("view_macro_charts_button")
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
           ) {
-            Text(
-              text = "Daily Charts →",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.accent
-            )
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(4.dp),
+              modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(colors.accentSoft)
+                .clickable {
+                  initialShareBadge = null
+                  showShareDialog = true
+                }
+                .padding(horizontal = 8.dp, vertical = 3.dp)
+                .testTag("share_daily_macros_button")
+            ) {
+              Icon(Icons.Default.Share, contentDescription = null, tint = colors.accent, modifier = Modifier.size(12.dp))
+              Text(
+                text = "Share",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = colors.accent
+              )
+            }
+
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(colors.surface2)
+                .clickable { onNavigate(AppDestination.NUTRITION_TRACKING) }
+                .padding(horizontal = 8.dp, vertical = 3.dp)
+                .testTag("view_macro_charts_button")
+            ) {
+              Text(
+                text = "Charts →",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = colors.ink2
+              )
+            }
           }
         }
 
@@ -531,124 +641,185 @@ fun HomeScreen(
       }
     }
 
-    // 3b. Dedicated Hydration Card with Circular Progress and Undo
-    CalCard(modifier = Modifier.testTag("home_water_card")) {
+    // 3b. Simple Daily Water Consumption Tracker Component
+    DailyWaterConsumptionTracker(
+      glassesLogged = uiState.waterGlassesLogged,
+      targetGlasses = uiState.totalWaterGlassesTarget,
+      onLogGlass = onLogWater,
+      onLogBottle = onLogWaterBottle,
+      onUndoGlass = onUndoWater,
+      onToggleGlassIndex = onToggleWaterGlass,
+      onUpdateTarget = onUpdateWaterGoal
+    )
+
+    // 3c. Recharts Visual Macro Distribution Dashboard Summary (Scanned Meals)
+    MacroDistributionDashboard(
+      scannedMeals = uiState.scannedMealLogs,
+      todayMeals = uiState.todayMeals,
+      carbsConsumedGrams = uiState.carbsConsumedGrams,
+      proteinConsumedGrams = uiState.proteinConsumedGrams,
+      fatsConsumedGrams = uiState.fatsConsumedGrams,
+      carbsTargetGrams = uiState.carbsTargetGrams,
+      proteinTargetGrams = uiState.proteinTargetGrams,
+      fatsTargetGrams = uiState.fatsTargetGrams
+    )
+
+    // 3c. Automatic Step Counting & Daily Activity Telemetry
+    DailyActivityTrackerCard(
+      currentSteps = uiState.currentSteps,
+      dailyStepGoal = uiState.dailyStepGoal,
+      activeCaloriesBurned = uiState.activeCaloriesBurned,
+      distanceKm = uiState.distanceKm,
+      activeMinutes = uiState.activeMinutes,
+      activityLevel = uiState.activityLevelLabel,
+      hourlySteps = uiState.hourlySteps,
+      isTracking = uiState.isStepTrackingActive,
+      hasPermission = uiState.hasActivityPermission,
+      sensorSource = uiState.stepSensorSource,
+      caloriesConsumed = uiState.currentCaloriesConsumed,
+      onUpdateGoal = onUpdateStepGoal,
+      onAddManualSteps = onAddManualSteps,
+      onRefresh = onRefreshStepData,
+      onPermissionGranted = onStartStepTracking
+    )
+
+    // 3d. Gamification & Achievement Badges (Hydration Streaks & Weekly Macro Goals)
+    GamificationBadgesCard(
+      profile = uiState.gamificationProfile,
+      onSimulateStreak = onSimulateStreak,
+      onSimulateWeeklyMacro = onSimulateWeeklyMacro,
+      onShareBadge = { badge ->
+        initialShareBadge = badge
+        showShareDialog = true
+      }
+    )
+
+    // 3e. Localized Meal Reminders (Breakfast, Lunch, Dinner in User's Timezone)
+    reminderManager?.let { manager ->
+      MealReminderSettingsCard(reminderManager = manager)
+    }
+
+    // 3f. 30-Day Scanned Meal History & Intake Patterns Quick Access Card
+    CalCard(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable { onNavigate(AppDestination.MEAL_HISTORY) }
+        .testTag("home_meal_history_card")
+    ) {
       Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
         Row(
+          modifier = Modifier.weight(1f),
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(14.dp)
+          horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-          // Circular progress ring
-          val waterFraction = (uiState.waterGlassesLogged.toFloat() / uiState.totalWaterGlassesTarget.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
-          Box(modifier = Modifier.size(54.dp), contentAlignment = Alignment.Center) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-              drawArc(
-                color = colors.line,
-                startAngle = -90f,
-                sweepAngle = 360f,
-                useCenter = false,
-                style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round)
-              )
-              drawArc(
-                color = colors.protein,
-                startAngle = -90f,
-                sweepAngle = 360f * waterFraction,
-                useCenter = false,
-                style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round)
-              )
-            }
+          Box(
+            modifier = Modifier
+              .size(46.dp)
+              .clip(CircleShape)
+              .background(colors.accentSoft),
+            contentAlignment = Alignment.Center
+          ) {
             Icon(
-              imageVector = Icons.Default.Opacity,
+              imageVector = Icons.Default.History,
               contentDescription = null,
-              tint = colors.protein,
-              modifier = Modifier.size(22.dp)
+              tint = colors.accent,
+              modifier = Modifier.size(24.dp)
             )
           }
-
           Column {
             Text(
-              text = "HYDRATION",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink2,
-              letterSpacing = 0.8.sp
-            )
-            Text(
-              text = "${uiState.waterGlassesLogged} of ${uiState.totalWaterGlassesTarget} glasses",
+              text = "Past 30 Days Meal History",
               fontSize = 15.sp,
               fontWeight = FontWeight.Bold,
               color = colors.ink
             )
-            val loggedL = String.format(Locale.US, "%.1f", uiState.waterGlassesLogged * 0.25f)
-            val targetL = String.format(Locale.US, "%.1f", uiState.totalWaterGlassesTarget * 0.25f)
+            val mealCount = uiState.scannedMealLogs.size
             Text(
-              text = "$loggedL L / $targetL L goal",
+              text = "$mealCount meals scanned • Review daily intake trends",
               fontSize = 12.sp,
               color = colors.ink2
             )
           }
         }
-
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp)
+        Surface(
+          shape = RoundedCornerShape(999.dp),
+          color = colors.surface2
         ) {
-          if (uiState.waterGlassesLogged > 0) {
-            IconButton(
-              onClick = onUndoWater,
-              modifier = Modifier.size(36.dp).testTag("undo_water_button")
-            ) {
-              Text(
-                text = "-1",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = colors.ink2
-              )
-            }
-          }
-          Button(
-            onClick = onLogWater,
-            shape = RoundedCornerShape(999.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = colors.protein, contentColor = androidx.compose.ui.graphics.Color.White),
-            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-            modifier = Modifier.testTag("add_glass_button")
-          ) {
-            Text("+ Glass", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-          }
+          Text(
+            text = "Review →",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = colors.accent,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+          )
         }
       }
     }
+
+    // Contextual Tooltip Guide for Car & Object Scanning
+    ScanContextualTooltipBanner(
+      currentStep = currentTooltipStep,
+      isVisible = showTooltips,
+      onNext = {
+        val nextOrdinal = (currentTooltipStep.ordinal + 1).coerceAtMost(ScanTooltipStep.values().size - 1)
+        currentTooltipStep = ScanTooltipStep.values()[nextOrdinal]
+      },
+      onPrevious = {
+        val prevOrdinal = (currentTooltipStep.ordinal - 1).coerceAtLeast(0)
+        currentTooltipStep = ScanTooltipStep.values()[prevOrdinal]
+      },
+      onDismiss = { dismissTooltips() },
+      onActionClick = {
+        dismissTooltips()
+        onNavigate(AppDestination.SCAN)
+      }
+    )
 
     // 4. Quick Action Row: 4 Equal Minimalist Tiles (Scan, Voice, Water, Add)
     Row(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+      val isScanHighlighted = showTooltips && currentTooltipStep == ScanTooltipStep.LAUNCH_SCANNER
       QuickActionTile(
-        title = "Scan",
+        title = "Scan Meal",
         icon = Icons.Default.PhotoCamera,
-        modifier = Modifier.weight(1f).testTag("quick_action_scan"),
-        onClick = { onNavigate(AppDestination.SCAN) }
+        modifier = Modifier
+          .weight(1f)
+          .then(
+            if (isScanHighlighted) {
+              Modifier.border(2.dp, Color(0xFFFF9933), RoundedCornerShape(16.dp))
+            } else Modifier
+          )
+          .testTag("quick_action_scan"),
+        onClick = {
+          if (showTooltips) {
+            dismissTooltips()
+          }
+          onNavigate(AppDestination.SCAN)
+        }
       )
       QuickActionTile(
-        title = "Voice",
+        title = "Voice Log",
         icon = Icons.Default.Mic,
         modifier = Modifier.weight(1f).testTag("quick_action_voice"),
         onClick = { showVoiceLogDialog = true }
       )
       QuickActionTile(
-        title = "Water",
+        title = "Log Water",
         icon = Icons.Default.Opacity,
         badge = "${uiState.waterGlassesLogged}/${uiState.totalWaterGlassesTarget}",
         modifier = Modifier.weight(1f).testTag("quick_action_water"),
         onClick = { onLogWater() }
       )
       QuickActionTile(
-        title = "Add",
+        title = "Add Custom",
         icon = Icons.Default.Add,
         modifier = Modifier.weight(1f).testTag("quick_action_add"),
         onClick = { showAddMealDialog = true }
@@ -658,7 +829,7 @@ fun HomeScreen(
     // 4b. Quick Re-Log Favorites
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
       Text(
-        text = "Quick Re-Log Favorites",
+        text = "Popular Indian Meals",
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         color = colors.ink2,
@@ -720,13 +891,19 @@ fun HomeScreen(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Text(
-          text = "Today's Meals",
-          fontSize = 18.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.ink,
-          letterSpacing = (-0.3).sp
-        )
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          Text("🍛", fontSize = 16.sp)
+          Text(
+            text = "Today's Meals",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = colors.ink,
+            letterSpacing = (-0.3).sp
+          )
+        }
         Text(
           text = "${uiState.todayMeals.size} logged",
           fontSize = 12.sp,
@@ -750,7 +927,7 @@ fun HomeScreen(
               )
               Spacer(modifier = Modifier.height(10.dp))
               TextButton(onClick = { onNavigate(AppDestination.SCAN) }) {
-                Text("Tap to scan your first meal", color = colors.accent, fontWeight = FontWeight.Bold)
+                Text("Tap to scan your meal or thali", color = colors.accent, fontWeight = FontWeight.Bold)
               }
             }
           }
@@ -774,7 +951,16 @@ fun HomeScreen(
       }
     }
 
-    // 6. Insight of the Day Card
+    IndianRangoliDivider(badgeText = "DESI REGIONAL RASOI")
+
+    // 6. Regional Diet Tips (Context-Aware Indian Cuisines)
+    RegionalDietTipsCard(
+      currentRegionId = uiState.selectedRegion,
+      dailyCalorieTarget = uiState.dailyCalorieTarget,
+      onSelectRegion = onSelectRegion
+    )
+
+    // 7. Insight of the Day Card
     CalCard(backgroundColor = colors.surface2) {
       Row(
         verticalAlignment = Alignment.Top,
@@ -1044,6 +1230,18 @@ fun HomeScreen(
     MyCalAiChatScreen(
       uiState = uiState,
       onDismiss = { showMyCalAiDialog = false }
+    )
+  }
+
+  // Social Sharing Dialog via Android Sharesheet
+  if (showShareDialog) {
+    ShareProgressDialog(
+      uiState = uiState,
+      initialBadge = initialShareBadge,
+      onDismiss = {
+        showShareDialog = false
+        initialShareBadge = null
+      }
     )
   }
 }

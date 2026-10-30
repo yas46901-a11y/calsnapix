@@ -79,6 +79,7 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.VideocamOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -1802,6 +1803,7 @@ private fun AiAnalysisResultView(
   onLogMeal: (LoggedMeal) -> Unit,
   onUpdateResult: (ScanScreenState.Result) -> Unit
 ) {
+  val context = LocalContext.current
   val scrollState = rememberScrollState()
   var showEditDishDialog by remember { mutableStateOf(false) }
 
@@ -2154,6 +2156,37 @@ private fun AiAnalysisResultView(
               text = "Retake",
               color = colors.ink,
               fontWeight = FontWeight.Bold
+            )
+          }
+
+          // Share Dish via Android Sharesheet
+          Button(
+            onClick = {
+              val shareText = com.example.util.SocialShareHelper.buildScannedMealShareText(
+                dishName = dish.dishName,
+                calories = adjustedCalories,
+                protein = adjustedProtein.toDouble(),
+                carbs = adjustedCarbs.toDouble(),
+                fat = adjustedFat.toDouble(),
+                fiber = dish.fiberGrams.toDouble(),
+                chefNote = dish.chefNote
+              )
+              com.example.util.SocialShareHelper.launchSharesheet(context, shareText, "Share Meal")
+            },
+            modifier = Modifier
+              .size(52.dp)
+              .testTag("share_scan_result_button"),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+              containerColor = colors.accentSoft,
+              contentColor = colors.accent
+            )
+          ) {
+            Icon(
+              imageVector = Icons.Default.Share,
+              contentDescription = "Share",
+              tint = colors.accent,
+              modifier = Modifier.size(20.dp)
             )
           }
 

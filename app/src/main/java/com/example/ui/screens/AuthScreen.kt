@@ -74,6 +74,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import com.example.R
 import coil.compose.AsyncImage
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.TextButton
+import com.example.ui.components.PrivacyPolicyDialog
 import com.example.ui.components.GlassBorderBrush
 import com.example.ui.components.GlassBorderStroke
 import com.example.ui.theme.AhaarPrimary
@@ -97,6 +100,7 @@ fun AuthScreen(
   logoUrl: String,
   onGoogleSignIn: () -> Unit = {},
   onPasteOAuthCallback: (String) -> Unit = {},
+  onBack: (() -> Unit)? = null,
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -120,9 +124,25 @@ fun AuthScreen(
       .verticalScroll(scrollState)
       .padding(horizontal = 24.dp, vertical = 20.dp),
     horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.spacedBy(20.dp)
+    verticalArrangement = Arrangement.spacedBy(18.dp)
   ) {
-    Spacer(modifier = Modifier.height(12.dp))
+    if (onBack != null) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        IconButton(onClick = onBack, modifier = Modifier.testTag("auth_back_button")) {
+          Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Back",
+            tint = MaterialTheme.colorScheme.onSurface
+          )
+        }
+      }
+    } else {
+      Spacer(modifier = Modifier.height(12.dp))
+    }
 
     // App Logo & Brand Header (Official Uploaded CalSnapix Logo)
     Box(
@@ -541,7 +561,7 @@ fun AuthScreen(
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-              text = if (mode == AuthMode.LOGIN) "Sign in with Google" else "Sign up with Google",
+              text = "Continue with Google",
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.SemiBold,
               color = MaterialTheme.colorScheme.onSurface
@@ -580,61 +600,55 @@ fun AuthScreen(
       }
     }
 
-    // Terms & Conditions and Privacy Policy Links
-    Column(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(4.dp)
+    // Prominent Terms & Conditions and Privacy Policy Action Panel
+    Surface(
+      shape = RoundedCornerShape(16.dp),
+      color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+      border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+      modifier = Modifier.fillMaxWidth()
     ) {
-      Text(
-        text = "By continuing, you agree to our",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        fontSize = 11.sp
-      )
-      Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+      Column(
+        modifier = Modifier.padding(14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
         Text(
-          text = "Terms & Conditions",
-          style = MaterialTheme.typography.labelSmall,
-          fontWeight = FontWeight.Bold,
-          color = AhaarPrimary,
-          fontSize = 11.sp,
-          modifier = Modifier
-            .clickable {
-              try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://claude.ai/artifact/6oxxES7VRyyNnrG9HVxN45")))
-              } catch (e: Exception) {
-                showTermsDialog = true
-              }
-            }
-            .padding(4.dp)
-            .testTag("terms_link")
-        )
-        Text(
-          text = "•",
-          color = MaterialTheme.colorScheme.outlineVariant,
+          text = "By creating an account or signing in, you agree to our policies:",
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
           fontSize = 11.sp
         )
-        Text(
-          text = "Privacy Policy",
-          style = MaterialTheme.typography.labelSmall,
-          fontWeight = FontWeight.Bold,
-          color = AhaarPrimary,
-          fontSize = 11.sp,
-          modifier = Modifier
-            .clickable {
-              try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://claude.ai/artifact/HPtn6GbWs3uTXEYTFEQJ9U")))
-              } catch (e: Exception) {
-                showPrivacyDialog = true
-              }
-            }
-            .padding(4.dp)
-            .testTag("privacy_link")
-        )
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+          OutlinedButton(
+            onClick = { showPrivacyDialog = true },
+            modifier = Modifier.weight(1f).testTag("privacy_policy_button"),
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+          ) {
+            Text(
+              text = "Privacy Policy",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold,
+              color = AhaarPrimary
+            )
+          }
+          OutlinedButton(
+            onClick = { showTermsDialog = true },
+            modifier = Modifier.weight(1f).testTag("terms_conditions_button"),
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+          ) {
+            Text(
+              text = "Terms & Conditions",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold,
+              color = AhaarPrimary
+            )
+          }
+        }
       }
     }
 
@@ -681,7 +695,7 @@ fun AuthScreen(
               lineHeight = 17.sp
             )
             Text(
-              text = "5. 100% Free Forever Service:\nCalSnapix is completely 100% free for all users. There are zero subscriptions, zero paid tiers, zero hidden fees, and zero in-app purchases. Unlimited AI food scans, barcode & QR lookups, Ayurvedic digestion windows, and 24/7 AI nutrition assistant are provided freely without charge.",
+              text = "5. Free Trial & Calorie Scan Premium:\nCalSnapix provides 3 free calorie scans for new users. After 3 free scans, continued AI food scanning requires an active Calorie Scan Premium subscription (available in daily, weekly, monthly, 6-month, or yearly passes). Personal biometrics, meal history, and privacy controls remain accessible.",
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               lineHeight = 17.sp
@@ -707,57 +721,7 @@ fun AuthScreen(
 
     // Comprehensive Privacy Policy Dialog
     if (showPrivacyDialog) {
-      AlertDialog(
-        onDismissRequest = { showPrivacyDialog = false },
-        title = {
-          Text(text = "CalSnapix Privacy Policy", fontWeight = FontWeight.Bold)
-        },
-        text = {
-          Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-          ) {
-            Text(
-              text = "Effective Date: October 2026\nApp: CalSnapix • Privacy & Data Security (100% Free)",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = AhaarPrimary
-            )
-            Text(
-              text = "1. Data Protection & Encryption:\nWe never sell your data. Your logs are encrypted. Your health, body weight, and meal habits are personal. CalSnapix never sells, rents, monetizes, or brokers your personal health data to insurance companies, data brokers, or third-party advertisers.",
-              fontSize = 12.sp,
-              color = MaterialTheme.colorScheme.onSurface,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "2. Exact Data We Collect & Exactly Why We Collect It (In Detail):\n\n• Biometrics (Age, Gender, Height, Weight & Goal Weight):\nWHY WE COLLECT THIS: We use these strictly to calculate your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE) via the Mifflin-St Jeor formula to determine your safe, daily calorie and macronutrient targets. Without these, customized nutrition goals cannot be computed.\n\n• Dietary Habits & Allergies (Veg, Non-Veg, Jain, Allergens):\nWHY WE COLLECT THIS: To recommend suitable Indian meals, filter out non-permissible ingredients, and prevent accidental allergen exposure.\n\n• Camera Access & Food Photos:\nWHY WE COLLECT THIS: Accessed in real-time exclusively when you use the Camera scanner. Photos are analyzed transiently by Gemini AI to detect dishes and calculate calories/macros. Photos are never stored permanently, never used for facial recognition, and never sold.\n\n• Barcode & QR Code Scans:\nWHY WE COLLECT THIS: Numerical EAN/UPC barcodes and nutritional QR text are queried against composition databases to auto-populate product calories, protein, carbs, and fats.\n\n• Name & Email Address:\nWHY WE COLLECT THIS: Required solely for secure account login, password reset, and backing up your nutrition logs across your devices.",
-              fontSize = 12.sp,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "3. Security & Cryptographic Storage:\nAll personal credentials and nutrition blueprints are stored using secure local and cloud databases protected with 256-bit encryption.",
-              fontSize = 12.sp,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "4. Your Absolute Right to Erasure:\nYou maintain full ownership of your data. You may permanently delete your account, meal records, and biometric history at any time from your profile with instantaneous data wipe. Web deletion: calsnapix.in/delete-account",
-              fontSize = 12.sp,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              lineHeight = 17.sp
-            )
-          }
-        },
-        confirmButton = {
-          Button(
-            onClick = { showPrivacyDialog = false },
-            colors = ButtonDefaults.buttonColors(containerColor = AhaarPrimary, contentColor = Color.White)
-          ) {
-            Text("Close")
-          }
-        }
-      )
+      PrivacyPolicyDialog(onDismiss = { showPrivacyDialog = false })
     }
 
     // Security & Data Protection Note

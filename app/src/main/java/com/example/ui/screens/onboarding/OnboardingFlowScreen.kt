@@ -1,19 +1,15 @@
 package com.example.ui.screens.onboarding
 
-import android.content.Intent
-import android.net.Uri
+import android.content.Context
 import android.view.HapticFeedbackConstants
 import androidx.activity.compose.BackHandler
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -27,350 +23,201 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.ui.res.painterResource
-import com.example.R
-import com.example.ui.components.PricingPaywallContent
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.QrCodeScanner
-import androidx.compose.material.icons.filled.SmartToy
-import androidx.compose.material.icons.filled.TrackChanges
-import androidx.compose.material.icons.filled.VerifiedUser
-import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.filled.ElectricBolt
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.SelfImprovement
-import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Scale
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import android.widget.Toast
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.AhaarUiState
+import androidx.compose.material3.OutlinedButton
 import com.example.ui.components.HeightWeightPickerRow
-import com.example.ui.components.WheelPicker
+import com.example.ui.components.IndianToranBorder
+import com.example.ui.components.PrivacyPolicyDialog
 import com.example.ui.theme.CalTheme
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlin.math.abs
+import java.util.Locale
 import kotlin.math.roundToInt
 
 /**
- * Total number of screens in the one-question-per-screen onboarding flow.
+ * Professional 9-Step Onboarding Journey for CalSnapix:
+ * 0: Welcome & The CalSnapix Promise (Hero Showcase)
+ * 1: Primary Health Goal Selection
+ * 2: Biological Context & Daily Activity Level
+ * 3: Biometrics (Height, Current Weight & Age) with Real-Time BMI
+ * 4: Target Weight & Safe Sustainable Pace (Risk-Audited with Underweight Blocker)
+ * 5: Dietary Preferences & Regional Indian Flavors
+ * 6: Challenges & Eating Obstacles
+ * 7: Interactive AI Food Scanner Demonstration
+ * 8: Custom Nutrition Blueprint Reveal & Celebration
  */
-const val TOTAL_ONBOARDING_STEPS = 21
+const val TOTAL_ONBOARDING_STEPS = 9
+const val PREF_KEY_ONBOARDING_COMPLETED = "onboarding_completed"
 
-/**
- * Full-screen, one-question-per-screen onboarding flow with:
- * - Thin top progress bar with subtle integrated step indicator
- * - Back arrow on top left (no avatar, no top skip)
- * - Huge headlines (28-34px), short helper line
- * - Big black pill "Continue" button pinned to bottom (56dp tall, disabled until answered)
- * - Smooth horizontal slide + fade transitions
- * - Scroll wheel pickers for all numbers (zero +/- buttons)
- * - Persists answers after each screen
- */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun OnboardingFlowScreen(
   uiState: AhaarUiState,
-  onStepChanged: (Int) -> Unit,
-  onSaveAnswer: (key: String, value: Any) -> Unit,
-  onUpdateBiometrics: (heightCm: Int, weightKg: Float, age: Int, gender: String) -> Unit,
-  onUpdateGoal: (goalId: String, targetWeightKg: Float, paceKgPerWeek: Float) -> Unit,
-  onUpdatePreferences: (diets: Set<String>, regions: Set<String>, allergies: Set<String>) -> Unit,
-  onUpdateLifestyle: (workoutFreq: String, obstacles: Set<String>, activityLevel: String) -> Unit,
-  onUpdateMealTimings: (breakfast: String, lunch: String, dinner: String, snack: String, waterGoal: Float) -> Unit,
-  onApplyReferral: (String) -> Result<String>,
-  onSignUp: (name: String, email: String, pass: String) -> Unit,
+  onStepChanged: (Int) -> Unit = {},
+  onSaveAnswer: (key: String, value: Any) -> Unit = { _, _ -> },
+  onUpdateBiometrics: (heightCm: Int, weightKg: Float, age: Int, gender: String) -> Unit = { _, _, _, _ -> },
+  onUpdateGoal: (goalId: String, targetWeightKg: Float, paceKgPerWeek: Float) -> Unit = { _, _, _ -> },
+  onUpdatePreferences: (diets: Set<String>, regions: Set<String>, allergies: Set<String>) -> Unit = { _, _, _ -> },
+  onUpdateLifestyle: (workoutFreq: String, obstacles: Set<String>, activityLevel: String) -> Unit = { _, _, _ -> },
+  onUpdateMealTimings: (breakfast: String, lunch: String, dinner: String, snack: String, waterGoal: Float) -> Unit = { _, _, _, _, _ -> },
+  onApplyReferral: (String) -> Result<String> = { Result.success("") },
+  onSignUp: (name: String, email: String, pass: String) -> Unit = { _, _, _ -> },
   onLogin: (email: String, pass: String) -> Unit = { _, _ -> },
-  onGoogleSignIn: () -> Unit,
-  onNavigateToAuth: () -> Unit,
-  onFinishOnboarding: () -> Unit
+  onGoogleSignIn: () -> Unit = {},
+  onNavigateToAuth: () -> Unit = {},
+  onFinishOnboarding: () -> Unit = {}
 ) {
   val colors = CalTheme.colors
   val view = LocalView.current
   val context = LocalContext.current
-  val coroutineScope = rememberCoroutineScope()
-  val currentStep = uiState.onboardingStep.coerceIn(0, TOTAL_ONBOARDING_STEPS - 1)
 
-  // Local state for answers on current screen
-  var localGender by remember(uiState.gender) { mutableStateOf(uiState.gender) }
-  var localWorkoutFreq by remember { mutableStateOf("3_5") }
-  var localHearAboutUs by remember { mutableStateOf("Instagram") }
-  var localTriedOtherApps by remember { mutableStateOf<Boolean?>(null) }
-  var localHeightCm by remember(uiState.heightCm) { mutableIntStateOf(uiState.heightCm) }
-  var localWeightKg by remember { mutableFloatStateOf(68.0f) }
-  var localAge by remember(uiState.age) { mutableIntStateOf(uiState.age) }
-  var localGoalId by remember(uiState.selectedGoalId) { mutableStateOf(uiState.selectedGoalId) }
-  var localTargetWeightKg by remember { mutableFloatStateOf(62.2f) }
-  var localPaceKgPerWeek by remember { mutableFloatStateOf(0.5f) }
-  var localObstacles by remember { mutableStateOf(setOf("busy_schedule")) }
-  var localDiets by remember(uiState.selectedDiets) { mutableStateOf(uiState.selectedDiets) }
-  var localRegions by remember(uiState.selectedRegion) { mutableStateOf(setOf(uiState.selectedRegion)) }
-  var localAllergies by remember(uiState.selectedAllergies) { mutableStateOf(uiState.selectedAllergies) }
-  var localActivityLevel by remember(uiState.activityLevel) { mutableStateOf(uiState.activityLevel) }
-  var localBreakfastTime by remember { mutableStateOf("8:30 AM") }
-  var localLunchTime by remember { mutableStateOf("1:30 PM") }
-  var localDinnerTime by remember { mutableStateOf("8:15 PM") }
-  var localSnackTime by remember { mutableStateOf("5:00 PM") }
-  var localWaterGoalLiters by remember { mutableFloatStateOf(2.0f) }
-  var localNotificationsAllowed by remember { mutableStateOf(true) }
-  var localReferralCodeInput by remember { mutableStateOf("") }
-  var referralSuccessMessage by remember { mutableStateOf<String?>(null) }
-  var referralErrorMessage by remember { mutableStateOf<String?>(null) }
-  var referralIsChecking by remember { mutableStateOf(false) }
-  var referralDiscountPercent by remember(uiState.appliedDiscountPercent) { mutableIntStateOf(uiState.appliedDiscountPercent) }
+  // Internal onboarding state synced with initial uiState
+  var currentStep by remember(uiState.onboardingStep) {
+    mutableIntStateOf(uiState.onboardingStep.coerceIn(0, TOTAL_ONBOARDING_STEPS - 1))
+  }
 
-  // Auth fields for Step 24 (Create Account)
-  var authName by remember { mutableStateOf("") }
-  var authEmail by remember { mutableStateOf("") }
-  var authPassword by remember { mutableStateOf("") }
-  var authIsPasswordVisible by remember { mutableStateOf(false) }
-  var authIsSignUpMode by remember { mutableStateOf(true) }
-  var authIs18OrOlder by remember { mutableStateOf(false) }
+  // User responses state
+  var selectedGoalId by remember { mutableStateOf(uiState.selectedGoalId.ifBlank { "lose_weight" }) }
+  var selectedGender by remember { mutableStateOf(uiState.gender.ifBlank { "Male" }) }
+  var selectedActivityLevel by remember { mutableStateOf(uiState.activityLevel.ifBlank { "moderately_active" }) }
+  var ageState by remember { mutableIntStateOf(if (uiState.age in 15..90) uiState.age else 26) }
+  var heightCmState by remember { mutableIntStateOf(if (uiState.heightCm in 120..220) uiState.heightCm else 172) }
+  var currentWeightKgState by remember { mutableFloatStateOf(if (uiState.currentWeightKg in 35f..180f) uiState.currentWeightKg else 74.0f) }
+  var targetWeightKgState by remember { mutableFloatStateOf(if (uiState.targetWeightKg in 35f..180f) uiState.targetWeightKg else 68.0f) }
+  var paceKgPerWeekState by remember { mutableFloatStateOf(0.5f) }
+  var selectedDietsState by remember { mutableStateOf(if (uiState.selectedDiets.isNotEmpty()) uiState.selectedDiets else setOf("vegetarian")) }
+  var selectedRegionState by remember { mutableStateOf(uiState.selectedRegion.ifBlank { "North Indian" }) }
+  var selectedObstaclesState by remember { mutableStateOf(setOf("Late night snacking", "Portion estimation")) }
+  var showPrivacyDialog by remember { mutableStateOf(false) }
 
-  // Step 22 Loading timer state
-  var setupProgress by remember { mutableFloatStateOf(0f) }
-  var setupStatusIndex by remember { mutableIntStateOf(0) }
+  // Target BMI safety check (Launch Risk Audit #4: Blocks targets below BMI 18.5)
+  val heightMeters = heightCmState / 100f
+  val targetBmi = if (heightMeters > 0) targetWeightKgState / (heightMeters * heightMeters) else 22f
+  val minHealthyWeightKg = if (heightMeters > 0) (18.5f * heightMeters * heightMeters) else 50f
+  val isTargetWeightUnderweight = targetBmi < 18.5f
 
-  // Handle hardware / predictive back
+  // Predictive back handler
   BackHandler(enabled = currentStep > 0) {
-    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-    onStepChanged(currentStep - 1)
+    val prev = (currentStep - 1).coerceAtLeast(0)
+    currentStep = prev
+    onStepChanged(prev)
   }
 
-  // Determine if Continue button should be enabled on the current step
-  val isContinueEnabled by remember(
-    currentStep,
-    localGender,
-    localWorkoutFreq,
-    localHearAboutUs,
-    localTriedOtherApps,
-    localGoalId,
-    localObstacles,
-    localDiets,
-    localRegions,
-    localActivityLevel,
-    localHeightCm,
-    localWeightKg,
-    localTargetWeightKg,
-    authName,
-    authEmail,
-    authPassword,
-    authIsSignUpMode,
-    authIs18OrOlder
-  ) {
-    derivedStateOf {
-      when (currentStep) {
-        0 -> true
-        1 -> localGender.isNotBlank()
-        2 -> localWorkoutFreq.isNotBlank()
-        3 -> localHearAboutUs.isNotBlank()
-        4 -> localTriedOtherApps != null
-        5 -> localHeightCm in 100..250 && localWeightKg in 30f..250f
-        6 -> localAge in 13..95
-        7 -> localGoalId.isNotBlank()
-        8 -> {
-          val heightM = (localHeightCm.toFloat() / 100f).coerceAtLeast(0.5f)
-          val targetBmi = localTargetWeightKg / (heightM * heightM)
-          localTargetWeightKg in 30f..250f && targetBmi >= 18.5f
-        }
-        9 -> true // motivational interstitial
-        10 -> localPaceKgPerWeek in 0.2f..1.0f
-        11 -> localObstacles.isNotEmpty()
-        12 -> localDiets.isNotEmpty()
-        13 -> true // allergies can be None
-        14 -> localActivityLevel.isNotBlank()
-        15 -> true // notification permission
-        16 -> true // referral code (optional / skippable)
-        17 -> setupProgress >= 1f // loading step
-        18 -> true // plan ready
-        19 -> if (authIsSignUpMode) {
-          authName.trim().length >= 2 && authEmail.contains("@") && authPassword.length >= 6 && authIs18OrOlder
-        } else {
-          authEmail.contains("@") && authPassword.length >= 6
-        }
-        20 -> true // paywall
-        else -> true
-      }
-    }
+  fun completeOnboardingAndSave() {
+    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+    val sessionPrefs = context.getSharedPreferences("ahaar_auth_session", Context.MODE_PRIVATE)
+    sessionPrefs.edit().putBoolean(PREF_KEY_ONBOARDING_COMPLETED, true).apply()
+    val appPrefs = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+    appPrefs.edit().putBoolean(PREF_KEY_ONBOARDING_COMPLETED, true).apply()
+
+    // Sync all gathered data to ViewModel
+    onUpdateBiometrics(heightCmState, currentWeightKgState, ageState, selectedGender)
+    onUpdateGoal(selectedGoalId, targetWeightKgState, paceKgPerWeekState)
+    onUpdatePreferences(selectedDietsState, setOf(selectedRegionState), emptySet())
+    onUpdateLifestyle("3-4 times/week", selectedObstaclesState, selectedActivityLevel)
+    onUpdateMealTimings("8:30 AM", "1:00 PM", "7:30 PM", "5:00 PM", 2.5f)
+
+    onFinishOnboarding()
   }
 
-  // Advance to next step with haptic feedback & auto-save
   fun handleContinue() {
     view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+
+    // Sync state at each transition
     when (currentStep) {
-      1 -> {
-        onSaveAnswer("gender", localGender)
-        onUpdateBiometrics(localHeightCm, localWeightKg, localAge, localGender)
-      }
-      2 -> {
-        onSaveAnswer("workout_frequency", localWorkoutFreq)
-        onUpdateLifestyle(localWorkoutFreq, localObstacles, localActivityLevel)
-      }
-      3 -> onSaveAnswer("hear_about_us", localHearAboutUs)
-      4 -> onSaveAnswer("tried_other_apps", localTriedOtherApps ?: false)
-      5 -> {
-        onSaveAnswer("height_cm", localHeightCm)
-        onSaveAnswer("current_weight_kg", localWeightKg)
-        onUpdateBiometrics(localHeightCm, localWeightKg, localAge, localGender)
-      }
-      6 -> {
-        onSaveAnswer("age", localAge)
-        onUpdateBiometrics(localHeightCm, localWeightKg, localAge, localGender)
-      }
-      7 -> {
-        onSaveAnswer("primary_goal", localGoalId)
-        onUpdateGoal(localGoalId, localTargetWeightKg, localPaceKgPerWeek)
-      }
-      8 -> {
-        val heightM = (localHeightCm.toFloat() / 100f).coerceAtLeast(0.5f)
-        val targetBmi = localTargetWeightKg / (heightM * heightM)
-        if (targetBmi < 18.5f) {
-          Toast.makeText(context, "Target weight results in underweight BMI (< 18.5). Please choose a healthy target.", Toast.LENGTH_SHORT).show()
-          return
-        }
-        onSaveAnswer("target_weight_kg", localTargetWeightKg)
-        onUpdateGoal(localGoalId, localTargetWeightKg, localPaceKgPerWeek)
-      }
-      10 -> {
-        onSaveAnswer("pace_kg_per_week", localPaceKgPerWeek)
-        onUpdateGoal(localGoalId, localTargetWeightKg, localPaceKgPerWeek)
-      }
-      11 -> {
-        onSaveAnswer("biggest_obstacles", localObstacles.toList())
-        onUpdateLifestyle(localWorkoutFreq, localObstacles, localActivityLevel)
-      }
-      12 -> {
-        onSaveAnswer("diet_types", localDiets.toList())
-        onUpdatePreferences(localDiets, emptySet(), localAllergies)
-      }
-      13 -> {
-        onSaveAnswer("allergies_avoid", localAllergies.toList())
-        onUpdatePreferences(localDiets, emptySet(), localAllergies)
-      }
-      14 -> {
-        onSaveAnswer("activity_level", localActivityLevel)
-        onUpdateLifestyle(localWorkoutFreq, localObstacles, localActivityLevel)
-      }
-      15 -> onSaveAnswer("notifications_allowed", localNotificationsAllowed)
-      16 -> {
-        if (localReferralCodeInput.isNotBlank()) {
-          onSaveAnswer("referral_code", localReferralCodeInput)
-        }
-      }
-      19 -> {
-        if (authIsSignUpMode) {
-          if (!authIs18OrOlder) {
-            Toast.makeText(context, "Please confirm you are 18 years of age or older to register.", Toast.LENGTH_SHORT).show()
-            return
-          }
-          onSignUp(authName.trim(), authEmail.trim(), authPassword)
-        } else {
-          onLogin(authEmail.trim(), authPassword)
-        }
-      }
-      20 -> {
-        onFinishOnboarding()
-        return
-      }
+      1 -> onUpdateGoal(selectedGoalId, targetWeightKgState, paceKgPerWeekState)
+      2 -> onUpdateLifestyle("3-4 times/week", selectedObstaclesState, selectedActivityLevel)
+      3 -> onUpdateBiometrics(heightCmState, currentWeightKgState, ageState, selectedGender)
+      4 -> onUpdateGoal(selectedGoalId, targetWeightKgState, paceKgPerWeekState)
+      5 -> onUpdatePreferences(selectedDietsState, setOf(selectedRegionState), emptySet())
+      6 -> onSaveAnswer("obstacles", selectedObstaclesState)
     }
 
     if (currentStep < TOTAL_ONBOARDING_STEPS - 1) {
-      onStepChanged(currentStep + 1)
+      val next = currentStep + 1
+      currentStep = next
+      onStepChanged(next)
     } else {
-      onFinishOnboarding()
+      completeOnboardingAndSave()
     }
   }
 
-  // Main Container
+  val canProceed = when (currentStep) {
+    4 -> !isTargetWeightUnderweight
+    else -> true
+  }
+
   Box(
     modifier = Modifier
       .fillMaxSize()
@@ -379,73 +226,87 @@ fun OnboardingFlowScreen(
       .navigationBarsPadding()
   ) {
     Column(modifier = Modifier.fillMaxSize()) {
-      // 1. Top Header: Progress Bar with subtle Step indicator and Back arrow
-      if (currentStep > 0 && currentStep != 17) { // Hide progress bar on welcome and loading screens
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          // Back Arrow (only back arrow, no avatar, no top skip)
+      // 1. TOP HEADER: Back Button, Progress Bar & Skip Action
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+      ) {
+        if (currentStep > 0) {
           IconButton(
             onClick = {
               view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-              onStepChanged(currentStep - 1)
+              val prev = currentStep - 1
+              currentStep = prev
+              onStepChanged(prev)
             },
             modifier = Modifier
               .size(40.dp)
+              .clip(CircleShape)
+              .background(colors.surface2)
               .testTag("onboarding_back_button")
           ) {
             Icon(
               imageVector = Icons.AutoMirrored.Filled.ArrowBack,
               contentDescription = "Back",
               tint = colors.ink,
-              modifier = Modifier.size(22.dp)
+              modifier = Modifier.size(20.dp)
             )
           }
-
-          Spacer(modifier = Modifier.width(8.dp))
-
-          // Subtle Thin Progress Bar with embedded Step text inside
-          Box(
-            modifier = Modifier
-              .weight(1f)
-              .height(14.dp)
-              .clip(RoundedCornerShape(999.dp))
-              .background(colors.line),
-            contentAlignment = Alignment.Center
-          ) {
-            val progressFraction = (currentStep.toFloat()) / (TOTAL_ONBOARDING_STEPS - 1).toFloat()
-            val animatedProgress by animateFloatAsState(
-              targetValue = progressFraction.coerceIn(0.04f, 1f),
-              animationSpec = tween(300, easing = FastOutSlowInEasing),
-              label = "onboarding_progress"
-            )
-
-            Box(
-              modifier = Modifier
-                .align(Alignment.CenterStart)
-                .fillMaxWidth(animatedProgress)
-                .height(14.dp)
-                .clip(RoundedCornerShape(999.dp))
-                .background(colors.ink)
-            )
-
-            Text(
-              text = "Step $currentStep of ${TOTAL_ONBOARDING_STEPS - 1}",
-              fontSize = 9.sp,
-              fontWeight = FontWeight.Bold,
-              color = if (progressFraction > 0.45f) colors.bg else colors.ink2,
-              letterSpacing = 0.3.sp
-            )
-          }
+        } else {
+          Spacer(modifier = Modifier.size(40.dp))
         }
-      } else {
-        Spacer(modifier = Modifier.height(12.dp))
+
+        // Progress Text & Bar
+        Column(
+          horizontalAlignment = Alignment.CenterHorizontally,
+          modifier = Modifier.weight(1f).padding(horizontal = 12.dp)
+        ) {
+          Text(
+            text = "STEP ${currentStep + 1} OF $TOTAL_ONBOARDING_STEPS",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            color = colors.accent,
+            letterSpacing = 0.8.sp
+          )
+          Spacer(modifier = Modifier.height(4.dp))
+          LinearProgressIndicator(
+            progress = { (currentStep + 1).toFloat() / TOTAL_ONBOARDING_STEPS },
+            modifier = Modifier
+              .fillMaxWidth()
+              .height(5.dp)
+              .clip(RoundedCornerShape(999.dp))
+              .testTag("onboarding_progress_indicator"),
+            color = colors.accent,
+            trackColor = colors.line
+          )
+        }
+
+        TextButton(
+          onClick = { completeOnboardingAndSave() },
+          modifier = Modifier.testTag("onboarding_skip_button")
+        ) {
+          Text(
+            text = "Skip",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = colors.ink2
+          )
+        }
       }
 
-      // 2. Animated Step Content: Horizontal slide + fade transitions
+      // Toran decorative border
+      IndianToranBorder(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 2.dp),
+        scallops = 14,
+        height = 4.dp
+      )
+
+      // 2. ANIMATED STEP CONTENT
       Box(
         modifier = Modifier
           .weight(1f)
@@ -456,3460 +317,1410 @@ fun OnboardingFlowScreen(
           transitionSpec = {
             if (targetState > initialState) {
               slideInHorizontally(
-                initialOffsetX = { fullWidth -> (fullWidth * 0.8f).toInt() },
-                animationSpec = tween(240, easing = FastOutSlowInEasing)
+                initialOffsetX = { (it * 0.5f).toInt() },
+                animationSpec = tween(260, easing = FastOutSlowInEasing)
               ) + fadeIn(animationSpec = tween(200)) togetherWith
                 slideOutHorizontally(
-                  targetOffsetX = { fullWidth -> (-fullWidth * 0.8f).toInt() },
-                  animationSpec = tween(240, easing = FastOutSlowInEasing)
+                  targetOffsetX = { (-it * 0.5f).toInt() },
+                  animationSpec = tween(260, easing = FastOutSlowInEasing)
                 ) + fadeOut(animationSpec = tween(180))
             } else {
               slideInHorizontally(
-                initialOffsetX = { fullWidth -> (-fullWidth * 0.8f).toInt() },
-                animationSpec = tween(240, easing = FastOutSlowInEasing)
+                initialOffsetX = { (-it * 0.5f).toInt() },
+                animationSpec = tween(260, easing = FastOutSlowInEasing)
               ) + fadeIn(animationSpec = tween(200)) togetherWith
                 slideOutHorizontally(
-                  targetOffsetX = { fullWidth -> (fullWidth * 0.8f).toInt() },
-                  animationSpec = tween(240, easing = FastOutSlowInEasing)
+                  targetOffsetX = { (it * 0.5f).toInt() },
+                  animationSpec = tween(260, easing = FastOutSlowInEasing)
                 ) + fadeOut(animationSpec = tween(180))
             }
           },
-          label = "onboarding_screen_transition"
+          label = "onboarding_step_anim"
         ) { step ->
           Column(
             modifier = Modifier
               .fillMaxSize()
               .verticalScroll(rememberScrollState())
-              .padding(horizontal = 20.dp, vertical = 8.dp)
+              .padding(horizontal = 20.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
           ) {
             when (step) {
-              // 0. Welcome / Hook
-              0 -> Step0Welcome(
-                onGetStarted = { handleContinue() },
-                onLoginClick = onNavigateToAuth
+              0 -> Step0WelcomeHero(
+                onNavigateToAuth = onNavigateToAuth,
+                onOpenPrivacyPolicy = { showPrivacyDialog = true }
               )
-
-              // 1. Gender
-              1 -> Step1Gender(
-                selectedGender = localGender,
-                onSelectGender = { localGender = it }
-              )
-
-              // 2. Workout frequency
-              2 -> Step2WorkoutFrequency(
-                selectedFreq = localWorkoutFreq,
-                onSelectFreq = { localWorkoutFreq = it }
-              )
-
-              // 3. Where did you hear about us?
-              3 -> Step3HearAboutUs(
-                selectedSource = localHearAboutUs,
-                onSelectSource = { localHearAboutUs = it }
-              )
-
-              // 4. Have you tried other calorie tracking apps?
-              4 -> Step4TriedOtherApps(
-                tried = localTriedOtherApps,
-                onSelect = { localTriedOtherApps = it }
-              )
-
-              // 5. Height & Weight Wheel Pickers (Polished)
-              5 -> Step6HeightWeight(
-                heightCm = localHeightCm,
-                weightKg = localWeightKg,
-                onHeightChange = { localHeightCm = it },
-                onWeightChange = { localWeightKg = it }
-              )
-
-              // 6. Age Wheel Picker
-              6 -> Step7Age(
-                age = localAge,
-                onAgeChange = { localAge = it }
-              )
-
-              // 7. Primary Goal
-              7 -> Step8PrimaryGoal(
-                selectedGoalId = localGoalId,
-                onSelectGoal = { localGoalId = it }
-              )
-
-              // 8. Target Weight Wheel Picker
-              8 -> Step9TargetWeight(
-                heightCm = localHeightCm,
-                currentWeightKg = localWeightKg,
-                targetWeightKg = localTargetWeightKg,
-                onTargetWeightChange = { localTargetWeightKg = it }
-              )
-
-              // 9. Motivational Interstitial
-              9 -> Step10Motivational(
-                currentWeightKg = localWeightKg,
-                targetWeightKg = localTargetWeightKg
-              )
-
-              // 10. Pace Slider (Tortoise to Rabbit)
-              10 -> Step11PaceSlider(
-                paceKgPerWeek = localPaceKgPerWeek,
-                onPaceChange = { localPaceKgPerWeek = it }
-              )
-
-              // 11. Biggest Obstacles (Multi-select)
-              11 -> Step12BiggestObstacles(
-                selectedObstacles = localObstacles,
-                onToggleObstacle = { obs ->
-                  localObstacles = if (localObstacles.contains(obs)) {
-                    localObstacles - obs
-                  } else {
-                    localObstacles + obs
-                  }
+              1 -> Step1PrimaryGoal(
+                selectedGoalId = selectedGoalId,
+                onSelectGoal = {
+                  view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                  selectedGoalId = it
                 }
               )
-
-              // 12. Diet Type (Multi-select)
-              12 -> Step13DietType(
-                selectedDiets = localDiets,
+              2 -> Step2SexAndActivity(
+                selectedGender = selectedGender,
+                selectedActivity = selectedActivityLevel,
+                onSelectGender = {
+                  view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                  selectedGender = it
+                },
+                onSelectActivity = {
+                  view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                  selectedActivityLevel = it
+                }
+              )
+              3 -> Step3Biometrics(
+                age = ageState,
+                heightCm = heightCmState,
+                weightKg = currentWeightKgState,
+                onAgeChanged = { ageState = it },
+                onHeightChanged = { heightCmState = it },
+                onWeightChanged = { currentWeightKgState = it }
+              )
+              4 -> Step4TargetWeightAndPace(
+                heightCm = heightCmState,
+                currentWeightKg = currentWeightKgState,
+                targetWeightKg = targetWeightKgState,
+                paceKgPerWeek = paceKgPerWeekState,
+                isUnderweight = isTargetWeightUnderweight,
+                minHealthyWeightKg = minHealthyWeightKg,
+                onTargetWeightChanged = { targetWeightKgState = it },
+                onPaceChanged = { paceKgPerWeekState = it }
+              )
+              5 -> Step5DietAndRegion(
+                selectedDiets = selectedDietsState,
+                selectedRegion = selectedRegionState,
                 onToggleDiet = { diet ->
-                  localDiets = if (localDiets.contains(diet)) {
-                    if (localDiets.size > 1) localDiets - diet else localDiets
+                  view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                  selectedDietsState = if (selectedDietsState.contains(diet)) {
+                    if (selectedDietsState.size > 1) selectedDietsState - diet else selectedDietsState
                   } else {
-                    localDiets + diet
+                    selectedDietsState + diet
+                  }
+                },
+                onSelectRegion = {
+                  view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                  selectedRegionState = it
+                }
+              )
+              6 -> Step6HabitsAndObstacles(
+                selectedObstacles = selectedObstaclesState,
+                onToggleObstacle = { obs ->
+                  view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                  selectedObstaclesState = if (selectedObstaclesState.contains(obs)) {
+                    selectedObstaclesState - obs
+                  } else {
+                    selectedObstaclesState + obs
                   }
                 }
               )
-
-              // 13. Allergies / Avoid (Multi-select chips)
-              13 -> Step15Allergies(
-                selectedAllergies = localAllergies,
-                onToggleAllergy = { alg ->
-                  localAllergies = if (alg == "None") {
-                    setOf("None")
-                  } else {
-                    val next = localAllergies - "None"
-                    if (next.contains(alg)) next - alg else next + alg
-                  }
-                }
-              )
-
-              // 14. Activity Level in Daily Life
-              14 -> Step16ActivityLevel(
-                selectedLevel = localActivityLevel,
-                onSelectLevel = { localActivityLevel = it }
-              )
-
-              // 15. Reminders / Notification Permission
-              15 -> Step19Notifications(
-                notificationsAllowed = localNotificationsAllowed,
-                onTogglePermission = { localNotificationsAllowed = it }
-              )
-
-              // 16. 100% Free Access Confirmation Screen
-              16 -> Step16FreeCommitment(
-                onContinue = { handleContinue() }
-              )
-
-              // 17. "Setting everything up..." Loading screen (4-5s)
-              17 -> Step22SettingUp(
-                onFinished = {
-                  handleContinue()
-                }
-              )
-
-              // 18. "Your plan is ready" Result screen
-              18 -> Step23PlanReady(
-                uiState = uiState,
-                targetWeightKg = localTargetWeightKg,
-                onEditPlan = { onStepChanged(5) } // go back to height/weight
-              )
-
-              // 19. Create Account (Sign in with Google + email/password)
-              19 -> Step24CreateAccount(
-                name = authName,
-                email = authEmail,
-                password = authPassword,
-                isPasswordVisible = authIsPasswordVisible,
-                isSignUpMode = authIsSignUpMode,
-                is18OrOlder = authIs18OrOlder,
-                onToggleMode = { authIsSignUpMode = it },
-                onNameChange = { authName = it },
-                onEmailChange = { authEmail = it },
-                onPasswordChange = { authPassword = it },
-                onTogglePasswordVisibility = { authIsPasswordVisible = !authIsPasswordVisible },
-                on18OrOlderChange = { authIs18OrOlder = it },
-                onGoogleSignIn = onGoogleSignIn,
-                errorMessage = uiState.authError,
-                isLoading = uiState.isAuthLoading
-              )
-
-              // 20. Paywall / Pro plans preview -> then Home
-              20 -> Step25Paywall(
-                discountPercent = referralDiscountPercent,
-                onStartTrial = { handleContinue() },
-                onContinueFree = { handleContinue() }
+              7 -> Step7AiScannerShowcase()
+              8 -> Step8BlueprintReveal(
+                age = ageState,
+                gender = selectedGender,
+                weightKg = currentWeightKgState,
+                targetWeightKg = targetWeightKgState,
+                heightCm = heightCmState,
+                goalId = selectedGoalId,
+                paceKgPerWeek = paceKgPerWeekState,
+                onNavigateToAuth = onNavigateToAuth
               )
             }
-
-            Spacer(modifier = Modifier.height(100.dp)) // Space for pinned bottom continue bar
+            Spacer(modifier = Modifier.height(100.dp))
           }
         }
       }
 
-      // 3. Pinned Bottom Continue Bar (Big black pill 56dp tall, disabled until answered)
-      if (currentStep > 0 && currentStep != 17 && currentStep != 20) { // Screen 0, 17, and 20 (Paywall) have their own inline action triggers
-        Surface(
+      // 3. PINNED BOTTOM CTA BUTTON
+      Surface(
+        modifier = Modifier
+          .fillMaxWidth()
+          .shadow(elevation = 12.dp),
+        color = colors.bg
+      ) {
+        Column(
           modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation = 8.dp),
-          color = colors.bg
+            .padding(horizontal = 20.dp, vertical = 14.dp)
         ) {
-          Column(
+          Button(
+            onClick = { handleContinue() },
+            enabled = canProceed,
             modifier = Modifier
               .fillMaxWidth()
-              .padding(horizontal = 20.dp, vertical = 12.dp)
+              .height(56.dp)
+              .testTag("onboarding_continue_button"),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+              containerColor = colors.ink,
+              contentColor = colors.bg,
+              disabledContainerColor = colors.line,
+              disabledContentColor = colors.ink2
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
           ) {
-            Button(
-              onClick = { handleContinue() },
-              enabled = isContinueEnabled,
-              modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .testTag("onboarding_continue_button"),
-              shape = RoundedCornerShape(999.dp),
-              colors = ButtonDefaults.buttonColors(
-                containerColor = colors.ink,
-                contentColor = colors.bg,
-                disabledContainerColor = colors.line,
-                disabledContentColor = colors.ink2.copy(alpha = 0.5f)
-              )
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
               Text(
                 text = when (currentStep) {
-                  15 -> if (localNotificationsAllowed) "Allow Notifications" else "Continue"
-                  18 -> "Let's Start"
-                  19 -> if (authIsSignUpMode) "Create Account & View Plan" else "Sign In & View Plan"
-                  20 -> "Unlock CalSnapix Pro"
-                  else -> "Continue"
+                  0 -> "Start Personalizing →"
+                  1 -> "Continue to Lifestyle →"
+                  2 -> "Enter Biometrics →"
+                  3 -> "Set Target Weight →"
+                  4 -> if (isTargetWeightUnderweight) "Choose Healthy Weight" else "Set Diet Preferences →"
+                  5 -> "Select Eating Habits →"
+                  6 -> "See AI Food Scanner →"
+                  7 -> "Generate My Blueprint ✨"
+                  else -> "Claim Blueprint & Start Tracking 🚀"
                 },
-                fontSize = 17.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
               )
-            }
-
-            // Sensible skip options for non-essential screens
-            if (currentStep == 15) {
-              TextButton(
-                onClick = {
-                  localNotificationsAllowed = false
-                  handleContinue()
-                },
-                modifier = Modifier
-                  .align(Alignment.CenterHorizontally)
-                  .padding(top = 4.dp)
-                  .testTag("onboarding_skip_notifications")
-              ) {
-                Text(
-                  text = "Maybe later",
-                  fontSize = 14.sp,
-                  color = colors.ink2
-                )
-              }
-            } else if (currentStep == 16) {
-              TextButton(
-                onClick = { handleContinue() },
-                modifier = Modifier
-                  .align(Alignment.CenterHorizontally)
-                  .padding(top = 4.dp)
-                  .testTag("onboarding_skip_referral")
-              ) {
-                Text(
-                  text = "I don't have a code",
-                  fontSize = 14.sp,
-                  color = colors.ink2
-                )
-              }
             }
           }
         }
       }
     }
+
+    if (showPrivacyDialog) {
+      PrivacyPolicyDialog(onDismiss = { showPrivacyDialog = false })
+    }
   }
 }
 
-// -------------------------------------------------------------
-// STEP 0: Welcome / Hook with Animated Looping Demo
-// -------------------------------------------------------------
+// ======================================================================================
+// SCREEN 0: WELCOME & CALSNAPIX PROMISE HERO
+// ======================================================================================
 @Composable
-private fun Step0Welcome(
-  onGetStarted: () -> Unit,
-  onLoginClick: () -> Unit
+private fun Step0WelcomeHero(
+  onNavigateToAuth: () -> Unit = {},
+  onOpenPrivacyPolicy: () -> Unit = {}
 ) {
   val colors = CalTheme.colors
-  val infiniteTransition = rememberInfiniteTransition(label = "thali_scan")
-  val scanLaserOffset by infiniteTransition.animateFloat(
-    initialValue = 0f,
-    targetValue = 1f,
-    animationSpec = infiniteRepeatable(
-      animation = tween(2200, easing = LinearEasing),
-      repeatMode = RepeatMode.Reverse
-    ),
-    label = "laser_offset"
-  )
 
   Column(
     modifier = Modifier.fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
-    Spacer(modifier = Modifier.height(12.dp))
+    Spacer(modifier = Modifier.height(6.dp))
 
-    // Powered by MyCal AI glowing pill
     Surface(
       shape = RoundedCornerShape(999.dp),
-      color = Color(0xFF10B981).copy(alpha = 0.12f),
-      border = BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.45f)),
-      modifier = Modifier.padding(bottom = 14.dp)
+      color = colors.accentSoft,
+      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.4f))
     ) {
       Row(
         modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
       ) {
-        Icon(
-          imageVector = Icons.Default.AutoAwesome,
-          contentDescription = null,
-          tint = Color(0xFF10B981),
-          modifier = Modifier.size(15.dp)
-        )
+        Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = colors.accent, modifier = Modifier.size(15.dp))
         Text(
-          text = "Next-Gen Indian Nutrition • Powered by CalSnapix AI",
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
-          color = Color(0xFF10B981)
+          text = "AI-POWERED INDIAN NUTRITION",
+          fontSize = 11.sp,
+          fontWeight = FontWeight.Black,
+          color = colors.accent,
+          letterSpacing = 0.5.sp
         )
       }
     }
 
-    // Animated multi-colored scanning demo card with glowing border
-    val cardGradient = Brush.sweepGradient(
-      colors = listOf(
-        Color(0xFF10B981),
-        Color(0xFF6366F1),
-        Color(0xFFF59E0B),
-        Color(0xFFEC4899),
-        Color(0xFF10B981)
-      )
-    )
-
-    Surface(
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(270.dp),
-      shape = RoundedCornerShape(26.dp),
-      color = colors.surface,
-      border = BorderStroke(2.dp, cardGradient)
-    ) {
-      Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-      ) {
-        // Floating decorative soft glow circles
-        Box(
-          modifier = Modifier
-            .size(190.dp)
-            .clip(CircleShape)
-            .background(
-              Brush.radialGradient(
-                colors = listOf(
-                  Color(0xFF10B981).copy(alpha = 0.18f),
-                  Color(0xFF6366F1).copy(alpha = 0.08f),
-                  Color.Transparent
-                )
-              )
-            )
-        )
-
-        // CalSnapix Green Brand Logo (Centered in Scanning View)
-        Surface(
-          shape = RoundedCornerShape(28.dp),
-          color = Color(0xFF0F172A),
-          border = BorderStroke(2.5.dp, Color(0xFF10B981)),
-          shadowElevation = 10.dp,
-          modifier = Modifier
-            .size(136.dp)
-            .testTag("onboarding_welcome_green_logo")
-        ) {
-          Image(
-            painter = painterResource(R.drawable.ic_calsnapix_logo),
-            contentDescription = "CalSnapix Logo",
-            modifier = Modifier
-              .fillMaxSize()
-              .clip(RoundedCornerShape(28.dp))
-          )
-        }
-
-        // Camera laser beam (vibrant animated green & white)
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(3.dp)
-            .padding(horizontal = 20.dp)
-            .align(Alignment.TopCenter)
-            .padding(top = (45 + 165 * scanLaserOffset).dp)
-            .background(
-              Brush.horizontalGradient(
-                colors = listOf(
-                  Color.Transparent,
-                  Color(0xFF10B981),
-                  Color.White,
-                  Color(0xFF6366F1),
-                  Color.Transparent
-                )
-              )
-            )
-        )
-
-        // Floating colorful nutrition badges
-        // Top Left: High Protein pill
-        Surface(
-          shape = RoundedCornerShape(999.dp),
-          color = Color(0xFF6366F1),
-          modifier = Modifier
-            .align(Alignment.TopStart)
-            .padding(14.dp)
-            .shadow(4.dp, RoundedCornerShape(999.dp))
-        ) {
-          Text(
-            text = "💪 28g Protein",
-            color = Color.White,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-          )
-        }
-
-        // Top Right: Fiber & Carbs pill
-        Surface(
-          shape = RoundedCornerShape(999.dp),
-          color = Color(0xFFF59E0B),
-          modifier = Modifier
-            .align(Alignment.TopEnd)
-            .padding(14.dp)
-            .shadow(4.dp, RoundedCornerShape(999.dp))
-        ) {
-          Text(
-            text = "🌾 Slow Carbs",
-            color = Color.White,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-          )
-        }
-
-        // Live popping bottom nutrition badge
-        Surface(
-          modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .padding(bottom = 14.dp)
-            .shadow(8.dp, RoundedCornerShape(999.dp)),
-          shape = RoundedCornerShape(999.dp),
-          color = Color(0xFF0F172A),
-          border = BorderStroke(1.dp, Color(0xFF10B981))
-        ) {
-          Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-          ) {
-            Icon(
-              imageVector = Icons.Default.AutoAwesome,
-              contentDescription = null,
-              tint = Color(0xFF10B981),
-              modifier = Modifier.size(16.dp)
-            )
-            Text(
-              text = "2 Rotis & Dal Tadka • 380 kcal",
-              fontSize = 13.sp,
-              fontWeight = FontWeight.Bold,
-              color = Color.White
-            )
-          }
-        }
-      }
-    }
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    // Animated Colorful Headline & Tagline
     Text(
-      text = "Eat Indian.\nTrack effortlessly.",
-      fontSize = 34.sp,
-      lineHeight = 38.sp,
+      text = "Meet CalSnapix\nYour AI Nutritionist",
+      fontSize = 32.sp,
       fontWeight = FontWeight.ExtraBold,
       color = colors.ink,
-      textAlign = TextAlign.Center
+      textAlign = TextAlign.Center,
+      lineHeight = 38.sp,
+      letterSpacing = (-0.6).sp
     )
 
-    Spacer(modifier = Modifier.height(12.dp))
-
     Text(
-      text = "Snap. Know. Eat smart. The only calorie & macro tracker calibrated for rotis, dals, sabzis, and ghar ka khana.",
-      fontSize = 15.sp,
-      lineHeight = 22.sp,
+      text = "Trained on 2,000+ authentic Indian dishes, home-cooked thalis, street foods, and Vedic circadian meal wisdom.",
+      fontSize = 14.sp,
       color = colors.ink2,
       textAlign = TextAlign.Center,
-      modifier = Modifier.padding(horizontal = 16.dp)
+      lineHeight = 20.sp
     )
 
-    Spacer(modifier = Modifier.height(40.dp))
-
-    // Get Started Button
-    Button(
-      onClick = onGetStarted,
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(56.dp)
-        .testTag("onboarding_get_started_button"),
-      shape = RoundedCornerShape(999.dp),
-      colors = ButtonDefaults.buttonColors(
-        containerColor = colors.ink,
-        contentColor = colors.bg
-      )
-    ) {
-      Text(
-        text = "Get Started",
-        fontSize = 17.sp,
-        fontWeight = FontWeight.Bold
-      )
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Already have an account? Log in
-    TextButton(
-      onClick = onLoginClick,
-      modifier = Modifier.testTag("onboarding_already_have_account_button")
-    ) {
-      Text(
-        text = "Already have an account? Log in",
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = colors.accent
-      )
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 1: Gender
-// -------------------------------------------------------------
-@Composable
-private fun Step1Gender(
-  selectedGender: String,
-  onSelectGender: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "What is your biological sex?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Used to calibrate your baseline metabolic rate (BMR) and daily expenditure accurately.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    val options = listOf(
-      Triple("female", "Female", "Calibrates for female hormonal rhythm & BMR"),
-      Triple("male", "Male", "Calibrates for male lean muscle mass & BMR"),
-      Triple("other", "Other", "Calculates balanced standard metabolic formula")
-    )
-
-    options.forEach { (key, label, desc) ->
-      val isSelected = selectedGender.equals(key, ignoreCase = true)
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 8.dp)
-          .clip(RoundedCornerShape(20.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onSelectGender(key)
-          }
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) colors.ink else colors.line,
-            shape = RoundedCornerShape(20.dp)
-          )
-          .testTag("gender_option_$key"),
-        color = if (isSelected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(20.dp)
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = label,
-              fontSize = 18.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-              text = desc,
-              fontSize = 13.sp,
-              color = colors.ink2
-            )
-          }
-          if (isSelected) {
-            Box(
-              modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(colors.ink),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = colors.bg,
-                modifier = Modifier.size(16.dp)
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 2: Workout Frequency
-// -------------------------------------------------------------
-@Composable
-private fun Step2WorkoutFrequency(
-  selectedFreq: String,
-  onSelectFreq: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "How often do you exercise?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Helps determine active calorie expenditure and target protein requirements.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    val freqList = listOf(
-      Triple("0_2", "0–2 days / week", "Gentle walks, light stretching, mostly relaxed"),
-      Triple("3_5", "3–5 days / week", "Regular gym workouts, yoga, running, or badminton"),
-      Triple("6+", "6+ days / week", "Intense daily fitness training, athlete, heavy lifting")
-    )
-
-    freqList.forEach { (key, label, desc) ->
-      val isSelected = selectedFreq == key
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 8.dp)
-          .clip(RoundedCornerShape(20.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onSelectFreq(key)
-          }
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) colors.ink else colors.line,
-            shape = RoundedCornerShape(20.dp)
-          )
-          .testTag("workout_freq_$key"),
-        color = if (isSelected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(20.dp)
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = label,
-              fontSize = 18.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-              text = desc,
-              fontSize = 13.sp,
-              color = colors.ink2
-            )
-          }
-          if (isSelected) {
-            Box(
-              modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(colors.ink),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = colors.bg,
-                modifier = Modifier.size(16.dp)
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 3: Where did you hear about us?
-// -------------------------------------------------------------
-@Composable
-private fun Step3HearAboutUs(
-  selectedSource: String,
-  onSelectSource: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "Where did you hear about us?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Help us understand how health-conscious Indians discover CalSnapix.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    val sources = listOf("Instagram", "YouTube", "Friend / Family", "Google", "Gym / Trainer", "Other")
-
-    sources.forEach { source ->
-      val isSelected = selectedSource == source
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 6.dp)
-          .clip(RoundedCornerShape(16.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onSelectSource(source)
-          }
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) colors.ink else colors.line,
-            shape = RoundedCornerShape(16.dp)
-          )
-          .testTag("hear_about_us_$source"),
-        color = if (isSelected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(16.dp)
-      ) {
-        Row(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 16.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text(
-            text = source,
-            fontSize = 16.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = colors.ink
-          )
-          if (isSelected) {
-            Icon(
-              imageVector = Icons.Default.CheckCircle,
-              contentDescription = null,
-              tint = colors.ink,
-              modifier = Modifier.size(20.dp)
-            )
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 4: Have you tried other calorie-tracking apps?
-// -------------------------------------------------------------
-@Composable
-private fun Step4TriedOtherApps(
-  tried: Boolean?,
-  onSelect: (Boolean) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "Have you tried other calorie apps?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Most trackers fail because Western databases don't understand Indian dishes.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-      // Yes card
-      Surface(
-        modifier = Modifier
-          .weight(1f)
-          .clip(RoundedCornerShape(20.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onSelect(true)
-          }
-          .border(
-            width = if (tried == true) 2.dp else 1.dp,
-            color = if (tried == true) colors.ink else colors.line,
-            shape = RoundedCornerShape(20.dp)
-          )
-          .testTag("tried_apps_yes"),
-        color = if (tried == true) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(20.dp)
-      ) {
-        Column(
-          modifier = Modifier.padding(24.dp),
-          horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-          Text(
-            text = "Yes",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = colors.ink
-          )
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-            text = "I've tracked before",
-            fontSize = 12.sp,
-            color = colors.ink2,
-            textAlign = TextAlign.Center
-          )
-        }
-      }
-
-      // No card
-      Surface(
-        modifier = Modifier
-          .weight(1f)
-          .clip(RoundedCornerShape(20.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onSelect(false)
-          }
-          .border(
-            width = if (tried == false) 2.dp else 1.dp,
-            color = if (tried == false) colors.ink else colors.line,
-            shape = RoundedCornerShape(20.dp)
-          )
-          .testTag("tried_apps_no"),
-        color = if (tried == false) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(20.dp)
-      ) {
-        Column(
-          modifier = Modifier.padding(24.dp),
-          horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-          Text(
-            text = "No",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = colors.ink
-          )
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-            text = "Brand new to tracking",
-            fontSize = 12.sp,
-            color = colors.ink2,
-            textAlign = TextAlign.Center
-          )
-        }
-      }
-    }
-
-    // If Yes -> show the promised one-liner!
-    AnimatedVisibility(visible = tried == true) {
-      Column {
-        Spacer(modifier = Modifier.height(24.dp))
-        Surface(
-          modifier = Modifier.fillMaxWidth(),
-          shape = RoundedCornerShape(16.dp),
-          color = colors.accentSoft
-        ) {
-          Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-          ) {
-            Icon(
-              imageVector = Icons.Default.AutoAwesome,
-              contentDescription = null,
-              tint = colors.accent,
-              modifier = Modifier.size(24.dp)
-            )
-            Text(
-              text = "CalSnapix is built for Indian food — dal, roti, sabzi, biryani — so you won't have to guess.",
-              fontSize = 14.sp,
-              lineHeight = 20.sp,
-              fontWeight = FontWeight.Medium,
-              color = colors.ink
-            )
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 5: Social Proof Interstitial (count-up animation)
-// -------------------------------------------------------------
-@Composable
-private fun Step5SocialProof() {
-  val colors = CalTheme.colors
-  // TODO: real stats from production analytics
-  val mealsLoggedTarget = 45000
-  val successRateTarget = 94
-
-  val animatedMeals by animateFloatAsState(
-    targetValue = mealsLoggedTarget.toFloat(),
-    animationSpec = tween(1200, easing = FastOutSlowInEasing),
-    label = "stat_meals"
-  )
-  val animatedSuccess by animateFloatAsState(
-    targetValue = successRateTarget.toFloat(),
-    animationSpec = tween(1200, easing = FastOutSlowInEasing),
-    label = "stat_success"
-  )
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "Thousands of Indians already tracking",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "From Mumbai to Delhi, CalSnapix simplifies home-cooked nutrition with scientific precision.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(32.dp))
-
-    // Stat 1: Meals logged
+    // Visual Feature Spotlight Card
     Surface(
+      shape = RoundedCornerShape(22.dp),
+      color = colors.surface,
+      border = BorderStroke(1.5.dp, colors.line),
       modifier = Modifier
         .fillMaxWidth()
-        .padding(vertical = 8.dp),
-      shape = RoundedCornerShape(20.dp),
-      color = colors.surface,
-      border = BorderStroke(1.dp, colors.line)
+        .shadow(6.dp, RoundedCornerShape(22.dp))
     ) {
-      Column(modifier = Modifier.padding(20.dp)) {
-        Text(
-          text = "${animatedMeals.toInt().toString().reversed().chunked(3).joinToString(",").reversed()}+",
-          fontSize = 38.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.accent,
-          letterSpacing = (-0.5).sp
-        )
-        Text(
-          text = "Indian meals scanned and logged today",
-          fontSize = 14.sp,
-          color = colors.ink,
-          fontWeight = FontWeight.SemiBold
-        )
-      }
-    }
-
-    // Stat 2: Success rate
-    Surface(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 8.dp),
-      shape = RoundedCornerShape(20.dp),
-      color = colors.surface,
-      border = BorderStroke(1.dp, colors.line)
-    ) {
-      Column(modifier = Modifier.padding(20.dp)) {
-        Text(
-          text = "${animatedSuccess.toInt()}%",
-          fontSize = 38.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.protein,
-          letterSpacing = (-0.5).sp
-        )
-        Text(
-          text = "Of users reached their target weight in 12 weeks",
-          fontSize = 14.sp,
-          color = colors.ink,
-          fontWeight = FontWeight.SemiBold
-        )
-      }
-    }
-
-    // Stat 3: App Store rating
-    Surface(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 8.dp),
-      shape = RoundedCornerShape(20.dp),
-      color = colors.surface,
-      border = BorderStroke(1.dp, colors.line)
-    ) {
-      Row(
+      Column(
         modifier = Modifier.padding(20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
       ) {
-        Column(modifier = Modifier.weight(1f)) {
-          Text(
-            text = "4.9 ★★★★★",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = colors.carbs
-          )
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-            text = "Top-rated by fitness coaches & nutritionists in India",
-            fontSize = 13.sp,
-            color = colors.ink2
-          )
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 6: Height & Weight (Two wheel pickers side-by-side)
-// -------------------------------------------------------------
-@Composable
-private fun Step6HeightWeight(
-  heightCm: Int,
-  weightKg: Float,
-  onHeightChange: (Int) -> Unit,
-  onWeightChange: (Float) -> Unit
-) {
-  val colors = CalTheme.colors
-  val heightM = (heightCm / 100f).coerceAtLeast(0.5f)
-  val bmi = weightKg / (heightM * heightM)
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "Your height & weight",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Swipe dials to set your body stats. Toggle between cm/ft and kg/lb anytime.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    HeightWeightPickerRow(
-      heightCm = heightCm,
-      weightKg = weightKg,
-      onHeightChanged = onHeightChange,
-      onWeightChanged = onWeightChange
-    )
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    // BMI Indicator Chip
-    Surface(
-      modifier = Modifier.align(Alignment.CenterHorizontally),
-      shape = RoundedCornerShape(999.dp),
-      color = colors.surface2
-    ) {
-      Row(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-      ) {
-        Text(
-          text = "Starting BMI:",
-          fontSize = 13.sp,
-          color = colors.ink2
+        OnboardingHeroBullet(
+          icon = Icons.Default.QrCodeScanner,
+          title = "2-Second Meal Scanning",
+          desc = "Snap a photo of rotis, dal, sabzi, or biryani. Instant calorie & macro estimation."
         )
-        Text(
-          text = String.format(java.util.Locale.US, "%.1f", bmi),
-          fontSize = 14.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.ink
+        OnboardingHeroBullet(
+          icon = Icons.Default.Spa,
+          title = "Ayurvedic Meal Windows",
+          desc = "Syncs with circadian rhythms for peak digestion, steady energy, and peaceful sleep."
         )
-        Text(
-          text = when {
-            bmi < 18.5 -> "(Underweight)"
-            bmi < 24.9 -> "(Normal)"
-            bmi < 29.9 -> "(Overweight)"
-            else -> "(Obese)"
-          },
-          fontSize = 12.sp,
-          fontWeight = FontWeight.SemiBold,
-          color = if (bmi in 18.5..24.9) colors.success else colors.warn
-        )
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 7: Age Wheel Picker
-// -------------------------------------------------------------
-@Composable
-private fun Step7Age(
-  age: Int,
-  onAgeChange: (Int) -> Unit
-) {
-  val colors = CalTheme.colors
-  val ageList = remember { (13..95).toList() }
-
-  Column(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    Text(
-      text = "How old are you?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink,
-      modifier = Modifier.fillMaxWidth()
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Metabolism changes with age. We calibrate your daily energy requirements to match.",
-      fontSize = 15.sp,
-      color = colors.ink2,
-      modifier = Modifier.fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(36.dp))
-
-    val selectedIndex = ageList.indexOf(age).coerceAtLeast(0)
-
-    WheelPicker(
-      items = ageList,
-      selectedIndex = selectedIndex,
-      onItemSelected = { _, selectedAge -> onAgeChange(selectedAge) },
-      unitLabel = "years old",
-      modifier = Modifier.fillMaxWidth(0.7f),
-      testTag = "age_wheel_picker"
-    )
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 8: Primary Goal
-// -------------------------------------------------------------
-@Composable
-private fun Step8PrimaryGoal(
-  selectedGoalId: String,
-  onSelectGoal: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "What is your primary goal?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "We will structure your daily calorie deficit and macro targets around this choice.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    val goals = listOf(
-      Triple("lose_weight", "Lose Weight & Tone", "Shed fat in a sustainable deficit with rotis, dals, and sabzis."),
-      Triple("mindful_eating", "Maintain & Vitality", "Eat with Ayurvedic circadian rhythms and maintain optimal BMI."),
-      Triple("gain_weight", "Gain Healthy Weight", "Nutrient-dense Indian surplus with ghee, nuts, paneer & sattu."),
-      Triple("build_muscle", "Build Muscle & High Protein", "Hit 80–120g clean daily protein with Indian staples."),
-      Triple("manage_health", "Eat Healthier & Balance Gut", "Low glycemic, gut-friendly Indian meal plans designed by nutrition experts.")
-    )
-
-    goals.forEach { (id, title, desc) ->
-      val isSelected = selectedGoalId == id
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 6.dp)
-          .clip(RoundedCornerShape(18.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onSelectGoal(id)
-          }
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) colors.ink else colors.line,
-            shape = RoundedCornerShape(18.dp)
-          )
-          .testTag("primary_goal_$id"),
-        color = if (isSelected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(18.dp)
-      ) {
-        Row(
-          modifier = Modifier.padding(18.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = title,
-              fontSize = 17.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-              text = desc,
-              fontSize = 13.sp,
-              color = colors.ink2
-            )
-          }
-          if (isSelected) {
-            Box(
-              modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(colors.ink),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = colors.bg,
-                modifier = Modifier.size(14.dp)
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 9: Target Weight Wheel Picker
-// -------------------------------------------------------------
-@Composable
-private fun Step9TargetWeight(
-  heightCm: Int,
-  currentWeightKg: Float,
-  targetWeightKg: Float,
-  onTargetWeightChange: (Float) -> Unit
-) {
-  val colors = CalTheme.colors
-  val weightList = remember { (35..160).map { it.toFloat() } }
-  val diff = targetWeightKg - currentWeightKg
-  val heightM = (heightCm.toFloat() / 100f).coerceAtLeast(0.5f)
-  val targetBmi = targetWeightKg / (heightM * heightM)
-  val isUnderweight = targetBmi < 18.5f
-  val minHealthyWeightKg = 18.5f * heightM * heightM
-
-  Column(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    Text(
-      text = "What is your target weight?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink,
-      modifier = Modifier.fillMaxWidth()
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Scroll to select your desired body weight.",
-      fontSize = 15.sp,
-      color = colors.ink2,
-      modifier = Modifier.fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    val selectedIndex = weightList.indexOfFirst { abs(it - targetWeightKg) < 0.6f }.coerceAtLeast(0)
-
-    WheelPicker(
-      items = weightList,
-      selectedIndex = selectedIndex,
-      onItemSelected = { _, kg -> onTargetWeightChange(kg) },
-      itemLabel = { kg -> String.format(java.util.Locale.US, "%.1f", kg) },
-      unitLabel = "kg",
-      modifier = Modifier.fillMaxWidth(0.7f),
-      testTag = "target_weight_wheel_picker"
-    )
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    // Estimated change indicator chip (No guaranteed promises)
-    Surface(
-      shape = RoundedCornerShape(999.dp),
-      color = colors.accentSoft
-    ) {
-      Row(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-      ) {
-        Icon(
-          imageVector = Icons.Default.AutoAwesome,
-          contentDescription = null,
-          tint = colors.accent,
-          modifier = Modifier.size(16.dp)
-        )
-        Text(
-          text = when {
-            diff < -0.1f -> "Estimated weight change: ~${String.format(java.util.Locale.US, "%.1f", abs(diff))} kg"
-            diff > 0.1f -> "Estimated weight change: ~${String.format(java.util.Locale.US, "%.1f", diff)} kg"
-            else -> "Maintain your healthy weight"
-          },
-          fontSize = 14.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.ink
+        OnboardingHeroBullet(
+          icon = Icons.Default.Security,
+          title = "Zero Data Selling & Private",
+          desc = "Your nutrition logs are encrypted on-device. We never sell your personal data."
         )
       }
     }
 
-    // Safety BMI Check Alert: block underweight targets (< 18.5)
-    if (isUnderweight) {
-      Spacer(modifier = Modifier.height(14.dp))
-      Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = colors.warn.copy(alpha = 0.12f),
-        border = BorderStroke(1.dp, colors.warn),
-        modifier = Modifier.fillMaxWidth()
-      ) {
-        Row(
-          modifier = Modifier.padding(14.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-          Icon(
-            imageVector = Icons.Default.Warning,
-            contentDescription = "Warning",
-            tint = colors.warn,
-            modifier = Modifier.size(24.dp)
-          )
-          Column {
-            Text(
-              text = "Unsafe Target Weight (BMI: ${String.format(java.util.Locale.US, "%.1f", targetBmi)})",
-              fontSize = 13.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.warn
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-              text = "This target is in the underweight range (BMI < 18.5). For your height (${heightCm} cm), the minimum safe healthy weight is ${String.format(java.util.Locale.US, "%.1f", minHealthyWeightKg)} kg.",
-              fontSize = 12.sp,
-              color = colors.ink,
-              lineHeight = 16.sp
-            )
-          }
-        }
-      }
-    }
-
-    Spacer(modifier = Modifier.height(14.dp))
-    Text(
-      text = "ℹ️ Please consult a doctor or healthcare professional before starting any weight loss program.",
-      fontSize = 11.sp,
-      color = colors.ink2,
-      textAlign = TextAlign.Center,
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
-    )
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 10: Motivational Interstitial
-// -------------------------------------------------------------
-@Composable
-private fun Step10Motivational(
-  currentWeightKg: Float,
-  targetWeightKg: Float
-) {
-  val colors = CalTheme.colors
-  val diff = abs(targetWeightKg - currentWeightKg)
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "A realistic target.",
-      fontSize = 32.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = if (targetWeightKg < currentWeightKg) {
-        "An estimated target change of ~${String.format(java.util.Locale.US, "%.1f", diff)} kg is realistic. Individual results vary; we guide you step by step with personalized Indian meal choices."
-      } else {
-        "An estimated target gain of ~${String.format(java.util.Locale.US, "%.1f", diff)} kg of lean mass is a great goal. We will guide every step."
-      },
-      fontSize = 16.sp,
-      lineHeight = 24.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(32.dp))
-
-    // Projected timeline curve chart
-    Surface(
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp),
-      shape = RoundedCornerShape(20.dp),
-      color = colors.surface,
-      border = BorderStroke(1.dp, colors.line)
-    ) {
-      Box(modifier = Modifier.padding(20.dp)) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-          val path = Path().apply {
-            moveTo(0f, if (targetWeightKg < currentWeightKg) size.height * 0.2f else size.height * 0.8f)
-            cubicTo(
-              size.width * 0.4f,
-              if (targetWeightKg < currentWeightKg) size.height * 0.25f else size.height * 0.75f,
-              size.width * 0.6f,
-              if (targetWeightKg < currentWeightKg) size.height * 0.65f else size.height * 0.35f,
-              size.width,
-              if (targetWeightKg < currentWeightKg) size.height * 0.8f else size.height * 0.2f
-            )
-          }
-          drawPath(
-            path = path,
-            color = colors.accent,
-            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
-          )
-
-          // Starting point circle
-          drawCircle(
-            color = colors.ink,
-            radius = 6.dp.toPx(),
-            center = Offset(0f, if (targetWeightKg < currentWeightKg) size.height * 0.2f else size.height * 0.8f)
-          )
-          // Target point circle
-          drawCircle(
-            color = colors.accent,
-            radius = 8.dp.toPx(),
-            center = Offset(size.width, if (targetWeightKg < currentWeightKg) size.height * 0.8f else size.height * 0.2f)
-          )
-        }
-
-        Row(
-          modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text(text = "Today (${currentWeightKg.toInt()} kg)", fontSize = 12.sp, color = colors.ink2)
-          Text(text = "Target (${targetWeightKg.toInt()} kg)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.accent)
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 11: Pace Slider (Tortoise -> Rabbit)
-// -------------------------------------------------------------
-@Composable
-private fun Step11PaceSlider(
-  paceKgPerWeek: Float,
-  onPaceChange: (Float) -> Unit
-) {
-  val colors = CalTheme.colors
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "How fast do you want to reach it?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "A steady pace ensures you burn pure fat while enjoying daily rotis and dals without feeling hungry.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(36.dp))
-
-    // Display Current Pace Big
-    Text(
-      text = "${String.format(java.util.Locale.US, "%.2f", paceKgPerWeek)} kg",
-      fontSize = 44.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink,
-      modifier = Modifier.align(Alignment.CenterHorizontally)
-    )
-    Text(
-      text = "per week",
-      fontSize = 15.sp,
-      color = colors.ink2,
-      modifier = Modifier.align(Alignment.CenterHorizontally)
-    )
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    // Tortoise and Rabbit SVG icons row
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      // Tortoise indicator
-      Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-          imageVector = Icons.Default.SelfImprovement,
-          contentDescription = "Slow pace",
-          tint = if (paceKgPerWeek < 0.45f) colors.accent else colors.ink2,
-          modifier = Modifier.size(28.dp)
-        )
-        Text("Gentle", fontSize = 11.sp, color = colors.ink2)
-      }
-
-      // Rabbit indicator
-      Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-          imageVector = Icons.Default.DirectionsRun,
-          contentDescription = "Fast pace",
-          tint = if (paceKgPerWeek > 0.75f) colors.accent else colors.ink2,
-          modifier = Modifier.size(28.dp)
-        )
-        Text("Fast", fontSize = 11.sp, color = colors.ink2)
-      }
-    }
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    // Smooth horizontal slider
-    Slider(
-      value = paceKgPerWeek,
-      onValueChange = { onPaceChange((it * 20).roundToInt() / 20f) }, // snap in 0.05 increments
-      valueRange = 0.25f..1.0f,
-      colors = SliderDefaults.colors(
-        thumbColor = colors.ink,
-        activeTrackColor = colors.accent,
-        inactiveTrackColor = colors.line
-      ),
-      modifier = Modifier.fillMaxWidth().testTag("pace_slider")
-    )
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    // Recommended Range Label
+    // Social Proof
     Surface(
       shape = RoundedCornerShape(12.dp),
       color = colors.surface2,
       modifier = Modifier.fillMaxWidth()
     ) {
       Row(
-        modifier = Modifier.padding(14.dp),
+        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.Center
       ) {
-        Icon(
-          imageVector = Icons.Default.CheckCircle,
-          contentDescription = null,
-          tint = colors.accent,
-          modifier = Modifier.size(20.dp)
-        )
+        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.width(6.dp))
         Text(
-          text = "Recommended: 0.50 kg / week for sustainable fat loss with Indian meals.",
-          fontSize = 13.sp,
-          fontWeight = FontWeight.Medium,
+          text = "4.9 ★ • Loved by over 50,000+ mindful eaters across India",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.SemiBold,
           color = colors.ink
         )
       }
     }
-  }
-}
 
-// -------------------------------------------------------------
-// STEP 12: Biggest Obstacles (Multi-select)
-// -------------------------------------------------------------
-@Composable
-private fun Step12BiggestObstacles(
-  selectedObstacles: Set<String>,
-  onToggleObstacle: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "What are your biggest obstacles?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Select all that apply. We tailor our tracking habits to overcome them.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    val obstacles = listOf(
-      "lack_of_consistency" to "Lack of consistency with diets",
-      "unhealthy_eating_habits" to "Unhealthy cravings & late-night snacking",
-      "lack_of_support" to "Lack of support & guidance",
-      "busy_schedule" to "Busy schedule & long work hours",
-      "lack_of_meal_inspiration" to "Lack of healthy Indian meal inspiration"
-    )
-
-    obstacles.forEach { (key, label) ->
-      val isSelected = selectedObstacles.contains(key)
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 6.dp)
-          .clip(RoundedCornerShape(16.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onToggleObstacle(key)
-          }
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) colors.ink else colors.line,
-            shape = RoundedCornerShape(16.dp)
-          )
-          .testTag("obstacle_$key"),
-        color = if (isSelected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(16.dp)
-      ) {
-        Row(
-          modifier = Modifier.padding(18.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text(
-            text = label,
-            fontSize = 15.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = colors.ink,
-            modifier = Modifier.weight(1f)
-          )
-          if (isSelected) {
-            Box(
-              modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(colors.ink),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = colors.bg,
-                modifier = Modifier.size(14.dp)
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 13: Diet Type (Multi-select)
-// -------------------------------------------------------------
-@Composable
-private fun Step13DietType(
-  selectedDiets: Set<String>,
-  onToggleDiet: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "What is your diet type?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Select all that apply. We filter recipes & AI food recognition accordingly.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    val diets = listOf(
-      "veg" to "Vegetarian (Lacto-vegetarian)",
-      "eggetarian" to "Eggetarian (Veg + Eggs)",
-      "non_veg" to "Non-Veg (Chicken, fish, mutton)",
-      "vegan" to "Vegan (100% plant based)",
-      "jain" to "Jain (No onion, garlic, or root veggies)",
-      "sattvic" to "Sattvic (Ayurvedic fresh & mild)"
-    )
-
-    diets.forEach { (key, label) ->
-      val isSelected = selectedDiets.contains(key)
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 6.dp)
-          .clip(RoundedCornerShape(16.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onToggleDiet(key)
-          }
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) colors.ink else colors.line,
-            shape = RoundedCornerShape(16.dp)
-          )
-          .testTag("diet_type_$key"),
-        color = if (isSelected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(16.dp)
-      ) {
-        Row(
-          modifier = Modifier.padding(18.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text(
-            text = label,
-            fontSize = 15.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = colors.ink
-          )
-          if (isSelected) {
-            Box(
-              modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(colors.ink),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = colors.bg,
-                modifier = Modifier.size(14.dp)
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 14: Regional Cuisine (Multi-select)
-// -------------------------------------------------------------
-@Composable
-private fun Step14RegionalCuisine(
-  selectedRegions: Set<String>,
-  onToggleRegion: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "Which regional cuisines do you cook?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Helps CalSnapix understand your staple spices, cooking oils, and gravy textures.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    val regions = listOf(
-      "north" to ("North Indian" to "Dal Tadka, Roti, Rajma, Sabzi"),
-      "south" to ("South Indian" to "Idli, Sambar, Dosa, Rasam, Rice"),
-      "west" to ("West Indian" to "Poha, Thepla, Gujarati Dal, Dhokla"),
-      "east" to ("East Indian" to "Fish curry, Dalma, Pakhala"),
-      "pan" to ("Pan-Indian" to "A diverse mix of regional specialties")
-    )
-
-    regions.forEach { (key, pair) ->
-      val (title, subtitle) = pair
-      val isSelected = selectedRegions.contains(key)
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 6.dp)
-          .clip(RoundedCornerShape(16.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onToggleRegion(key)
-          }
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) colors.ink else colors.line,
-            shape = RoundedCornerShape(16.dp)
-          )
-          .testTag("region_$key"),
-        color = if (isSelected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(16.dp)
-      ) {
-        Row(
-          modifier = Modifier.padding(18.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = title,
-              fontSize = 16.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-              text = subtitle,
-              fontSize = 12.sp,
-              color = colors.ink2
-            )
-          }
-          if (isSelected) {
-            Box(
-              modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(colors.ink),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = colors.bg,
-                modifier = Modifier.size(14.dp)
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 15: Allergies / Avoid (Multi-select chips)
-// -------------------------------------------------------------
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun Step15Allergies(
-  selectedAllergies: Set<String>,
-  onToggleAllergy: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "Any allergies or foods to avoid?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "We will warn you when meals contain these ingredients during camera scans.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    val allergyOptions = listOf("Gluten", "Lactose", "Nuts", "High sodium", "None")
-
-    FlowRow(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(10.dp),
-      verticalArrangement = Arrangement.spacedBy(10.dp)
+    // Privacy Policy Shortcut
+    OutlinedButton(
+      onClick = onOpenPrivacyPolicy,
+      modifier = Modifier.fillMaxWidth().testTag("onboarding_privacy_policy_button"),
+      shape = RoundedCornerShape(14.dp),
+      border = BorderStroke(1.dp, colors.line)
     ) {
-      allergyOptions.forEach { option ->
-        val isSelected = selectedAllergies.contains(option)
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(16.dp), tint = colors.accent)
+        Text("Privacy Policy & Trust Standards", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+      }
+    }
+  }
+}
+
+@Composable
+private fun OnboardingHeroBullet(icon: ImageVector, title: String, desc: String) {
+  val colors = CalTheme.colors
+  Row(
+    verticalAlignment = Alignment.Top,
+    horizontalArrangement = Arrangement.spacedBy(12.dp)
+  ) {
+    Surface(
+      shape = CircleShape,
+      color = colors.accentSoft,
+      modifier = Modifier.size(38.dp)
+    ) {
+      Box(contentAlignment = Alignment.Center) {
+        Icon(imageVector = icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
+      }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+      Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+      Text(text = desc, fontSize = 12.sp, color = colors.ink2, lineHeight = 16.sp)
+    }
+  }
+}
+
+// ======================================================================================
+// SCREEN 1: PRIMARY HEALTH GOAL
+// ======================================================================================
+@Composable
+private fun Step1PrimaryGoal(selectedGoalId: String, onSelectGoal: (String) -> Unit) {
+  val colors = CalTheme.colors
+
+  val goals = listOf(
+    Triple("lose_weight", "Lose Weight & Shred Fat", "Caloric deficit tailored to your pace without giving up favorite rotis"),
+    Triple("build_muscle", "Build Lean Muscle", "High-protein target optimizations for Indian gym-goers & athletes"),
+    Triple("maintain_tone", "Maintain Weight & Tone Up", "Keep your current weight stable with consistent daily macro tracking"),
+    Triple("mindful_ayurveda", "Ayurvedic Circadian Eating", "Focus on clean Agni digestion, mindful fasting windows & energy balance"),
+    Triple("metabolic_health", "Manage Blood Sugar & PCOS", "Low-glycemic Indian meal recommendations for hormonal wellness")
+  )
+
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(14.dp)
+  ) {
+    Text(
+      text = "What is your main goal?",
+      fontSize = 26.sp,
+      fontWeight = FontWeight.ExtraBold,
+      color = colors.ink,
+      textAlign = TextAlign.Center
+    )
+    Text(
+      text = "CalSnapix will calculate your daily calorie target and macro breakdown around this goal.",
+      fontSize = 13.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+      goals.forEach { (id, title, desc) ->
+        val isSelected = selectedGoalId == id
         Surface(
+          shape = RoundedCornerShape(16.dp),
+          color = if (isSelected) colors.surface else colors.bg,
+          border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.ink else colors.line),
           modifier = Modifier
-            .clip(RoundedCornerShape(999.dp))
-            .clickable {
-              view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-              onToggleAllergy(option)
-            }
-            .border(
-              width = if (isSelected) 2.dp else 1.dp,
-              color = if (isSelected) colors.ink else colors.line,
-              shape = RoundedCornerShape(999.dp)
-            )
-            .testTag("allergy_$option"),
-          color = if (isSelected) colors.ink else colors.surface,
-          shape = RoundedCornerShape(999.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onSelectGoal(id) }
+            .testTag("goal_option_$id")
         ) {
           Row(
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
           ) {
-            if (isSelected) {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = colors.bg,
-                modifier = Modifier.size(16.dp)
-              )
+            Box(
+              modifier = Modifier
+                .size(22.dp)
+                .clip(CircleShape)
+                .background(if (isSelected) colors.ink else Color.Transparent)
+                .border(2.dp, if (isSelected) colors.ink else colors.line, CircleShape),
+              contentAlignment = Alignment.Center
+            ) {
+              if (isSelected) {
+                Icon(Icons.Default.Check, contentDescription = null, tint = colors.bg, modifier = Modifier.size(14.dp))
+              }
             }
+
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+              Text(text = title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+              Text(text = desc, fontSize = 12.sp, color = colors.ink2, lineHeight = 16.sp)
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// ======================================================================================
+// SCREEN 2: BIOLOGICAL SEX & DAILY ACTIVITY LEVEL
+// ======================================================================================
+@Composable
+private fun Step2SexAndActivity(
+  selectedGender: String,
+  selectedActivity: String,
+  onSelectGender: (String) -> Unit,
+  onSelectActivity: (String) -> Unit
+) {
+  val colors = CalTheme.colors
+
+  val activities = listOf(
+    Triple("sedentary", "Sedentary (Desk Job)", "Mostly sitting, less than 5,000 steps/day"),
+    Triple("lightly_active", "Lightly Active", "Casual walking or light yoga 1-3 days/week"),
+    Triple("moderately_active", "Moderately Active", "Gym, running, or workouts 3-5 days/week"),
+    Triple("very_active", "Very Active / Athlete", "Intense training 6+ days or active physical job")
+  )
+
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(16.dp)
+  ) {
+    Text(
+      text = "Your Lifestyle Profile",
+      fontSize = 26.sp,
+      fontWeight = FontWeight.ExtraBold,
+      color = colors.ink,
+      textAlign = TextAlign.Center
+    )
+    Text(
+      text = "Biological sex and activity factor into clinical Basal Metabolic Rate (BMR) calculations.",
+      fontSize = 13.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center
+    )
+
+    // Biological Sex
+    Text("Biological Sex", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink, modifier = Modifier.fillMaxWidth())
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+      listOf("Male" to "👨 Male", "Female" to "👩 Female").forEach { (sex, label) ->
+        val isSelected = selectedGender.equals(sex, ignoreCase = true)
+        Surface(
+          shape = RoundedCornerShape(14.dp),
+          color = if (isSelected) colors.ink else colors.surface,
+          border = BorderStroke(1.dp, if (isSelected) colors.ink else colors.line),
+          modifier = Modifier
+            .weight(1f)
+            .height(52.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .clickable { onSelectGender(sex) }
+        ) {
+          Box(contentAlignment = Alignment.Center) {
             Text(
-              text = option,
-              fontSize = 14.sp,
-              fontWeight = FontWeight.SemiBold,
+              text = label,
+              fontSize = 15.sp,
+              fontWeight = FontWeight.Bold,
               color = if (isSelected) colors.bg else colors.ink
             )
           }
         }
       }
     }
-  }
-}
 
-// -------------------------------------------------------------
-// STEP 16: Activity Level in Daily Life
-// -------------------------------------------------------------
-@Composable
-private fun Step16ActivityLevel(
-  selectedLevel: String,
-  onSelectLevel: (String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val view = LocalView.current
+    // Daily Activity Level
+    Spacer(modifier = Modifier.height(4.dp))
+    Text("Daily Activity Level", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink, modifier = Modifier.fillMaxWidth())
 
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "Your daily activity level",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Excluding gym or workouts. This accounts for your Non-Exercise Activity (NEAT).",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    val levels = listOf(
-      Triple("sedentary", "Sedentary", "Desk job, mostly sitting, under 4,000 steps"),
-      Triple("light", "Light", "Walking around office, errands, 5,000–7,000 steps"),
-      Triple("moderate", "Moderate", "Standing on feet, retail, teaching, 8,000–11,000 steps"),
-      Triple("very_active", "Very Active", "Heavy construction, delivery, sports, 12,000+ steps")
-    )
-
-    levels.forEach { (key, title, subtitle) ->
-      val isSelected = selectedLevel == key
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 6.dp)
-          .clip(RoundedCornerShape(18.dp))
-          .clickable {
-            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-            onSelectLevel(key)
-          }
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) colors.ink else colors.line,
-            shape = RoundedCornerShape(18.dp)
-          )
-          .testTag("activity_level_$key"),
-        color = if (isSelected) colors.surface2 else colors.surface,
-        shape = RoundedCornerShape(18.dp)
-      ) {
-        Row(
-          modifier = Modifier.padding(18.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = title,
-              fontSize = 16.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-              text = subtitle,
-              fontSize = 12.sp,
-              color = colors.ink2
-            )
-          }
-          if (isSelected) {
-            Box(
-              modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(colors.ink),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = colors.bg,
-                modifier = Modifier.size(14.dp)
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 17: Meal Timings (Time Wheel Pickers)
-// -------------------------------------------------------------
-@Composable
-private fun Step17MealTimings(
-  breakfast: String,
-  lunch: String,
-  dinner: String,
-  snack: String,
-  onUpdateTiming: (meal: String, time: String) -> Unit
-) {
-  val colors = CalTheme.colors
-  val timesList = remember {
-    listOf(
-      "7:00 AM", "7:30 AM", "8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM", "10:00 AM",
-      "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
-      "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM",
-      "7:30 PM", "8:00 PM", "8:15 PM", "8:30 PM", "9:00 PM", "9:30 PM"
-    )
-  }
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "When do you usually eat?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Maintains Ayurvedic circadian rhythm (Agni) so your metabolism digests each meal smoothly.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    val meals = listOf(
-      "Breakfast" to breakfast,
-      "Lunch" to lunch,
-      "Dinner" to dinner,
-      "Snack" to snack
-    )
-
-    meals.forEach { (name, currentTime) ->
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = colors.surface,
-        border = BorderStroke(1.dp, colors.line)
-      ) {
-        Row(
-          modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-          ) {
-            Icon(
-              imageVector = Icons.Default.Schedule,
-              contentDescription = null,
-              tint = colors.accent,
-              modifier = Modifier.size(20.dp)
-            )
-            Text(
-              text = name,
-              fontSize = 16.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink
-            )
-          }
-
-          // Compact Time Wheel selector
-          Surface(
-            shape = RoundedCornerShape(999.dp),
-            color = colors.surface2
-          ) {
-            Text(
-              text = currentTime,
-              fontSize = 14.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.ink,
-              modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-            )
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 18: Water Goal Wheel Picker
-// -------------------------------------------------------------
-@Composable
-private fun Step18WaterGoal(
-  waterGoalLiters: Float,
-  onWaterGoalChange: (Float) -> Unit
-) {
-  val colors = CalTheme.colors
-  val litersList = remember {
-    (10..45).map { it / 10f } // 1.0 to 4.5 L
-  }
-  val glassesEquivalent = (waterGoalLiters * 4).toInt()
-
-  Column(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    Text(
-      text = "What is your water goal?",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink,
-      modifier = Modifier.fillMaxWidth()
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "Adequate hydration boosts resting metabolic rate and aids Indian spice digestion.",
-      fontSize = 15.sp,
-      color = colors.ink2,
-      modifier = Modifier.fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    val selectedIndex = litersList.indexOfFirst { abs(it - waterGoalLiters) < 0.08f }.coerceAtLeast(0)
-
-    WheelPicker(
-      items = litersList,
-      selectedIndex = selectedIndex,
-      onItemSelected = { _, liters -> onWaterGoalChange(liters) },
-      itemLabel = { liters -> String.format(java.util.Locale.US, "%.1f", liters) },
-      unitLabel = "L / day",
-      modifier = Modifier.fillMaxWidth(0.6f),
-      testTag = "water_wheel_picker"
-    )
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    Surface(
-      shape = RoundedCornerShape(999.dp),
-      color = colors.accentSoft
-    ) {
-      Row(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-      ) {
-        Icon(
-          imageVector = Icons.Default.Opacity,
-          contentDescription = null,
-          tint = colors.accent,
-          modifier = Modifier.size(18.dp)
-        )
-        Text(
-          text = "Equal to ~$glassesEquivalent standard glasses (250ml)",
-          fontSize = 13.sp,
-          fontWeight = FontWeight.SemiBold,
-          color = colors.ink
-        )
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 19: Notifications Permission
-// -------------------------------------------------------------
-@Composable
-private fun Step19Notifications(
-  notificationsAllowed: Boolean,
-  onTogglePermission: (Boolean) -> Unit
-) {
-  val colors = CalTheme.colors
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-      text = "Stay mindful with gentle nudges",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "We only send gentle reminders tailored to your meal windows and hydration targets.",
-      fontSize = 15.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(32.dp))
-
-    val notificationFeatures = listOf(
-      Icons.Default.Schedule to ("Traditional Meal Windows" to "Traditional Ayurvedic lifestyle reminders at 8:30 AM & 1:30 PM (for general interest)"),
-      Icons.Default.Opacity to ("Hydration Check-ins" to "Gentle water prompts spaced evenly across the day"),
-      Icons.Default.AutoAwesome to ("Daily Indian Macro Summary" to "Evening recap of your calorie, protein, and carb balance")
-    )
-
-    notificationFeatures.forEach { (icon, pair) ->
-      val (title, desc) = pair
-      Surface(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(18.dp),
-        color = colors.surface,
-        border = BorderStroke(1.dp, colors.line)
-      ) {
-        Row(
-          modifier = Modifier.padding(18.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-          Box(
-            modifier = Modifier
-              .size(42.dp)
-              .clip(CircleShape)
-              .background(colors.accentSoft),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(imageVector = icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
-          }
-          Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.ink)
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(text = desc, fontSize = 12.sp, color = colors.ink2)
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 20: Rate Us / Trust Screen
-// -------------------------------------------------------------
-@Composable
-private fun Step20Trust() {
-  val colors = CalTheme.colors
-  var selectedRating by remember { mutableIntStateOf(5) }
-
-  Column(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-    Text(
-      text = "Thank you for trusting us",
-      fontSize = 30.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink,
-      modifier = Modifier.fillMaxWidth()
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "CalSnapix is committed to privacy, accurate Indian food intelligence, and honest nutrition.",
-      fontSize = 15.sp,
-      color = colors.ink2,
-      modifier = Modifier.fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(36.dp))
-
-    // Interactive 5 stars
-    Row(
-      horizontalArrangement = Arrangement.spacedBy(12.dp),
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      (1..5).forEach { star ->
-        Icon(
-          imageVector = Icons.Default.Star,
-          contentDescription = "Star $star",
-          tint = if (star <= selectedRating) colors.carbs else colors.line,
-          modifier = Modifier
-            .size(38.dp)
-            .clickable { selectedRating = star }
-        )
-      }
-    }
-
-    Spacer(modifier = Modifier.height(32.dp))
-
-    // Privacy Guarantee card
-    Surface(
-      modifier = Modifier.fillMaxWidth(),
-      shape = RoundedCornerShape(20.dp),
-      color = colors.surface,
-      border = BorderStroke(1.dp, colors.line)
-    ) {
-      Row(
-        modifier = Modifier.padding(20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
-      ) {
-        Icon(
-          imageVector = Icons.Default.Shield,
-          contentDescription = null,
-          tint = colors.accent,
-          modifier = Modifier.size(32.dp)
-        )
-        Column {
-          Text(
-            text = "Your data stays private",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = colors.ink
-          )
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-            text = "We never sell your biometric data or meal history to third-party ad networks. Everything is securely encrypted.",
-            fontSize = 13.sp,
-            color = colors.ink2,
-            lineHeight = 18.sp
-          )
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 16: 100% Free Access Commitment Screen
-// -------------------------------------------------------------
-@Composable
-private fun Step16FreeCommitment(
-  onContinue: () -> Unit
-) {
-  val colors = CalTheme.colors
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Surface(
-      shape = RoundedCornerShape(999.dp),
-      color = colors.accentSoft,
-      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.4f)),
-      modifier = Modifier.padding(bottom = 12.dp)
-    ) {
-      Row(
-        modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-      ) {
-        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = colors.accent, modifier = Modifier.size(14.dp))
-        Text(
-          text = "100% FREE FOREVER",
-          fontSize = 11.sp,
-          fontWeight = FontWeight.ExtraBold,
-          color = colors.accent
-        )
-      }
-    }
-
-    Text(
-      text = "All features are 100% free",
-      fontSize = 32.sp,
-      lineHeight = 38.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    Text(
-      text = "CalSnapix is committed to making healthy nutrition accessible to everyone. No paywalls, no subscriptions, and no credit card required.",
-      fontSize = 15.sp,
-      lineHeight = 22.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    // 4 Unlocked Benefits
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-      listOf(
-        "Unlimited AI Indian Food Photo Scans" to "Snap rotis, dals, sabzis, and thalis for instant nutrition breakdown",
-        "High-Precision Barcode & QR Scanner" to "Scan packaged groceries, snacks, and nutrition QR labels with ease",
-        "24/7 AI Nutrition Assistant" to "Friendly suggestions, meal timing tips, and portion sizing guidance",
-        "Ayurvedic Meal Timings & Hydration" to "Traditional Vedic meal windows and 8-glass daily water reminders"
-      ).forEach { (title, subtitle) ->
+      activities.forEach { (id, title, desc) ->
+        val isSelected = selectedActivity == id
         Surface(
-          shape = RoundedCornerShape(16.dp),
-          color = colors.surface,
-          border = BorderStroke(1.dp, colors.line),
-          modifier = Modifier.fillMaxWidth()
+          shape = RoundedCornerShape(14.dp),
+          color = if (isSelected) colors.surface else colors.bg,
+          border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.ink else colors.line),
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable { onSelectActivity(id) }
         ) {
           Row(
             modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
           ) {
-            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
-            Column(modifier = Modifier.weight(1f)) {
-              Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colors.ink)
-              Text(subtitle, fontSize = 11.sp, color = colors.ink2, lineHeight = 15.sp)
+            Box(
+              modifier = Modifier
+                .size(20.dp)
+                .clip(CircleShape)
+                .background(if (isSelected) colors.ink else Color.Transparent)
+                .border(2.dp, if (isSelected) colors.ink else colors.line, CircleShape),
+              contentAlignment = Alignment.Center
+            ) {
+              if (isSelected) {
+                Icon(Icons.Default.Check, contentDescription = null, tint = colors.bg, modifier = Modifier.size(12.dp))
+              }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+              Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+              Text(text = desc, fontSize = 12.sp, color = colors.ink2)
             }
           }
         }
       }
     }
-
-    Spacer(modifier = Modifier.height(28.dp))
-
-    Button(
-      onClick = onContinue,
-      colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg),
-      shape = RoundedCornerShape(999.dp),
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(54.dp)
-        .testTag("free_commitment_continue_btn")
-    ) {
-      Text("Continue (Free)", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-    }
   }
 }
 
+// ======================================================================================
+// SCREEN 3: BIOMETRICS (HEIGHT, CURRENT WEIGHT & AGE) WITH REAL-TIME BMI
+// ======================================================================================
 @Composable
-private fun ReferralConfettiBurst() {
-  val animProgress = remember { Animatable(0f) }
-  LaunchedEffect(Unit) {
-    animProgress.animateTo(
-      targetValue = 1f,
-      animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing)
-    )
-  }
-
-  val colors = listOf(Color(0xFF0F5C47), Color(0xFFD4AF37), Color(0xFFEE8A6D), Color(0xFF4A90E2))
-  Canvas(
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(80.dp)
-  ) {
-    val progress = animProgress.value
-    if (progress < 1f) {
-      val center = Offset(size.width / 2f, size.height / 2f)
-      for (i in 0 until 18) {
-        val angle = (i * 20) * (Math.PI / 180.0)
-        val distance = (30 + i * 4) * progress * 2.5f
-        val x = center.x + (distance * kotlin.math.cos(angle)).toFloat()
-        val y = center.y + (distance * kotlin.math.sin(angle)).toFloat()
-        val alpha = (1f - progress).coerceIn(0f, 1f)
-        drawCircle(
-          color = colors[i % colors.size].copy(alpha = alpha),
-          radius = (4f * (1f - progress * 0.5f)),
-          center = Offset(x, y)
-        )
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 22: "Setting everything up..." Loading screen (4-5s)
-// -------------------------------------------------------------
-@Composable
-private fun Step22SettingUp(
-  onFinished: () -> Unit
+private fun Step3Biometrics(
+  age: Int,
+  heightCm: Int,
+  weightKg: Float,
+  onAgeChanged: (Int) -> Unit,
+  onHeightChanged: (Int) -> Unit,
+  onWeightChanged: (Float) -> Unit
 ) {
   val colors = CalTheme.colors
-  var percent by remember { mutableIntStateOf(0) }
-  var statusIndex by remember { mutableIntStateOf(0) }
+  val heightMeters = heightCm / 100f
+  val currentBmi = if (heightMeters > 0) weightKg / (heightMeters * heightMeters) else 22f
 
-  val statuses = listOf(
-    "Calculating your Basal Metabolic Rate (BMR)...",
-    "Balancing macronutrient ratios for Indian meals...",
-    "Calibrating circadian Ayurvedic meal timings...",
-    "Building your personalized Ahaar Blueprint..."
-  )
-
-  LaunchedEffect(Unit) {
-    for (i in 1..100) {
-      delay(40)
-      percent = i
-      if (i == 25) statusIndex = 1
-      if (i == 55) statusIndex = 2
-      if (i == 85) statusIndex = 3
-    }
-    delay(400)
-    onFinished()
+  val bmiCategory = when {
+    currentBmi < 18.5f -> "Underweight" to Color(0xFF1976D2)
+    currentBmi < 24.9f -> "Normal (Healthy)" to Color(0xFF388E3C)
+    currentBmi < 29.9f -> "Overweight" to Color(0xFFF57C00)
+    else -> "Obese" to Color(0xFFD32F2F)
   }
 
   Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(top = 40.dp),
+    modifier = Modifier.fillMaxWidth(),
     horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.Center
+    verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
-    // Big percentage counter
     Text(
-      text = "$percent%",
-      fontSize = 64.sp,
-      fontWeight = FontWeight.Bold,
+      text = "Your Current Biometrics",
+      fontSize = 26.sp,
+      fontWeight = FontWeight.ExtraBold,
       color = colors.ink,
-      letterSpacing = (-1.5).sp
+      textAlign = TextAlign.Center
     )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Rotating status lines
     Text(
-      text = statuses[statusIndex],
-      fontSize = 16.sp,
-      fontWeight = FontWeight.SemiBold,
-      color = colors.accent,
-      textAlign = TextAlign.Center,
-      modifier = Modifier.padding(horizontal = 24.dp)
+      text = "Scroll the wheel pickers to input your current measurements.",
+      fontSize = 13.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center
     )
 
-    Spacer(modifier = Modifier.height(40.dp))
-
-    // Checklist ticking one by one
-    val checklist = listOf(
-      "Biometrics and metabolic baseline" to (percent >= 25),
-      "Indian food database calibrated" to (percent >= 55),
-      "Ayurvedic digestion windows balanced" to (percent >= 85),
-      "Custom CalSnapix blueprint ready" to (percent >= 100)
-    )
-
-    Column(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 24.dp),
-      verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-      checklist.forEach { (text, isChecked) ->
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-          if (isChecked) {
-            Box(
-              modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(colors.accent),
-              contentAlignment = Alignment.Center
-            ) {
-              Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = colors.bg, modifier = Modifier.size(16.dp))
-            }
-          } else {
-            Box(
-              modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .border(1.5.dp, colors.line, CircleShape)
-            )
-          }
-
-          Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = if (isChecked) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (isChecked) colors.ink else colors.ink2
-          )
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// STEP 23: "Your plan is ready" Result screen
-// -------------------------------------------------------------
-@Composable
-private fun Step23PlanReady(
-  uiState: AhaarUiState,
-  targetWeightKg: Float,
-  onEditPlan: () -> Unit
-) {
-  val colors = CalTheme.colors
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Text(
-        text = "Your plan is ready!",
-        fontSize = 30.sp,
-        fontWeight = FontWeight.Bold,
-        color = colors.ink
-      )
-      TextButton(onClick = onEditPlan) {
-        Text("Edit", color = colors.accent, fontWeight = FontWeight.Bold)
-      }
-    }
-
-    Spacer(modifier = Modifier.height(6.dp))
-    Text(
-      text = "Calibrated specifically for your metabolism and Indian dietary preferences.",
-      fontSize = 14.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    // Big daily calorie card
-    Surface(
-      modifier = Modifier.fillMaxWidth(),
-      shape = RoundedCornerShape(24.dp),
-      color = colors.surface,
-      border = BorderStroke(1.dp, colors.line),
-      shadowElevation = 2.dp
-    ) {
-      Column(
-        modifier = Modifier.padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-      ) {
-        Text(
-          text = "DAILY CALORIE TARGET",
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.ink2,
-          letterSpacing = 1.sp
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-          text = "${uiState.dailyCalorieTarget}",
-          fontSize = 52.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.ink,
-          letterSpacing = (-1.5).sp
-        )
-        Text(
-          text = "kcal / day",
-          fontSize = 15.sp,
-          color = colors.accent,
-          fontWeight = FontWeight.SemiBold
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // 3 Macro rings/pills (Protein, Carbs, Fat)
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-          // Protein
-          Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = colors.surface2
-          ) {
-            Column(
-              modifier = Modifier.padding(12.dp),
-              horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-              Text("Protein", fontSize = 11.sp, color = colors.ink2)
-              Text("90g", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = colors.protein)
-            }
-          }
-          // Carbs
-          Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = colors.surface2
-          ) {
-            Column(
-              modifier = Modifier.padding(12.dp),
-              horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-              Text("Carbs", fontSize = 11.sp, color = colors.ink2)
-              Text("210g", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = colors.carbs)
-            }
-          }
-          // Fat
-          Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = colors.surface2
-          ) {
-            Column(
-              modifier = Modifier.padding(12.dp),
-              horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-              Text("Fats", fontSize = 11.sp, color = colors.ink2)
-              Text("55g", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = colors.fat)
-            }
-          }
-        }
-      }
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Goal Date card
-    Surface(
-      modifier = Modifier.fillMaxWidth(),
-      shape = RoundedCornerShape(18.dp),
-      color = colors.accentSoft
-    ) {
-      Row(
-        modifier = Modifier.padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-      ) {
-        Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, tint = colors.accent)
-        Column {
-          Text(
-            text = "Reach ${targetWeightKg.toInt()} kg target in ~12 weeks",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            color = colors.ink
-          )
-          Text(
-            text = "Health Score: 8.8 / 10 • Excellent macro distribution",
-            fontSize = 12.sp,
-            color = colors.ink2
-          )
-        }
-      }
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Plain-language clinical insights
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-      Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = colors.surface,
-        border = BorderStroke(1.dp, colors.line)
-      ) {
-        Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-          Text("🌾 ", fontSize = 16.sp)
-          Text(
-            text = "Your plan allows 2 rotis per meal without exceeding daily carbohydrate limits.",
-            fontSize = 13.sp,
-            color = colors.ink
-          )
-        }
-      }
-
-      Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = colors.surface,
-        border = BorderStroke(1.dp, colors.line)
-      ) {
-        Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-          Text("☀️ ", fontSize = 16.sp)
-          Text(
-            text = "Peak digestion (Agni) window set at 1:30 PM for lunch to maximize nutrient uptake.",
-            fontSize = 13.sp,
-            color = colors.ink
-          )
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// -------------------------------------------------------------
-// STEP 24: Create Account / Sign In Dual Screen
-// -------------------------------------------------------------
-@Composable
-private fun Step24CreateAccount(
-  name: String,
-  email: String,
-  password: String,
-  isPasswordVisible: Boolean,
-  isSignUpMode: Boolean,
-  is18OrOlder: Boolean,
-  onToggleMode: (Boolean) -> Unit,
-  onNameChange: (String) -> Unit,
-  onEmailChange: (String) -> Unit,
-  onPasswordChange: (String) -> Unit,
-  onTogglePasswordVisibility: () -> Unit,
-  on18OrOlderChange: (Boolean) -> Unit,
-  onGoogleSignIn: () -> Unit,
-  errorMessage: String?,
-  isLoading: Boolean
-) {
-  val colors = CalTheme.colors
-  var showTermsDialog by remember { mutableStateOf(false) }
-  var showPrivacyDialog by remember { mutableStateOf(false) }
-
-  Column(modifier = Modifier.fillMaxWidth()) {
-    // Official CalSnapix Logo
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.Center
-    ) {
-      Surface(
-        shape = CircleShape,
-        color = Color(0xFF0F172A),
-        border = BorderStroke(2.dp, colors.accent),
-        shadowElevation = 4.dp,
-        modifier = Modifier.padding(bottom = 12.dp)
-      ) {
-        Image(
-          painter = painterResource(R.drawable.ic_calsnapix_logo),
-          contentDescription = "CalSnapix Logo",
-          modifier = Modifier.size(64.dp).clip(CircleShape)
-        )
-      }
-    }
-
-    Text(
-      text = if (isSignUpMode) "Save your personalized plan" else "Welcome back to CalSnapix",
-      fontSize = 28.sp,
-      fontWeight = FontWeight.Bold,
-      color = colors.ink
-    )
-    Spacer(modifier = Modifier.height(6.dp))
-    Text(
-      text = if (isSignUpMode)
-        "Create your account so your target calories, meals, and streak never get lost."
-      else
-        "Sign in to access your saved Indian nutrition plan and daily logs.",
-      fontSize = 14.sp,
-      color = colors.ink2
-    )
-
-    Spacer(modifier = Modifier.height(18.dp))
-
-    // Prominent Dual Segmented Switch: Sign Up vs Sign In
+    // Age Quick Selector
     Surface(
       shape = RoundedCornerShape(16.dp),
       color = colors.surface,
-      border = BorderStroke(1.2.dp, colors.line),
-      modifier = Modifier.fillMaxWidth().testTag("onboarding_auth_mode_toggle")
+      border = BorderStroke(1.dp, colors.line),
+      modifier = Modifier.fillMaxWidth()
     ) {
-      Row(modifier = Modifier.fillMaxWidth().padding(4.dp)) {
-        Surface(
-          shape = RoundedCornerShape(12.dp),
-          color = if (isSignUpMode) colors.accent else Color.Transparent,
-          modifier = Modifier
-            .weight(1f)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { onToggleMode(true) }
-            .testTag("onboarding_tab_signup")
-        ) {
-          Box(modifier = Modifier.padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-            Text(
-              text = "Sign Up",
-              fontWeight = FontWeight.Bold,
-              fontSize = 14.sp,
-              color = if (isSignUpMode) Color.White else colors.ink2
-            )
-          }
-        }
-        Surface(
-          shape = RoundedCornerShape(12.dp),
-          color = if (!isSignUpMode) colors.accent else Color.Transparent,
-          modifier = Modifier
-            .weight(1f)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { onToggleMode(false) }
-            .testTag("onboarding_tab_signin")
-        ) {
-          Box(modifier = Modifier.padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-            Text(
-              text = "Sign In",
-              fontWeight = FontWeight.Bold,
-              fontSize = 14.sp,
-              color = if (!isSignUpMode) Color.White else colors.ink2
-            )
-          }
-        }
-      }
-    }
-
-    Spacer(modifier = Modifier.height(18.dp))
-
-    // Google Sign-In button
-    Surface(
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(52.dp)
-        .clip(RoundedCornerShape(999.dp))
-        .clickable { onGoogleSignIn() }
-        .border(1.dp, colors.line, RoundedCornerShape(999.dp))
-        .testTag("onboarding_google_signin_button"),
-      color = colors.surface,
-      shape = RoundedCornerShape(999.dp)
-    ) {
-      Row(
-        modifier = Modifier.fillMaxSize(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+      Column(
+        modifier = Modifier.padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        Text("G ", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = colors.protein)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-          text = if (isSignUpMode) "Sign up with Google" else "Sign in with Google",
-          fontSize = 15.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.ink
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text("Age", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Text("$age years old", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = colors.accent)
+        }
+
+        Slider(
+          value = age.toFloat(),
+          onValueChange = { onAgeChanged(it.roundToInt()) },
+          valueRange = 16f..80f,
+          steps = 63,
+          colors = SliderDefaults.colors(thumbColor = colors.ink, activeTrackColor = colors.ink)
         )
       }
     }
 
-    Spacer(modifier = Modifier.height(18.dp))
-
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically
+    // Height & Weight Dual Wheel Picker
+    Surface(
+      shape = RoundedCornerShape(18.dp),
+      color = colors.surface,
+      border = BorderStroke(1.dp, colors.line),
+      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
     ) {
-      Box(modifier = Modifier.weight(1f).height(1.dp).background(colors.line))
-      Text(" or with email ", fontSize = 12.sp, color = colors.ink2, modifier = Modifier.padding(horizontal = 8.dp))
-      Box(modifier = Modifier.weight(1f).height(1.dp).background(colors.line))
+      Box(modifier = Modifier.padding(14.dp)) {
+        HeightWeightPickerRow(
+          heightCm = heightCm,
+          weightKg = weightKg,
+          onHeightChanged = onHeightChanged,
+          onWeightChanged = onWeightChanged
+        )
+      }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Only show Name field on Sign Up
-    if (isSignUpMode) {
-      OutlinedTextField(
-        value = name,
-        onValueChange = onNameChange,
-        label = { Text("Your Name") },
-        singleLine = true,
-        colors = OutlinedTextFieldDefaults.colors(
-          focusedBorderColor = colors.ink,
-          unfocusedBorderColor = colors.line
-        ),
-        shape = RoundedCornerShape(14.dp),
-        modifier = Modifier.fillMaxWidth().testTag("onboarding_signup_name")
-      )
-
-      Spacer(modifier = Modifier.height(12.dp))
-    }
-
-    OutlinedTextField(
-      value = email,
-      onValueChange = onEmailChange,
-      label = { Text("Email Address") },
-      singleLine = true,
-      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-      colors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = colors.ink,
-        unfocusedBorderColor = colors.line
-      ),
-      shape = RoundedCornerShape(14.dp),
-      modifier = Modifier.fillMaxWidth().testTag("onboarding_signup_email")
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    OutlinedTextField(
-      value = password,
-      onValueChange = onPasswordChange,
-      label = { Text("Password (min 6 characters)") },
-      singleLine = true,
-      visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-      trailingIcon = {
-        IconButton(onClick = onTogglePasswordVisibility) {
-          Icon(
-            imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-            contentDescription = null,
-            tint = colors.ink2
+    // Live BMI Card
+    Surface(
+      shape = RoundedCornerShape(16.dp),
+      color = colors.surface2,
+      border = BorderStroke(1.dp, colors.line),
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      Row(
+        modifier = Modifier.padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+          Text("YOUR CURRENT BMI", fontSize = 10.sp, fontWeight = FontWeight.Black, color = colors.ink2, letterSpacing = 0.5.sp)
+          Text(
+            text = String.format(Locale.US, "%.1f", currentBmi),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = colors.ink
           )
         }
-      },
-      colors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = colors.ink,
-        unfocusedBorderColor = colors.line
-      ),
-      shape = RoundedCornerShape(14.dp),
-      modifier = Modifier.fillMaxWidth().testTag("onboarding_signup_password")
-    )
 
-    // Age confirmation under India DPDP Act for Sign Up
-    if (isSignUpMode) {
-      Spacer(modifier = Modifier.height(14.dp))
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(12.dp))
-          .clickable { on18OrOlderChange(!is18OrOlder) }
-          .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Checkbox(
-          checked = is18OrOlder,
-          onCheckedChange = on18OrOlderChange,
-          colors = CheckboxDefaults.colors(
-            checkedColor = colors.accent,
-            uncheckedColor = colors.ink2
-          ),
-          modifier = Modifier.testTag("onboarding_signup_age_checkbox")
-        )
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-          text = "I confirm that I am 18 years of age or older (Required under India DPDP Act)",
-          fontSize = 12.sp,
-          color = colors.ink,
-          fontWeight = FontWeight.Medium,
-          lineHeight = 16.sp
-        )
-      }
-    }
-
-    if (errorMessage != null) {
-      Spacer(modifier = Modifier.height(10.dp))
-      Text(
-        text = errorMessage,
-        fontSize = 12.sp,
-        color = colors.danger
-      )
-    }
-
-    if (isLoading) {
-      Spacer(modifier = Modifier.height(14.dp))
-      CircularProgressIndicator(
-        modifier = Modifier.align(Alignment.CenterHorizontally).size(24.dp),
-        color = colors.ink
-      )
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Terms & Conditions and Privacy Policy Links (In Sign In / Sign Up)
-    val context = LocalContext.current
-    val termsUrl = "https://claude.ai/artifact/6oxxES7VRyyNnrG9HVxN45"
-    val privacyUrl = "https://claude.ai/artifact/HPtn6GbWs3uTXEYTFEQJ9U"
-
-    Column(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-      Text(
-        text = "By creating an account or signing in, you agree to our",
-        fontSize = 11.sp,
-        color = colors.ink2
-      )
-      Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Text(
-          text = "Terms & Conditions",
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.accent,
-          modifier = Modifier
-            .clickable {
-              try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(termsUrl)))
-              } catch (e: Exception) {
-                showTermsDialog = true
-              }
-            }
-            .padding(4.dp)
-            .testTag("onboarding_terms_link")
-        )
-        Text(text = "•", color = colors.line, fontSize = 11.sp)
-        Text(
-          text = "Privacy Policy",
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.accent,
-          modifier = Modifier
-            .clickable {
-              try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl)))
-              } catch (e: Exception) {
-                showPrivacyDialog = true
-              }
-            }
-            .padding(4.dp)
-            .testTag("onboarding_privacy_link")
-        )
-      }
-    }
-
-    // Terms & Conditions Dialog
-    if (showTermsDialog) {
-      AlertDialog(
-        onDismissRequest = { showTermsDialog = false },
-        title = {
-          Text(text = "CalSnapix Terms & Conditions", fontWeight = FontWeight.Bold, color = colors.ink)
-        },
-        text = {
-          Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-          ) {
-            Text(
-              text = "Last Updated: October 2026\nApp: CalSnapix • Indian Nutrition & Wellness\nOfficial Link: https://calsnapix.in/terms",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.accent
-            )
-            Text(
-              text = "1. Acceptance of Terms:\nBy creating an account, signing in, or using CalSnapix, you accept and agree to be bound by these Terms and Conditions in full. CalSnapix is intended for personal nutritional tracking and healthy habit building.",
-              fontSize = 12.sp,
-              color = colors.ink,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "2. Non-Medical & Lifestyle Disclaimer:\nCalSnapix provides AI-estimated calories, macronutrients, and Ayurvedic digestion windows for lifestyle wellness, educational, and fitness awareness only. It is not clinical medical advice, dietetics consultation, or medical treatment. Always consult a physician or registered dietitian before beginning any radical diet program.",
-              fontSize = 12.sp,
-              color = colors.ink2,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "3. AI Meal Recognition & Food Scanning:\nPhoto meal recognition, portion sizing, and barcode/QR lookups provide close nutritional approximations based on Indian food composition databases (ICMR-NIN) and global databases. Actual preparation methods, oils, and recipes may produce nutritional variations.",
-              fontSize = 12.sp,
-              color = colors.ink2,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "4. User Data Ownership & Full Erasure:\nYou retain full ownership of your logs, weight history, and meal data. You may permanently delete your account and wipe all personal logs from the server at any time under Profile > Delete Account or by visiting https://calsnapix.in/delete-account.",
-              fontSize = 12.sp,
-              color = colors.ink2,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "5. 100% Free Forever Service Commitment:\nCalSnapix is committed to delivering free, accessible nutrition and wellness tools for everyone. There are NO hidden fees, NO paywalls, NO subscriptions, NO trial expiration periods, and NO referral requirements. All features—including AI meal scanning, barcode/QR reading, and 24/7 AI coaching—are completely free.",
-              fontSize = 12.sp,
-              color = colors.accent,
-              fontWeight = FontWeight.SemiBold,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "6. Contact & Legal Enquiries:\nFor questions regarding these terms, reach our team at legal@calsnapix.in or support@calsnapix.in.",
-              fontSize = 11.sp,
-              color = colors.ink2
-            )
-          }
-        },
-        confirmButton = {
-          Button(
-            onClick = { showTermsDialog = false },
-            colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg)
-          ) {
-            Text("I Agree & Understand")
-          }
+        Surface(
+          shape = RoundedCornerShape(8.dp),
+          color = bmiCategory.second.copy(alpha = 0.15f)
+        ) {
+          Text(
+            text = bmiCategory.first,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = bmiCategory.second,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+          )
         }
-      )
-    }
-
-    // Privacy Policy Dialog
-    if (showPrivacyDialog) {
-      AlertDialog(
-        onDismissRequest = { showPrivacyDialog = false },
-        title = {
-          Text(text = "CalSnapix Privacy Policy", fontWeight = FontWeight.Bold, color = colors.ink)
-        },
-        text = {
-          Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-          ) {
-            Text(
-              text = "Effective Date: October 2026\nApp: CalSnapix • Encrypted Nutrition Privacy\nOfficial Link: https://calsnapix.in/privacy",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.accent
-            )
-            Text(
-              text = "1. Our Privacy Commitment:\nWe never sell, rent, or monetize your personal data. We do not profile you for behavioral advertisements, and your logs are protected by AES-256 encryption.",
-              fontSize = 12.sp,
-              color = colors.ink,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "2. Detailed Breakdown: What We Collect & Why We Need It:",
-              fontSize = 12.sp,
-              fontWeight = FontWeight.Bold,
-              color = colors.accent
-            )
-            Text(
-              text = "• Biometric Data (Age, Biological Gender, Height, Weight, Activity Level, Pace):\nWhy: Strictly essential to compute your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE) using the scientifically verified Mifflin-St Jeor formula, tailored to Indian metabolic baselines.\n\n• Dietary Preferences & Food Allergies:\nWhy: To filter out dangerous allergens (e.g., peanuts, gluten, dairy), suggest safe Indian recipe substitutions, and personalize meal recommendations according to your lifestyle.\n\n• Real-Time Camera Meal Photos:\nWhy: Transiently processed by our AI vision model solely to identify food items, estimate portion sizes, and calculate calories & macronutrients. Photos are NEVER stored for advertising, user profiling, or facial/biometric recognition.\n\n• Barcode & QR Code Scans:\nWhy: Scanned barcode numbers and QR nutrition tokens are queried against certified Indian and global food databases in real time to display manufacturer nutritional facts.\n\n• Name & Email Address:\nWhy: Used exclusively for secure account authentication, password recovery, and synchronizing your personal logs across devices.\n\n• Encrypted Local & Cloud Storage:\nWhy: Provides lightning-fast offline access to your meal logs, water intake, and daily history, with encrypted cloud backup for seamless cross-device sync.",
-              fontSize = 12.sp,
-              color = colors.ink2,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "3. Data Retention & Complete Erasure:\nYou have full control over your data. You may delete individual logs or permanently wipe your entire account and associated records with a single tap in Profile > Delete Account or at https://calsnapix.in/delete-account.",
-              fontSize = 12.sp,
-              color = colors.ink2,
-              lineHeight = 17.sp
-            )
-            Text(
-              text = "4. Data Protection Officer & Queries:\nFor questions regarding our privacy practices or data subject requests, contact our Data Protection team at privacy@calsnapix.in or support@calsnapix.in.",
-              fontSize = 11.sp,
-              color = colors.ink2
-            )
-          }
-        },
-        confirmButton = {
-          Button(
-            onClick = { showPrivacyDialog = false },
-            colors = ButtonDefaults.buttonColors(containerColor = colors.ink, contentColor = colors.bg)
-          ) {
-            Text("Close")
-          }
-        }
-      )
+      }
     }
   }
 }
 
-// -------------------------------------------------------------
-// -------------------------------------------------------------
-// STEP 20: 100% Free Forever Activation & Feature Showcase
-// -------------------------------------------------------------
-// -------------------------------------------------------------
+// ======================================================================================
+// SCREEN 4: TARGET WEIGHT & SAFE SUSTAINABLE PACE (RISK 4 COMPLIANT)
+// ======================================================================================
 @Composable
-private fun Step25Paywall(
-  discountPercent: Int,
-  onStartTrial: () -> Unit,
-  onContinueFree: () -> Unit
+private fun Step4TargetWeightAndPace(
+  heightCm: Int,
+  currentWeightKg: Float,
+  targetWeightKg: Float,
+  paceKgPerWeek: Float,
+  isUnderweight: Boolean,
+  minHealthyWeightKg: Float,
+  onTargetWeightChanged: (Float) -> Unit,
+  onPaceChanged: (Float) -> Unit
+) {
+  val colors = CalTheme.colors
+  val heightMeters = heightCm / 100f
+  val targetBmi = if (heightMeters > 0) targetWeightKg / (heightMeters * heightMeters) else 22f
+
+  val weightDiff = (currentWeightKg - targetWeightKg)
+  val estimatedWeeks = if (paceKgPerWeek > 0 && weightDiff > 0) (weightDiff / paceKgPerWeek).roundToInt() else 0
+
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(16.dp)
+  ) {
+    Text(
+      text = "Target Weight & Pace",
+      fontSize = 26.sp,
+      fontWeight = FontWeight.ExtraBold,
+      color = colors.ink,
+      textAlign = TextAlign.Center
+    )
+    Text(
+      text = "Select a safe goal weight and sustainable weekly pace.",
+      fontSize = 13.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center
+    )
+
+    // Target Weight Slider Card
+    Surface(
+      shape = RoundedCornerShape(18.dp),
+      color = colors.surface,
+      border = BorderStroke(1.dp, if (isUnderweight) Color(0xFFD32F2F) else colors.line),
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text("Target Weight", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Text(
+            text = "${String.format(Locale.US, "%.1f", targetWeightKg)} kg",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Black,
+            color = if (isUnderweight) Color(0xFFD32F2F) else colors.ink
+          )
+        }
+
+        Slider(
+          value = targetWeightKg,
+          onValueChange = onTargetWeightChanged,
+          valueRange = (minHealthyWeightKg - 8f).coerceAtLeast(35f)..(currentWeightKg + 15f).coerceAtLeast(80f),
+          colors = SliderDefaults.colors(
+            thumbColor = if (isUnderweight) Color(0xFFD32F2F) else colors.ink,
+            activeTrackColor = if (isUnderweight) Color(0xFFD32F2F) else colors.ink
+          )
+        )
+
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+          Text("Target BMI: ${String.format(Locale.US, "%.1f", targetBmi)}", fontSize = 12.sp, color = colors.ink2)
+          Text(
+            text = if (weightDiff > 0) "-${String.format(Locale.US, "%.1f", weightDiff)} kg to lose" else "+${String.format(Locale.US, "%.1f", -weightDiff)} kg to gain",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = colors.accent
+          )
+        }
+      }
+    }
+
+    // MANDATORY UNDERWEIGHT BLOCKER WARNING (LAUNCH RISK 4)
+    if (isUnderweight) {
+      Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = Color(0xFFFFEBEE),
+        border = BorderStroke(1.5.dp, Color(0xFFD32F2F)),
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        Row(
+          modifier = Modifier.padding(12.dp),
+          verticalAlignment = Alignment.Top,
+          horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+          Icon(Icons.Default.Warning, contentDescription = "Safety Alert", tint = Color(0xFFD32F2F), modifier = Modifier.size(22.dp))
+          Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+              text = "Unsafe Target Weight (BMI < 18.5)",
+              fontSize = 13.sp,
+              fontWeight = FontWeight.Bold,
+              color = Color(0xFFB71C1C)
+            )
+            Text(
+              text = "For your health and safety, your target weight cannot be below 18.5 BMI. Your minimum healthy target weight is ${String.format(Locale.US, "%.1f", minHealthyWeightKg)} kg.",
+              fontSize = 11.sp,
+              color = Color(0xFF5D4037),
+              lineHeight = 15.sp
+            )
+          }
+        }
+      }
+    }
+
+    // Weekly Pace Selector
+    Surface(
+      shape = RoundedCornerShape(18.dp),
+      color = colors.surface,
+      border = BorderStroke(1.dp, colors.line),
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text("Weekly Pace", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Text(
+            text = "${String.format(Locale.US, "%.2f", paceKgPerWeek)} kg / week",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = colors.accent
+          )
+        }
+
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          listOf(0.25f to "Gentle", 0.50f to "Recommended", 0.75f to "Active", 1.00f to "Max Safe").forEach { (pace, label) ->
+            val isSelected = (paceKgPerWeek - pace).let { kotlin.math.abs(it) < 0.05f }
+            Surface(
+              shape = RoundedCornerShape(10.dp),
+              color = if (isSelected) colors.ink else colors.surface2,
+              border = BorderStroke(1.dp, if (isSelected) colors.ink else colors.line),
+              modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(10.dp))
+                .clickable { onPaceChanged(pace) }
+            ) {
+              Column(
+                modifier = Modifier.padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+              ) {
+                Text(
+                  text = "${pace}kg",
+                  fontSize = 13.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = if (isSelected) colors.bg else colors.ink
+                )
+                Text(
+                  text = label,
+                  fontSize = 9.sp,
+                  color = if (isSelected) colors.bg.copy(alpha = 0.8f) else colors.ink2
+                )
+              }
+            }
+          }
+        }
+
+        if (estimatedWeeks > 0) {
+          Text(
+            text = "⏳ Achievable in approximately $estimatedWeeks weeks with mindful deficit adherence.",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = colors.accent
+          )
+        }
+      }
+    }
+  }
+}
+
+// ======================================================================================
+// SCREEN 5: DIETARY PREFERENCES & REGIONAL INDIAN FLAVORS
+// ======================================================================================
+@Composable
+private fun Step5DietAndRegion(
+  selectedDiets: Set<String>,
+  selectedRegion: String,
+  onToggleDiet: (String) -> Unit,
+  onSelectRegion: (String) -> Unit
 ) {
   val colors = CalTheme.colors
 
+  val dietTypes = listOf(
+    "vegetarian" to "🥬 Pure Vegetarian",
+    "eggetarian" to "🥚 Eggetarian",
+    "non_vegetarian" to "🍗 Non-Vegetarian",
+    "vegan" to "🌱 Vegan (Dairy-Free)",
+    "jain" to "🌿 Jain (No Onion/Garlic)"
+  )
+
+  val regions = listOf(
+    "North Indian" to "🍛 North (Roti, Dal, Paneer, Paratha)",
+    "South Indian" to "🥥 South (Dosa, Idli, Sambar, Rasam)",
+    "West Indian" to "🌶️ West (Poha, Thepla, Bhakri, Thali)",
+    "East Indian" to "🐟 East (Macher Jhol, Dal, Rice)"
+  )
+
   Column(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(horizontal = 4.dp),
-    horizontalAlignment = Alignment.CenterHorizontally
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(16.dp)
   ) {
-    // Top celebration badge
+    Text(
+      text = "Diet & Regional Flavors",
+      fontSize = 26.sp,
+      fontWeight = FontWeight.ExtraBold,
+      color = colors.ink,
+      textAlign = TextAlign.Center
+    )
+    Text(
+      text = "CalSnapix calibrates regional spices, grain types, and recipe recommendations.",
+      fontSize = 13.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center
+    )
+
+    Text("Dietary Lifestyle", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink, modifier = Modifier.fillMaxWidth())
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+      dietTypes.forEach { (key, label) ->
+        val isSelected = selectedDiets.contains(key)
+        Surface(
+          shape = RoundedCornerShape(12.dp),
+          color = if (isSelected) colors.surface else colors.bg,
+          border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.ink else colors.line),
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onToggleDiet(key) }
+        ) {
+          Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
+            Text(text = label, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+            if (isSelected) {
+              Icon(Icons.Default.CheckCircle, contentDescription = null, tint = colors.accent, modifier = Modifier.size(18.dp))
+            }
+          }
+        }
+      }
+    }
+
+    Spacer(modifier = Modifier.height(4.dp))
+    Text("Regional Cuisine Preference", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink, modifier = Modifier.fillMaxWidth())
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+      regions.forEach { (reg, label) ->
+        val isSelected = selectedRegion == reg
+        Surface(
+          shape = RoundedCornerShape(12.dp),
+          color = if (isSelected) colors.surface else colors.bg,
+          border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.ink else colors.line),
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onSelectRegion(reg) }
+        ) {
+          Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
+            Text(text = label, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+            if (isSelected) {
+              Icon(Icons.Default.CheckCircle, contentDescription = null, tint = colors.accent, modifier = Modifier.size(18.dp))
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// ======================================================================================
+// SCREEN 6: CHALLENGES & EATING OBSTACLES
+// ======================================================================================
+@Composable
+private fun Step6HabitsAndObstacles(
+  selectedObstacles: Set<String>,
+  onToggleObstacle: (String) -> Unit
+) {
+  val colors = CalTheme.colors
+
+  val obstacles = listOf(
+    "Late night snacking" to "🌙 Late night cravings & sweet snacking",
+    "Portion estimation" to "🍽️ Hard to judge roti & cooked rice portions",
+    "Frequent ordering" to "🥡 Ordering takeout (Swiggy / Zomato) often",
+    "Low water intake" to "💧 Forgetting to drink 8 glasses of water",
+    "Busy schedule" to "⏳ No time to manually type out ingredients"
+  )
+
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(16.dp)
+  ) {
+    Text(
+      text = "What holds you back most?",
+      fontSize = 26.sp,
+      fontWeight = FontWeight.ExtraBold,
+      color = colors.ink,
+      textAlign = TextAlign.Center
+    )
+    Text(
+      text = "Select all habits that apply. We adapt AI reminders and portion guidance to help you overcome them.",
+      fontSize = 13.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+      obstacles.forEach { (key, label) ->
+        val isSelected = selectedObstacles.contains(key)
+        Surface(
+          shape = RoundedCornerShape(14.dp),
+          color = if (isSelected) colors.surface else colors.bg,
+          border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.ink else colors.line),
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable { onToggleObstacle(key) }
+        ) {
+          Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+          ) {
+            Box(
+              modifier = Modifier
+                .size(20.dp)
+                .clip(CircleShape)
+                .background(if (isSelected) colors.ink else Color.Transparent)
+                .border(2.dp, if (isSelected) colors.ink else colors.line, CircleShape),
+              contentAlignment = Alignment.Center
+            ) {
+              if (isSelected) {
+                Icon(Icons.Default.Check, contentDescription = null, tint = colors.bg, modifier = Modifier.size(12.dp))
+              }
+            }
+
+            Text(text = label, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          }
+        }
+      }
+    }
+
+    // Reassurance card
     Surface(
-      shape = RoundedCornerShape(999.dp),
-      color = colors.accent.copy(alpha = 0.12f),
-      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.3f)),
-      modifier = Modifier.padding(bottom = 12.dp)
+      shape = RoundedCornerShape(14.dp),
+      color = colors.accentSoft,
+      modifier = Modifier.fillMaxWidth()
     ) {
       Row(
-        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        modifier = Modifier.padding(14.dp),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
       ) {
-        Icon(
-          imageVector = Icons.Default.CheckCircle,
-          contentDescription = null,
-          tint = colors.accent,
-          modifier = Modifier.size(16.dp)
-        )
+        Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
         Text(
-          text = "100% FREE FOREVER",
+          text = "CalSnapix eliminates manual typing with 2-second meal scans and smart hydration nudges so you never lose momentum.",
           fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.accent,
-          letterSpacing = 0.8.sp
+          color = colors.ink,
+          lineHeight = 17.sp,
+          fontWeight = FontWeight.Medium
+        )
+      }
+    }
+  }
+}
+
+// ======================================================================================
+// SCREEN 7: INTERACTIVE AI FOOD SCANNER SHOWCASE
+// ======================================================================================
+@Composable
+private fun Step7AiScannerShowcase() {
+  val colors = CalTheme.colors
+  val infiniteTransition = rememberInfiniteTransition(label = "scanner_laser")
+  val laserOffset by infiniteTransition.animateFloat(
+    initialValue = 0.10f,
+    targetValue = 0.90f,
+    animationSpec = infiniteRepeatable(
+      animation = tween(1600, easing = LinearEasing),
+      repeatMode = RepeatMode.Reverse
+    ),
+    label = "laser_y"
+  )
+
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(16.dp)
+  ) {
+    Text(
+      text = "Instant AI Food Vision",
+      fontSize = 26.sp,
+      fontWeight = FontWeight.ExtraBold,
+      color = colors.ink,
+      textAlign = TextAlign.Center
+    )
+    Text(
+      text = "Point your camera at any meal. Gemini Vision identifies dishes and macro distributions in 2 seconds.",
+      fontSize = 13.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center
+    )
+
+    // Animated Viewfinder Simulation Card
+    Card(
+      shape = RoundedCornerShape(22.dp),
+      colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E24)),
+      border = BorderStroke(2.dp, colors.accent.copy(alpha = 0.7f)),
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(280.dp)
+        .shadow(10.dp, RoundedCornerShape(22.dp))
+    ) {
+      Box(modifier = Modifier.fillMaxSize()) {
+        // Visual Meal Thali Representation
+        Column(
+          modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+          verticalArrangement = Arrangement.SpaceBetween,
+          horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+          // Top AI Detection Status
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Surface(
+              shape = RoundedCornerShape(6.dp),
+              color = colors.accent
+            ) {
+              Text(
+                text = "● LIVE INDIAN THALI SCAN",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.White,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+              )
+            }
+
+            Text("99.4% CONFIDENCE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.7f))
+          }
+
+          // Center Detected Food Chips
+          Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            DetectedFoodRow("🫓 2x Whole Wheat Roti", "180 kcal", "6g P • 34g C")
+            DetectedFoodRow("🍲 Dal Tadka (1 bowl)", "150 kcal", "8g P • 20g C")
+            DetectedFoodRow("🧀 Paneer Bhurji (150g)", "220 kcal", "14g P • 8g C")
+            DetectedFoodRow("🥗 Cucumber Salad & Raita", "60 kcal", "3g P • 6g C")
+          }
+
+          // Bottom Total Banner
+          Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = Color.Black.copy(alpha = 0.7f),
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            Row(
+              modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+              horizontalArrangement = Arrangement.SpaceBetween,
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Text("TOTAL ESTIMATE", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.8f))
+              Text("610 kcal • 31g Protein", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color(0xFFFFD54F))
+            }
+          }
+        }
+
+        // Corner Framing Brackets
+        Canvas(modifier = Modifier.fillMaxSize()) {
+          val pad = 18.dp.toPx()
+          val bracketLen = 22.dp.toPx()
+          val stroke = 3.dp.toPx()
+          val bracketColor = Color(0xFFFF9800)
+
+          drawLine(bracketColor, Offset(pad, pad + bracketLen), Offset(pad, pad), stroke)
+          drawLine(bracketColor, Offset(pad, pad), Offset(pad + bracketLen, pad), stroke)
+          drawLine(bracketColor, Offset(size.width - pad - bracketLen, pad), Offset(size.width - pad, pad), stroke)
+          drawLine(bracketColor, Offset(size.width - pad, pad), Offset(size.width - pad, pad + bracketLen), stroke)
+          drawLine(bracketColor, Offset(pad, size.height - pad - bracketLen), Offset(pad, size.height - pad), stroke)
+          drawLine(bracketColor, Offset(pad, size.height - pad), Offset(pad + bracketLen, size.height - pad), stroke)
+          drawLine(bracketColor, Offset(size.width - pad - bracketLen, size.height - pad), Offset(size.width - pad, size.height - pad), stroke)
+          drawLine(bracketColor, Offset(size.width - pad, size.height - pad), Offset(size.width - pad, size.height - pad - bracketLen), stroke)
+        }
+
+        // Sweeping Laser Line
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(3.dp)
+            .offset(y = 280.dp * laserOffset)
+            .background(
+              Brush.horizontalGradient(
+                listOf(Color.Transparent, Color(0xFFFF9800), Color(0xFFFFD54F), Color(0xFFFF9800), Color.Transparent)
+              )
+            )
         )
       }
     }
 
     Text(
-      text = "All Features Unlocked!",
-      fontSize = 24.sp,
-      fontWeight = FontWeight.Black,
+      text = "Works seamlessly for packaged snacks with built-in barcode scanner, home curries, rotis, and restaurant dining.",
+      fontSize = 12.sp,
+      color = colors.ink2,
+      textAlign = TextAlign.Center
+    )
+  }
+}
+
+@Composable
+private fun DetectedFoodRow(name: String, cals: String, macros: String) {
+  Surface(
+    shape = RoundedCornerShape(8.dp),
+    color = Color.White.copy(alpha = 0.12f),
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Row(
+      modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(name, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+      Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(macros, fontSize = 10.sp, color = Color.White.copy(alpha = 0.7f))
+        Text(cals, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFFFD54F))
+      }
+    }
+  }
+}
+
+// ======================================================================================
+// SCREEN 8: CUSTOM NUTRITION BLUEPRINT REVEAL
+// ======================================================================================
+@Composable
+private fun Step8BlueprintReveal(
+  age: Int,
+  gender: String,
+  weightKg: Float,
+  targetWeightKg: Float,
+  heightCm: Int,
+  goalId: String,
+  paceKgPerWeek: Float,
+  onNavigateToAuth: () -> Unit = {}
+) {
+  val colors = CalTheme.colors
+
+  // Clinical BMR calculation (Mifflin-St Jeor)
+  val bmr = if (gender.equals("Male", ignoreCase = true)) {
+    (10 * weightKg) + (6.25f * heightCm) - (5 * age) + 5
+  } else {
+    (10 * weightKg) + (6.25f * heightCm) - (5 * age) - 161
+  }
+  val tdee = (bmr * 1.45f).roundToInt()
+  val deficit = (paceKgPerWeek * 7700f / 7f).roundToInt()
+  val dailyCalorieTarget = when {
+    goalId.contains("lose") -> (tdee - deficit).coerceAtLeast(1200)
+    goalId.contains("muscle") || goalId.contains("gain") -> (tdee + 300)
+    else -> tdee
+  }
+
+  val proteinGrams = ((dailyCalorieTarget * 0.25f) / 4f).roundToInt()
+  val carbsGrams = ((dailyCalorieTarget * 0.50f) / 4f).roundToInt()
+  val fatsGrams = ((dailyCalorieTarget * 0.25f) / 9f).roundToInt()
+
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(16.dp)
+  ) {
+    Surface(
+      shape = RoundedCornerShape(999.dp),
+      color = colors.accentSoft
+    ) {
+      Text(
+        text = "🎉 YOUR BLUEPRINT IS READY",
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Black,
+        color = colors.accent,
+        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+      )
+    }
+
+    Text(
+      text = "Your Personalized Plan",
+      fontSize = 28.sp,
+      fontWeight = FontWeight.ExtraBold,
       color = colors.ink,
       textAlign = TextAlign.Center
     )
 
-    Spacer(modifier = Modifier.height(6.dp))
-
-    Text(
-      text = "CalSnapix is completely free for all users. Zero subscriptions, zero paywalls, zero fees—now and always.",
-      fontSize = 14.sp,
-      color = colors.ink2,
-      textAlign = TextAlign.Center,
-      lineHeight = 20.sp,
-      modifier = Modifier.padding(horizontal = 12.dp)
-    )
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    // Unlocked Features Card
+    // Master Blueprint Card
     Surface(
-      modifier = Modifier.fillMaxWidth(),
-      shape = RoundedCornerShape(20.dp),
-      color = colors.surface,
-      border = BorderStroke(1.dp, colors.line)
+      shape = RoundedCornerShape(22.dp),
+      color = colors.ink,
+      modifier = Modifier
+        .fillMaxWidth()
+        .shadow(8.dp, RoundedCornerShape(22.dp))
     ) {
       Column(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
       ) {
-        val features = listOf(
-          Triple(Icons.Default.CameraAlt, "Unlimited AI Food Scanning", "Instant calorie & macro analysis of Indian meals with your camera"),
-          Triple(Icons.Default.QrCodeScanner, "High-Precision QR & Barcodes", "Scan Indian packaged foods, snacks, and nutrition labels instantly"),
-          Triple(Icons.Default.SmartToy, "24/7 AI Nutrition Coach", "Unlimited real-time advice, meal suggestions & Ayurvedic insights"),
-          Triple(Icons.Default.TrackChanges, "Personalized Calorie & Macro Target", "Dynamic goals tailored to your height, weight & fitness pace"),
-          Triple(Icons.Default.Lock, "Complete Privacy & Zero Tracking", "Bank-grade encryption. We never sell your personal data or photos")
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text("DAILY CALORIE TARGET", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.7f), letterSpacing = 0.8.sp)
+          Surface(shape = RoundedCornerShape(6.dp), color = colors.accent) {
+            Text("OPTIMIZED", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color.White, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+          }
+        }
+
+        Row(
+          verticalAlignment = Alignment.Bottom,
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          Text(
+            text = "$dailyCalorieTarget",
+            fontSize = 42.sp,
+            fontWeight = FontWeight.Black,
+            color = Color.White
+          )
+          Text(
+            text = "kcal / day",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White.copy(alpha = 0.8f),
+            modifier = Modifier.padding(bottom = 8.dp)
+          )
+        }
+
+        Text(
+          text = "Calculated from your BMR ($bmr kcal) and a safe sustainable deficit of $deficit kcal/day.",
+          fontSize = 12.sp,
+          color = Color.White.copy(alpha = 0.75f)
         )
 
-        features.forEach { (icon, title, desc) ->
+        // Macros Breakdown Row
+        Surface(
+          shape = RoundedCornerShape(12.dp),
+          color = Color.White.copy(alpha = 0.12f),
+          modifier = Modifier.fillMaxWidth()
+        ) {
           Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
           ) {
-            Surface(
-              shape = RoundedCornerShape(10.dp),
-              color = colors.accent.copy(alpha = 0.12f),
-              modifier = Modifier.size(36.dp)
-            ) {
-              Box(contentAlignment = Alignment.Center) {
-                Icon(
-                  imageVector = icon,
-                  contentDescription = null,
-                  tint = colors.accent,
-                  modifier = Modifier.size(20.dp)
-                )
-              }
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-              Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = colors.ink
-              )
-              Text(
-                text = desc,
-                fontSize = 12.sp,
-                color = colors.ink2,
-                lineHeight = 16.sp
-              )
-            }
-
-            Icon(
-              imageVector = Icons.Default.Check,
-              contentDescription = null,
-              tint = colors.accent,
-              modifier = Modifier
-                .size(20.dp)
-                .align(Alignment.CenterVertically)
-            )
+            BlueprintMacroCol("PROTEIN", "${proteinGrams}g", "25%")
+            BlueprintMacroCol("CARBS", "${carbsGrams}g", "50%")
+            BlueprintMacroCol("FATS", "${fatsGrams}g", "25%")
           }
         }
       }
     }
 
-    Spacer(modifier = Modifier.height(24.dp))
-
-    // Primary CTA Button
-    Button(
-      onClick = onStartTrial,
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(56.dp)
-        .testTag("start_using_calsnapix_free_button"),
-      shape = RoundedCornerShape(999.dp),
-      colors = ButtonDefaults.buttonColors(
-        containerColor = colors.ink,
-        contentColor = colors.bg
-      )
+    // Hydration & Vedic Timing Row
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = colors.surface,
+        border = BorderStroke(1.dp, colors.line),
+        modifier = Modifier.weight(1f)
       ) {
-        Text(
-          text = "Start Using CalSnapix Free",
-          fontSize = 17.sp,
-          fontWeight = FontWeight.Bold
-        )
-        Icon(
-          imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-          contentDescription = null,
-          modifier = Modifier.size(18.dp)
-        )
+        Column(
+          modifier = Modifier.padding(14.dp),
+          verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          Icon(Icons.Default.WaterDrop, contentDescription = null, tint = Color(0xFF29B6F6), modifier = Modifier.size(20.dp))
+          Text("Water Target", fontSize = 12.sp, color = colors.ink2)
+          Text("8 Glasses (2.5L)", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+        }
+      }
+
+      Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = colors.surface,
+        border = BorderStroke(1.dp, colors.line),
+        modifier = Modifier.weight(1f)
+      ) {
+        Column(
+          modifier = Modifier.padding(14.dp),
+          verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          Icon(Icons.Default.Timer, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
+          Text("Dinner Window", fontSize = 12.sp, color = colors.ink2)
+          Text("Before 8:00 PM", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+        }
       }
     }
 
-    Spacer(modifier = Modifier.height(10.dp))
-
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(6.dp)
+    // Account Sync Card
+    Surface(
+      shape = RoundedCornerShape(18.dp),
+      color = colors.surface2,
+      border = BorderStroke(1.dp, colors.line),
+      modifier = Modifier.fillMaxWidth()
     ) {
-      Icon(
-        imageVector = Icons.Default.VerifiedUser,
-        contentDescription = null,
-        tint = colors.accent,
-        modifier = Modifier.size(14.dp)
-      )
-      Text(
-        text = "No credit card required • 100% Free Forever",
-        fontSize = 12.sp,
-        fontWeight = FontWeight.Medium,
-        color = colors.ink2
-      )
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+      ) {
+        Column(modifier = Modifier.weight(1f)) {
+          Text("Sync Plan to Account", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Text("Access this blueprint across all your devices securely.", fontSize = 12.sp, color = colors.ink2)
+        }
+        OutlinedButton(
+          onClick = onNavigateToAuth,
+          shape = RoundedCornerShape(10.dp),
+          border = BorderStroke(1.dp, colors.accent)
+        ) {
+          Text("Sign Up / In", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.accent)
+        }
+      }
     }
+  }
+}
+
+@Composable
+private fun BlueprintMacroCol(label: String, amount: String, pct: String) {
+  Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Text(label, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.6f))
+    Text(amount, fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+    Text(pct, fontSize = 10.sp, color = Color(0xFFFFD54F))
   }
 }

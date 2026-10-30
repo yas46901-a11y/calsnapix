@@ -6,17 +6,21 @@ import com.example.AhaarUiState
 import com.example.model.LoggedMeal
 
 /**
- * ScanScreen delegates to MealScanScreen with full CameraX integration.
+ * ScanScreen delegates to CameraMealPreviewScreen with full CameraX meal framing and preview integration.
  */
 @Composable
 fun ScanScreen(
   uiState: AhaarUiState,
   onLogMeal: (LoggedMeal) -> Unit,
+  onNavigateToHistory: () -> Unit = {},
+  onBack: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
-  MealScanScreen(
+  CameraMealPreviewScreen(
     uiState = uiState,
     onLogMeal = onLogMeal,
+    onNavigateToHistory = onNavigateToHistory,
+    onBack = onBack,
     modifier = modifier
   )
 }

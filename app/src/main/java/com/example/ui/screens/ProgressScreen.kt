@@ -26,9 +26,11 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Opacity
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.WaterDrop
@@ -46,6 +48,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import com.example.ui.theme.CalTheme
+import com.example.ui.components.IndianGreetingBadge
+import com.example.ui.components.IndianMandalaMotif
+import com.example.ui.components.IndianRangoliDivider
+import com.example.ui.components.IndianToranBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +65,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -85,6 +92,7 @@ fun ProgressScreen(
   onNavigate: (AppDestination) -> Unit = {},
   modifier: Modifier = Modifier
 ) {
+  val context = LocalContext.current
   val scrollState = rememberScrollState()
   var selectedDayRecord by remember { mutableStateOf<DayCalorieRecord?>(null) }
   var showLogWeightDialog by remember { mutableStateOf(false) }
@@ -115,40 +123,79 @@ fun ProgressScreen(
       verticalAlignment = Alignment.CenterVertically
     ) {
       Column {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          Text("🪷", fontSize = 18.sp)
+          Text(
+            text = "Progress & Consistency",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+          )
+        }
         Text(
-          text = "Progress & Insights",
-          style = MaterialTheme.typography.headlineLarge,
-          fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-          text = "Weekly holistic health & adherence analytics",
+          text = "Weekly holistic Indian health & Vedic adherence",
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
 
-      Surface(
-        shape = RoundedCornerShape(50),
-        color = AhaarPrimaryFixed
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
       ) {
-        Row(
-          modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp)
+        Surface(
+          shape = RoundedCornerShape(50),
+          color = AhaarPrimaryFixed,
+          modifier = Modifier.clickable {
+            val shareText = com.example.util.SocialShareHelper.buildDailyProgressShareText(uiState)
+            com.example.util.SocialShareHelper.launchSharesheet(context, shareText, "Share Progress")
+          }.testTag("progress_share_button")
         ) {
-          Icon(
-            imageVector = Icons.Default.TrendingUp,
-            contentDescription = null,
-            tint = AhaarPrimary,
-            modifier = Modifier.size(16.dp)
-          )
-          Text(
-            text = "Week 1",
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = AhaarPrimary
-          )
+          Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            Icon(
+              imageVector = Icons.Default.Share,
+              contentDescription = "Share",
+              tint = AhaarPrimary,
+              modifier = Modifier.size(14.dp)
+            )
+            Text(
+              text = "Share",
+              style = MaterialTheme.typography.labelSmall,
+              fontWeight = FontWeight.Bold,
+              color = AhaarPrimary
+            )
+          }
+        }
+
+        Surface(
+          shape = RoundedCornerShape(50),
+          color = AhaarPrimaryFixed
+        ) {
+          Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            Icon(
+              imageVector = Icons.Default.TrendingUp,
+              contentDescription = null,
+              tint = AhaarPrimary,
+              modifier = Modifier.size(16.dp)
+            )
+            Text(
+              text = "Week 1",
+              style = MaterialTheme.typography.labelSmall,
+              fontWeight = FontWeight.Bold,
+              color = AhaarPrimary
+            )
+          }
         }
       }
     }
@@ -202,6 +249,70 @@ fun ProgressScreen(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             lineHeight = 16.sp
+          )
+        }
+      }
+    }
+
+    // 30-Day Scanned Meal History & Intake Patterns Banner
+    Card(
+      shape = RoundedCornerShape(20.dp),
+      colors = glassCardColors,
+      border = glassBorder,
+      elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable { onNavigate(AppDestination.MEAL_HISTORY) }
+        .testTag("progress_view_meal_history_button")
+    ) {
+      Row(
+        modifier = Modifier.padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Row(
+          modifier = Modifier.weight(1f),
+          horizontalArrangement = Arrangement.spacedBy(14.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Box(
+            modifier = Modifier
+              .size(46.dp)
+              .clip(CircleShape)
+              .background(AhaarPrimary.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.History,
+              contentDescription = null,
+              tint = AhaarPrimary,
+              modifier = Modifier.size(24.dp)
+            )
+          }
+          Column {
+            Text(
+              text = "30-Day Scanned Meal History",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+              text = "Review past daily intake patterns & calorie trends",
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
+        }
+        Surface(
+          shape = RoundedCornerShape(999.dp),
+          color = AhaarPrimaryFixed
+        ) {
+          Text(
+            text = "View →",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = AhaarPrimary,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
           )
         }
       }

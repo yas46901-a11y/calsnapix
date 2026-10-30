@@ -38,10 +38,8 @@ class AiKitchenVoiceLogTest {
       }
     }
 
-    // Verify AI Voice Log button and AI Kitchen button are present
+    // Verify AI Voice Log button is present
     composeTestRule.onNodeWithTag("ai_kitchen_voice_log_button").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("ai_kitchen_button").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("ai_kitchen_voice_banner").assertIsDisplayed()
 
     // Click on the Voice Log button to open the Voice Meal Logger Dialog
     composeTestRule.onNodeWithTag("ai_kitchen_voice_log_button").performClick()

@@ -22,8 +22,10 @@ import com.example.ui.components.AhaarBottomNav
 import com.example.ui.components.AhaarMainTopBar
 import com.example.ui.components.GlassBackground
 import com.example.ui.screens.AuthScreen
+import com.example.ui.screens.CameraMealPreviewScreen
 import com.example.ui.screens.DailyNutritionTrackingScreen
 import com.example.ui.screens.HomeScreen
+import com.example.ui.screens.MealHistoryScreen
 import com.example.ui.screens.MealScanScreen
 import com.example.ui.screens.PricingScreen
 import com.example.ui.screens.ProfileScreen
@@ -80,7 +82,7 @@ fun AhaarApp(viewModel: AhaarViewModel = viewModel()) {
       modifier = Modifier.fillMaxSize(),
       containerColor = Color.Transparent,
       topBar = {
-        if (!isAuthScreen && !isOnboarding && uiState.currentScreen != AppDestination.NUTRITION_TRACKING && uiState.currentScreen != AppDestination.PRICING) {
+        if (!isAuthScreen && !isOnboarding && uiState.currentScreen != AppDestination.NUTRITION_TRACKING && uiState.currentScreen != AppDestination.PRICING && uiState.currentScreen != AppDestination.MEAL_HISTORY && uiState.currentScreen != AppDestination.SCAN) {
           val title = when (uiState.currentScreen) {
             AppDestination.HOME -> "CalSnapix"
             AppDestination.SCAN -> "Scan Meal"
@@ -88,6 +90,7 @@ fun AhaarApp(viewModel: AhaarViewModel = viewModel()) {
             AppDestination.PROGRESS -> "Analytics"
             AppDestination.PROFILE -> "My Profile"
             AppDestination.NUTRITION_TRACKING -> "Daily Nutrition"
+            AppDestination.MEAL_HISTORY -> "Meal History"
             else -> "CalSnapix"
           }
           AhaarMainTopBar(
@@ -124,13 +127,14 @@ fun AhaarApp(viewModel: AhaarViewModel = viewModel()) {
                   val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(oauthUrl))
                   context.startActivity(browserIntent)
                 } catch (e: Exception) {
-                  // In headless/no-browser environments, log or fail gracefully
+                  viewModel.signInWithGoogleDirect()
                 }
               },
               onPasteOAuthCallback = { viewModel.handleSupabaseOAuthCallback(it) },
               errorMessage = uiState.authError,
               isLoading = uiState.isAuthLoading,
-              logoUrl = uiState.logoUrl
+              logoUrl = uiState.logoUrl,
+              onBack = null
             )
           }
           AppDestination.ONBOARDING_1,
@@ -168,16 +172,33 @@ fun AhaarApp(viewModel: AhaarViewModel = viewModel()) {
             uiState = uiState,
             onNavigate = { viewModel.navigateTo(it) },
             onLogWater = { viewModel.logWater() },
+            onLogWaterBottle = { viewModel.logWaterBottle() },
             onUndoWater = { viewModel.undoWater() },
+            onToggleWaterGlass = { viewModel.toggleWaterGlass(it) },
+            onUpdateWaterGoal = { viewModel.updateWaterGoal(it) },
             onAddCustomMeal = { viewModel.addCustomMeal(it) },
             onDeleteMeal = { viewModel.deleteMeal(it) },
-            onUpdateCalorieGoal = { viewModel.updateCalorieTarget(it) }
+            onUpdateCalorieGoal = { viewModel.updateCalorieTarget(it) },
+            onSelectRegion = { viewModel.selectRegion(it) },
+            onUpdateStepGoal = { viewModel.updateStepGoal(it) },
+            onAddManualSteps = { viewModel.logManualSteps(it) },
+            onRefreshStepData = { viewModel.refreshStepData() },
+            onStartStepTracking = { viewModel.startStepTracking() },
+            reminderManager = viewModel.mealReminderManager,
+            onSimulateStreak = { viewModel.simulateWaterStreak(it) },
+            onSimulateWeeklyMacro = { viewModel.simulateWeeklyMacro(it) }
           )
         }
         AppDestination.SCAN -> {
-          MealScanScreen(
+          CameraMealPreviewScreen(
             uiState = uiState,
-            onLogMeal = { viewModel.logScannedMeal(it) }
+            onLogMeal = { viewModel.logScannedMeal(it) },
+            onSaveCorrection = { dishId, orig, corr, f -> viewModel.saveUserCorrection(dishId, orig, corr, f) },
+            onSaveAccuracyTest = { test -> viewModel.saveAccuracyTest(test) },
+            onReportWrongResult = { dish, photoId, note -> viewModel.reportWrongResult(dish, photoId, note) },
+            onNavigateToHistory = { viewModel.navigateTo(AppDestination.MEAL_HISTORY) },
+            onNavigateToPricing = { viewModel.navigateTo(AppDestination.PRICING) },
+            onBack = { viewModel.navigateTo(AppDestination.HOME) }
           )
         }
         AppDestination.RECIPES -> {
@@ -214,7 +235,12 @@ fun AhaarApp(viewModel: AhaarViewModel = viewModel()) {
             },
             onLinkInstagram = { handle -> viewModel.linkAndVerifyInstagram(handle) },
             onUnlinkInstagram = { viewModel.unlinkInstagram() },
-            onNavigateToPricing = { viewModel.navigateTo(AppDestination.PRICING) }
+            onNavigateToPricing = { viewModel.navigateTo(AppDestination.PRICING) },
+            onNavigateToAuth = { viewModel.navigateTo(AppDestination.AUTH) },
+            onUpdateGoalType = { goalId -> viewModel.updateGoalType(goalId) },
+            onDeleteMyData = { viewModel.deleteMyData() },
+            onToggleAiConsent = { consent -> viewModel.toggleAiTrainingConsent(consent) },
+            onSaveAccuracyTest = { test -> viewModel.saveAccuracyTest(test) }
           )
         }
         AppDestination.NUTRITION_TRACKING -> {
@@ -226,21 +252,31 @@ fun AhaarApp(viewModel: AhaarViewModel = viewModel()) {
           )
         }
         AppDestination.PRICING -> {
-          val context = LocalContext.current
           PricingScreen(
             uiState = uiState,
-            onBack = { viewModel.navigateTo(AppDestination.PROFILE) },
-            onSelectPlan = { planId -> viewModel.selectSubscriptionPlan(planId) },
-            onOpenInstagram = {
-              val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com/_calsnapix?vrfl=MTZkajNnaTlreTR2dA=="))
-              try {
-                context.startActivity(intent)
-              } catch (e: Exception) {
-                // Ignore if browser not found
-              }
+            onBack = { viewModel.navigateTo(AppDestination.HOME) },
+            onSelectPlan = { planId ->
+              viewModel.selectSubscriptionPlan(planId)
+              viewModel.navigateTo(AppDestination.HOME)
             }
           )
         }
+        AppDestination.MEAL_HISTORY -> {
+          MealHistoryScreen(
+            uiState = uiState,
+            onBack = { viewModel.navigateTo(AppDestination.HOME) },
+            onDeleteScannedMeal = { viewModel.deleteScannedMealLog(it) },
+            onSeedSampleHistory = { viewModel.seed30DayHistory() }
+          )
+        }
+      }
+
+      // Point 6: Single-screen Daily Summary modal shown after logging meal
+      uiState.lastLoggedMealSummary?.let { summary ->
+        com.example.ui.components.PostMealSummaryModal(
+          summary = summary,
+          onDismiss = { viewModel.dismissMealSummaryModal() }
+        )
       }
     }
   }

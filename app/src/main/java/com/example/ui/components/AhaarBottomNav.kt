@@ -4,6 +4,7 @@ import android.view.HapticFeedbackConstants
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -25,10 +26,10 @@ import androidx.compose.material.icons.automirrored.outlined.TrendingUp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.RestaurantMenu
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
@@ -59,8 +61,8 @@ private data class NavItemData(
 
 /**
  * Modern CalSnapix Bottom Navigation.
- * 4 Tabs (Home, Recipes, Progress, Profile) + floating center Scan FAB in --ink / --bg.
- * Active = --ink, Inactive = --ink-2. Zero orange.
+ * 4 Tabs (Home, Recipes, Progress, Profile) + floating center Scan FAB.
+ * Translucent frosted glassmorphism dock with specular top highlight border.
  */
 @Composable
 fun AhaarBottomNav(
@@ -69,11 +71,12 @@ fun AhaarBottomNav(
   modifier: Modifier = Modifier
 ) {
   val colors = CalTheme.colors
+  val isDark = colors.isDark
   val view = LocalView.current
 
   val leftItems = listOf(
     NavItemData(AppDestination.HOME, "Home", "nav_home", Icons.Filled.Home, Icons.Outlined.Home),
-    NavItemData(AppDestination.RECIPES, "Recipes", "nav_recipes", Icons.Filled.RestaurantMenu, Icons.Outlined.RestaurantMenu)
+    NavItemData(AppDestination.RECIPES, "Recipes", "nav_recipes", Icons.Filled.Restaurant, Icons.Outlined.Restaurant)
   )
 
   val rightItems = listOf(
@@ -81,23 +84,26 @@ fun AhaarBottomNav(
     NavItemData(AppDestination.PROFILE, "Profile", "nav_profile", Icons.Filled.Person, Icons.Outlined.Person)
   )
 
+  val navBorder = BorderStroke(1.dp, colors.line)
+
   Box(
     modifier = modifier
       .fillMaxWidth()
       .navigationBarsPadding(),
     contentAlignment = Alignment.BottomCenter
   ) {
-    // Frosted bar container
+    // Clean surface bar container
     Surface(
       modifier = Modifier
         .fillMaxWidth()
-        .height(64.dp),
-      color = colors.surface.copy(alpha = 0.94f),
-      border = BorderStroke(1.dp, colors.line)
+        .height(64.dp)
+        .shadow(elevation = 4.dp)
+        .border(navBorder),
+      color = colors.surface
     ) {
       Row(
         modifier = Modifier
-          .fillMaxSize()
+          .fillMaxWidth()
           .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -144,11 +150,19 @@ fun AhaarBottomNav(
     }
 
     // Floating circular Scan Button in --ink / --bg centered above the bar
+    val scanBorderBrush = Brush.verticalGradient(
+      listOf(
+        Color.White.copy(alpha = 0.55f),
+        colors.accent.copy(alpha = 0.40f)
+      )
+    )
+
     Box(
       modifier = Modifier
         .offset(y = (-18).dp)
         .size(56.dp)
-        .shadow(elevation = 6.dp, shape = CircleShape)
+        .shadow(elevation = 8.dp, shape = CircleShape, ambientColor = colors.accent.copy(alpha = 0.3f), spotColor = colors.accent.copy(alpha = 0.2f))
+        .border(BorderStroke(1.5.dp, scanBorderBrush), CircleShape)
         .clip(CircleShape)
         .background(colors.ink)
         .clickable(

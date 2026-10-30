@@ -89,6 +89,62 @@ interface SupabaseApiService {
   @GET("auth/v1/user")
   suspend fun getAuthUser(): Response<com.example.data.supabase.model.SupabaseAuthUserResponse>
 
+  @POST("rest/v1/rpc/calculate_meal_calories")
+  suspend fun calculateMealCalories(
+    @Body request: com.example.data.supabase.model.SupabaseFoodCalorieRequest
+  ): Response<com.example.data.supabase.model.SupabaseFoodCalorieResponse>
+
+  // --- Accuracy Tests ---
+  @POST("rest/v1/accuracy_tests")
+  suspend fun insertAccuracyTest(
+    @Body test: com.example.data.supabase.model.SupabaseAccuracyTestDto
+  ): Response<ResponseBody>
+
+  @GET("rest/v1/accuracy_tests")
+  suspend fun getAccuracyTests(
+    @Query("user_id") userIdFilter: String,
+    @Query("select") select: String = "*",
+    @Query("order") order: String = "created_at.desc"
+  ): Response<List<com.example.data.supabase.model.SupabaseAccuracyTestDto>>
+
+  // --- User Corrections ---
+  @POST("rest/v1/user_corrections")
+  suspend fun insertUserCorrection(
+    @Body correction: com.example.data.supabase.model.SupabaseUserCorrectionDto
+  ): Response<ResponseBody>
+
+  @GET("rest/v1/user_corrections")
+  suspend fun getUserCorrections(
+    @Query("user_id") userIdFilter: String,
+    @Query("select") select: String = "*",
+    @Query("order") order: String = "created_at.desc"
+  ): Response<List<com.example.data.supabase.model.SupabaseUserCorrectionDto>>
+
+  // --- User Goals ---
+  @Headers("Prefer: resolution=merge-duplicates")
+  @POST("rest/v1/user_goals")
+  suspend fun upsertUserGoal(
+    @Body goal: com.example.data.supabase.model.SupabaseUserGoalDto
+  ): Response<ResponseBody>
+
+  @GET("rest/v1/user_goals")
+  suspend fun getUserGoal(
+    @Query("user_id") userIdFilter: String,
+    @Query("select") select: String = "*"
+  ): Response<List<com.example.data.supabase.model.SupabaseUserGoalDto>>
+
+  // --- Wrong Result Reports ---
+  @POST("rest/v1/wrong_result_reports")
+  suspend fun submitWrongResultReport(
+    @Body report: com.example.data.supabase.model.SupabaseWrongResultReportDto
+  ): Response<ResponseBody>
+
+  // --- Data Deletion RPC ---
+  @POST("rest/v1/rpc/delete_all_user_data")
+  suspend fun deleteAllUserData(
+    @Body req: com.example.data.supabase.model.SupabaseDeleteUserDataRequest
+  ): Response<ResponseBody>
+
   @GET("rest/v1/")
   suspend fun checkHealth(): Response<ResponseBody>
 }

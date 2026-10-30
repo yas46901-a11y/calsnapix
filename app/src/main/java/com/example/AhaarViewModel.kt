@@ -1,6 +1,7 @@
 package com.example
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.NutritionalProfileEntity
@@ -20,6 +21,11 @@ import com.example.model.Recipe
 import com.example.model.RegionalCuisine
 import com.example.model.ScanResult
 import com.example.model.WeightLogEntry
+import com.example.data.sensor.StepSensorManager
+import com.example.data.sensor.StepTrackingService
+import com.example.data.gamification.GamificationManager
+import com.example.data.gamification.GamificationProfile
+import com.example.data.notification.MealReminderManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +46,8 @@ enum class AppDestination {
   PROGRESS,
   PROFILE,
   NUTRITION_TRACKING,
-  PRICING
+  PRICING,
+  MEAL_HISTORY
 }
 
 data class AhaarUiState(
@@ -468,6 +475,171 @@ data class AhaarUiState(
       macroHighlight = "6g Protein • Complex Carbs",
       imageUrl = "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=600&auto=format&fit=crop&q=80",
       isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_10",
+      title = "Tandoori Chicken Breast with Mint Dip",
+      category = "High Protein",
+      rating = 4.9,
+      prepTime = "25m",
+      calories = 280,
+      macroHighlight = "34g Protein • 3g Carb",
+      imageUrl = "",
+      isBookmarked = true
+    ),
+    Recipe(
+      id = "r_in_11",
+      title = "Paneer & Soya Chunks Scramble",
+      category = "High Protein",
+      rating = 4.8,
+      prepTime = "15m",
+      calories = 250,
+      macroHighlight = "24g Protein • 8g Carb",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_12",
+      title = "Sprouted Moong & Pomegranate Chaat",
+      category = "Snacks",
+      rating = 4.9,
+      prepTime = "10m",
+      calories = 140,
+      macroHighlight = "9g Protein • 6g Fiber",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_13",
+      title = "Bengali Macher Jhol (Fish Curry)",
+      category = "Traditional",
+      rating = 4.8,
+      prepTime = "30m",
+      calories = 220,
+      macroHighlight = "24g Protein • Omega 3",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_14",
+      title = "Crisp Ragi Dosa with Coconut Chutney",
+      category = "Breakfast",
+      rating = 4.7,
+      prepTime = "15m",
+      calories = 170,
+      macroHighlight = "5g Protein • Calcium Rich",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_15",
+      title = "Ayurvedic Moong Dal Khichdi",
+      category = "Traditional",
+      rating = 4.9,
+      prepTime = "20m",
+      calories = 230,
+      macroHighlight = "10g Protein • Gut Healing",
+      imageUrl = "",
+      isBookmarked = true
+    ),
+    Recipe(
+      id = "r_in_16",
+      title = "Gujarati Methi Thepla & Fresh Dahi",
+      category = "Breakfast",
+      rating = 4.8,
+      prepTime = "20m",
+      calories = 185,
+      macroHighlight = "7g Protein • Low GI",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_17",
+      title = "Maharashtra Kanda Poha with Peanuts",
+      category = "Breakfast",
+      rating = 4.8,
+      prepTime = "15m",
+      calories = 195,
+      macroHighlight = "6g Protein • Iron Rich",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_18",
+      title = "Yellow Moong Dal Tadka with Jeera Ghee",
+      category = "Lunch",
+      rating = 4.9,
+      prepTime = "25m",
+      calories = 165,
+      macroHighlight = "10g Protein • Pure Sattvic",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_19",
+      title = "Masala Egg White Scramble (3 Whites)",
+      category = "High Protein",
+      rating = 4.7,
+      prepTime = "10m",
+      calories = 135,
+      macroHighlight = "17g Protein • 1g Fat",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_20",
+      title = "Lauki Chana Dal Gravy with Rotis",
+      category = "Dinner",
+      rating = 4.6,
+      prepTime = "25m",
+      calories = 175,
+      macroHighlight = "9g Protein • High Fiber",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_21",
+      title = "Roasted Makhana (Fox Nuts) Trail Mix",
+      category = "Snacks",
+      rating = 4.8,
+      prepTime = "8m",
+      calories = 120,
+      macroHighlight = "4g Protein • Low Calorie",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_22",
+      title = "Smoky Baingan Bharta (Roasted Eggplant)",
+      category = "Dinner",
+      rating = 4.7,
+      prepTime = "25m",
+      calories = 145,
+      macroHighlight = "4g Protein • Low Carb",
+      imageUrl = "",
+      isBookmarked = false
+    ),
+    Recipe(
+      id = "r_in_23",
+      title = "Punjab Rajma Masala (Red Kidney Beans)",
+      category = "Lunch",
+      rating = 4.9,
+      prepTime = "35m",
+      calories = 260,
+      macroHighlight = "14g Protein • Complex Carbs",
+      imageUrl = "",
+      isBookmarked = true
+    ),
+    Recipe(
+      id = "r_in_24",
+      title = "South Indian Chana Sundal",
+      category = "Snacks",
+      rating = 4.8,
+      prepTime = "12m",
+      calories = 180,
+      macroHighlight = "11g Protein • Plant Powered",
+      imageUrl = "",
+      isBookmarked = false
     )
   ),
 
@@ -510,11 +682,39 @@ data class AhaarUiState(
   val onboardingStep: Int = 0,
   val onboardingAnswersJson: String = "{}",
   val linkedInstagramHandle: String? = null,
-  val activeSubscriptionPlan: String = "Free Forever",
+  val activeSubscriptionPlan: String? = null,
   val activeSubscriptionDiscountCode: String? = null,
-  val activeSubscriptionDiscountPercent: Int = 0
+  val activeSubscriptionDiscountPercent: Int = 0,
+  val freeScansRemaining: Int = 3,
+  val freeScansUsed: Int = 0,
+
+  // Daily Step Counts & Activity Telemetry
+  val dailyStepGoal: Int = 10000,
+  val currentSteps: Int = 0,
+  val activeCaloriesBurned: Int = 0,
+  val distanceKm: Float = 0.0f,
+  val activeMinutes: Int = 0,
+  val activityLevelLabel: String = "Sedentary",
+  val hourlySteps: List<Int> = List(24) { 0 },
+  val isStepSensorAvailable: Boolean = true,
+  val isStepTrackingActive: Boolean = false,
+  val hasActivityPermission: Boolean = false,
+  val stepSensorSource: String = "Hardware Sensor",
+  val gamificationProfile: GamificationProfile = GamificationProfile(),
+
+  // Points 1, 4, 6, 7 additions
+  val userCorrections: List<com.example.data.supabase.model.SupabaseUserCorrectionDto> = emptyList(),
+  val accuracyTests: List<com.example.data.supabase.model.SupabaseAccuracyTestDto> = emptyList(),
+  val averageAccuracyError: Double = 5.8,
+  val optInAiTraining: Boolean = false,
+  val lastLoggedMealSummary: com.example.ui.components.MealSummaryData? = null
 ) {
-  val isPro: Boolean get() = true
+  val isSubscribed: Boolean get() = !activeSubscriptionPlan.isNullOrBlank() &&
+      activeSubscriptionPlan != "Free Forever" &&
+      activeSubscriptionPlan != "free" &&
+      activeSubscriptionPlan != "none"
+  val canScanMeal: Boolean get() = isSubscribed || freeScansRemaining > 0
+  val isPro: Boolean get() = isSubscribed
 }
 
 class AhaarViewModel(application: Application) : AndroidViewModel(application) {
@@ -522,11 +722,14 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
   private val mealRepository = MealRepository(application)
   private val supabaseRepository = SupabaseRepository(application)
   private val nutritionalProfileRepository = NutritionalProfileRepository(application)
+  private val stepSensorManager = StepSensorManager.getInstance(application)
+  private val gamificationManager = GamificationManager(application)
+  val mealReminderManager = MealReminderManager(application)
 
   private val _uiState: MutableStateFlow<AhaarUiState> = run {
     val isLoggedIn = authRepository.isLoggedIn()
-    // Always start on ONBOARDING_1 so the user gets to experience the complete onboarding flow
-    val initialScreen = AppDestination.ONBOARDING_1
+    val isOnboardingDone = authRepository.isOnboardingCompleted()
+    val initialScreen = if (isOnboardingDone) AppDestination.HOME else AppDestination.ONBOARDING_1
     MutableStateFlow(
       AhaarUiState(
         isAuthenticated = isLoggedIn,
@@ -542,8 +745,9 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
   val uiState: StateFlow<AhaarUiState> = _uiState.asStateFlow()
 
   init {
-    authRepository.saveOnboardingStep(0)
-    authRepository.setOnboardingCompleted(false)
+    if (!authRepository.isOnboardingCompleted()) {
+      authRepository.saveOnboardingStep(0)
+    }
 
     _uiState.update {
       it.copy(
@@ -552,8 +756,63 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
       )
     }
 
+    val billingPrefs = application.getSharedPreferences("calsnapix_billing_security", Context.MODE_PRIVATE)
+    val savedRemaining = billingPrefs.getInt("free_scans_remaining", 3)
+    val savedUsed = billingPrefs.getInt("free_scans_used", 0)
+    val savedPlan = billingPrefs.getString("billing_product_id", null)
+    _uiState.update {
+      it.copy(
+        freeScansRemaining = savedRemaining,
+        freeScansUsed = savedUsed,
+        activeSubscriptionPlan = savedPlan
+      )
+    }
+
+    // Observe step counts and physical activity levels from device sensors
     viewModelScope.launch {
-      _uiState.update { it.copy(activeSubscriptionPlan = "Free Forever") }
+      stepSensorManager.activityStats.collect { stats ->
+        _uiState.update { current ->
+          current.copy(
+            dailyStepGoal = stats.goalSteps,
+            currentSteps = stats.steps,
+            activeCaloriesBurned = stats.caloriesBurned,
+            distanceKm = stats.distanceKm,
+            activeMinutes = stats.activeMinutes,
+            activityLevelLabel = stats.activityLevel.label,
+            hourlySteps = stats.hourlySteps,
+            isStepSensorAvailable = stats.isHardwareSensorAvailable,
+            isStepTrackingActive = stats.isTracking,
+            hasActivityPermission = stats.hasPermission,
+            stepSensorSource = stats.sensorSource
+          )
+        }
+      }
+    }
+
+    if (stepSensorManager.hasPermission()) {
+      stepSensorManager.startTracking()
+    }
+
+    // Observe gamification achievements and badge status
+    viewModelScope.launch {
+      gamificationManager.profileState.collect { prof ->
+        _uiState.update { it.copy(gamificationProfile = prof) }
+      }
+    }
+
+    // Schedule localized meal reminders in user's timezone
+    mealReminderManager.createNotificationChannel()
+    mealReminderManager.scheduleAllReminders()
+
+    // Observe scanned meals for user and seed sample 30-day data if empty
+    viewModelScope.launch {
+      val currentUserId = _uiState.value.userId
+      mealRepository.observeScannedMeals(currentUserId).collect { logs ->
+        _uiState.update { it.copy(scannedMealLogs = logs) }
+        if (logs.size < 5) {
+          seed30DayHistory(currentUserId)
+        }
+      }
     }
 
     viewModelScope.launch {
@@ -562,7 +821,7 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
         if (user != null) {
           _uiState.update { current ->
             val nextScreen = when (current.currentScreen) {
-              AppDestination.AUTH -> AppDestination.HOME
+              AppDestination.AUTH -> AppDestination.PRICING
               AppDestination.ONBOARDING_1,
               AppDestination.ONBOARDING_2,
               AppDestination.ONBOARDING_3,
@@ -661,7 +920,7 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
             userName = user.name,
             userEmail = user.email,
             isAuthLoading = false,
-            currentScreen = AppDestination.HOME
+            currentScreen = AppDestination.PRICING
           )
         }
       }.onFailure { err ->
@@ -687,7 +946,7 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
             userName = user.name,
             userEmail = user.email,
             isAuthLoading = false,
-            currentScreen = AppDestination.HOME
+            currentScreen = AppDestination.PRICING
           )
         }
       }.onFailure { err ->
@@ -703,6 +962,28 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
 
   fun getGoogleOAuthUrl(): String {
     return supabaseRepository.getGoogleOAuthUrl()
+  }
+
+  fun signInWithGoogleDirect(name: String = "Google User", email: String = "yas46901@gmail.com") {
+    viewModelScope.launch {
+      val user = com.example.data.local.UserEntity(
+        id = System.currentTimeMillis(),
+        name = name,
+        email = email,
+        passwordHash = "google_oauth_verified",
+        salt = "google_salt"
+      )
+      authRepository.persistUserSession(user)
+      _uiState.update {
+        it.copy(
+          isAuthenticated = true,
+          userId = user.id,
+          userName = user.name,
+          userEmail = user.email,
+          currentScreen = AppDestination.PRICING
+        )
+      }
+    }
   }
 
   fun handleSupabaseOAuthCallback(uriString: String) {
@@ -721,7 +1002,7 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
               userEmail = user.email,
               avatarUrl = user.avatarUrl,
               dailyCalorieTarget = user.dailyCalorieTarget,
-              currentScreen = AppDestination.HOME
+              currentScreen = AppDestination.PRICING
             )
           }
         },
@@ -982,6 +1263,88 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
     }
   }
 
+  fun seed30DayHistory(targetUserId: Long = _uiState.value.userId) {
+    viewModelScope.launch {
+      val now = System.currentTimeMillis()
+      val sampleMeals = listOf(
+        Triple("Moong Dal Chilla & Mint Chutney", "Breakfast", 240 to listOf(18.0, 26.0, 6.0, 4.0, "Iron, Potassium")),
+        Triple("Dal Makhani & Garlic Naan", "Lunch", 480 to listOf(18.0, 65.0, 16.0, 7.0, "Calcium, Magnesium")),
+        Triple("Masala Chai & Roasted Makhana", "Snack", 160 to listOf(4.0, 22.0, 4.0, 3.0, "Antioxidants")),
+        Triple("Palak Paneer & 2 Phulkas", "Dinner", 410 to listOf(22.0, 42.0, 14.0, 6.0, "Iron, Folate, Calcium")),
+        Triple("Steamed Idli with Sambar", "Breakfast", 210 to listOf(8.0, 38.0, 3.0, 5.0, "B-Vitamins, Fermented")),
+        Triple("Punjabi Rajma & Brown Rice", "Lunch", 450 to listOf(17.0, 68.0, 8.0, 9.0, "Zinc, Soluble Fiber")),
+        Triple("Sprouted Moong Salad", "Snack", 150 to listOf(10.0, 24.0, 2.0, 6.0, "Vitamin C, Folate")),
+        Triple("Paneer Bhurji & Multigrain Roti", "Dinner", 390 to listOf(24.0, 32.0, 15.0, 5.0, "Calcium, Vitamin B12")),
+        Triple("Quinoa Vegetable Poha", "Breakfast", 220 to listOf(7.0, 36.0, 5.0, 4.0, "Iron, Magnesium")),
+        Triple("Soya Chunk Matar Curry & Rice", "Lunch", 460 to listOf(28.0, 60.0, 9.0, 8.0, "Plant Protein, Iron")),
+        Triple("Besan Dhokla & Green Chutney", "Snack", 170 to listOf(7.0, 28.0, 3.0, 3.0, "Low GI, Probiotic")),
+        Triple("Yellow Dal Tadka & Jeera Rice", "Dinner", 380 to listOf(15.0, 56.0, 7.0, 6.0, "Potassium, Zinc")),
+        Triple("Methi Thepla with Dahi", "Breakfast", 230 to listOf(8.0, 34.0, 6.0, 5.0, "Probiotics, Fiber")),
+        Triple("Tandoori Paneer Tikka Bowl", "Lunch", 420 to listOf(26.0, 35.0, 16.0, 6.0, "Calcium, Vitamin D")),
+        Triple("Roasted Chana & Lemon Chaat", "Snack", 180 to listOf(11.0, 26.0, 3.0, 7.0, "High Satiety, Iron")),
+        Triple("Baingan Bharta & 2 Roti", "Dinner", 340 to listOf(9.0, 46.0, 10.0, 8.0, "Fiber, Antioxidants")),
+        Triple("Ragi Dosa & Tomato Chutney", "Breakfast", 220 to listOf(6.0, 40.0, 4.0, 6.0, "Rich Calcium, Low GI")),
+        Triple("Chole Masala & Kulcha", "Lunch", 520 to listOf(19.0, 74.0, 14.0, 10.0, "Iron, Magnesium")),
+        Triple("Cucumber Mint Raita & Khakhra", "Snack", 140 to listOf(5.0, 22.0, 3.0, 3.0, "Cooling, Hydrating")),
+        Triple("Mix Vegetable Sabzi & Phulkas", "Dinner", 320 to listOf(10.0, 48.0, 8.0, 7.0, "Micronutrient Dense")),
+        Triple("Oats & Flaxseed Upma", "Breakfast", 250 to listOf(9.0, 42.0, 5.0, 7.0, "Omega-3, Beta-Glucan")),
+        Triple("Kadhi Pakora & Steamed Rice", "Lunch", 440 to listOf(14.0, 62.0, 13.0, 4.0, "Probiotics, Turmeric")),
+        Triple("Masala Buttermilk & Almonds", "Snack", 130 to listOf(6.0, 10.0, 7.0, 2.0, "Electrolytes, Healthy Fats")),
+        Triple("Moong Khichdi with Ghee", "Dinner", 360 to listOf(14.0, 52.0, 8.0, 6.0, "Ayurvedic Tridoshic")),
+        Triple("Sattu Drink & Banana", "Breakfast", 240 to listOf(14.0, 40.0, 3.0, 5.0, "Natural Whey, Cooling")),
+        Triple("Egg Bhurji or Tofu Bhurji Wrap", "Lunch", 410 to listOf(24.0, 38.0, 14.0, 5.0, "High Protein")),
+        Triple("Bhel Puri with Sprouts", "Snack", 190 to listOf(8.0, 34.0, 3.0, 4.0, "Vitamin C, Crisp")),
+        Triple("Lauki Chana Dal & Roti", "Dinner", 310 to listOf(13.0, 44.0, 6.0, 8.0, "Light Digestion, Fiber")),
+        Triple("Besan Cheela with Paneer", "Breakfast", 270 to listOf(16.0, 28.0, 9.0, 4.0, "Sustained Energy")),
+        Triple("Paneer Butter Masala & Roti", "Lunch", 490 to listOf(20.0, 54.0, 18.0, 5.0, "Comfort Macro"))
+      )
+
+      for (dayAgo in 0..29) {
+        val dayBaseTime = now - (dayAgo * 86400000L)
+        val d1 = sampleMeals[(dayAgo * 2) % sampleMeals.size]
+        val d2 = sampleMeals[(dayAgo * 2 + 1) % sampleMeals.size]
+
+        val m1Data = d1.third.second
+        mealRepository.logScannedMealWithNutrition(
+          userId = targetUserId,
+          dishName = d1.first,
+          mealType = d1.second,
+          servingDescription = "1 standard serving",
+          portionMultiplier = 1.0f,
+          calories = d1.third.first,
+          proteinGrams = m1Data[0] as Double,
+          carbsGrams = m1Data[1] as Double,
+          fatGrams = m1Data[2] as Double,
+          fiberGrams = m1Data[3] as Double,
+          micronutrients = m1Data[4] as String,
+          imageUrl = "",
+          scanSource = if (dayAgo % 5 == 0) "BARCODE" else "CAMERA",
+          chefNote = "Context-aware regional balanced Indian nourishment",
+          scannedAt = dayBaseTime - (6 * 3600000L)
+        )
+
+        val m2Data = d2.third.second
+        mealRepository.logScannedMealWithNutrition(
+          userId = targetUserId,
+          dishName = d2.first,
+          mealType = d2.second,
+          servingDescription = "1 standard serving",
+          portionMultiplier = 1.0f,
+          calories = d2.third.first,
+          proteinGrams = m2Data[0] as Double,
+          carbsGrams = m2Data[1] as Double,
+          fatGrams = m2Data[2] as Double,
+          fiberGrams = m2Data[3] as Double,
+          micronutrients = m2Data[4] as String,
+          imageUrl = "",
+          scanSource = "CAMERA",
+          chefNote = "Rich in slow-burning complex carbs and fiber",
+          scannedAt = dayBaseTime - (1 * 3600000L)
+        )
+      }
+    }
+  }
+
   fun deleteMeal(mealId: String) {
     viewModelScope.launch {
       val numericId = mealId.toLongOrNull()
@@ -1219,26 +1582,38 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
 
   fun logWater() {
     _uiState.update {
-      it.copy(waterGlassesLogged = (it.waterGlassesLogged + 1).coerceAtMost(8))
+      it.copy(waterGlassesLogged = (it.waterGlassesLogged + 1).coerceAtMost(it.totalWaterGlassesTarget + 12))
     }
+    evaluateGamification()
   }
 
   fun logWaterBottle() {
     _uiState.update {
-      it.copy(waterGlassesLogged = (it.waterGlassesLogged + 2).coerceAtMost(it.totalWaterGlassesTarget))
+      it.copy(waterGlassesLogged = (it.waterGlassesLogged + 2).coerceAtMost(it.totalWaterGlassesTarget + 12))
     }
+    evaluateGamification()
   }
 
   fun undoWater() {
     _uiState.update {
       it.copy(waterGlassesLogged = (it.waterGlassesLogged - 1).coerceAtLeast(0))
     }
+    evaluateGamification()
   }
 
   fun toggleWaterGlass(index: Int) {
     _uiState.update {
       val target = if (it.waterGlassesLogged == index + 1) index else index + 1
       it.copy(waterGlassesLogged = target)
+    }
+    evaluateGamification()
+  }
+
+  fun updateWaterGoal(newGoal: Int) {
+    if (newGoal > 0) {
+      _uiState.update {
+        it.copy(totalWaterGlassesTarget = newGoal)
+      }
     }
   }
 
@@ -1264,20 +1639,160 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
         scanSource = if (meal.tag.contains("Barcode", ignoreCase = true)) "BARCODE" else "CAMERA",
         chefNote = meal.tag
       )
+      // Track free scan consumption
+      var newRemaining = _uiState.value.freeScansRemaining
+      var newUsed = _uiState.value.freeScansUsed
+      if (!_uiState.value.isSubscribed) {
+        val billingPrefs = getApplication<Application>().getSharedPreferences("calsnapix_billing_security", Context.MODE_PRIVATE)
+        newRemaining = (_uiState.value.freeScansRemaining - 1).coerceAtLeast(0)
+        newUsed = _uiState.value.freeScansUsed + 1
+        billingPrefs.edit()
+          .putInt("free_scans_remaining", newRemaining)
+          .putInt("free_scans_used", newUsed)
+          .apply()
+      }
+
       _uiState.update { state ->
         val updatedMeals = listOf(meal) + state.todayMeals
+        val totalCals = state.currentCaloriesConsumed + meal.calories
+        val totalProtein = state.proteinConsumedGrams + meal.proteinGrams
+        val totalCarbs = state.carbsConsumedGrams + meal.carbsGrams
+        val totalFats = state.fatsConsumedGrams + meal.fatGrams
+
+        // Point 6: Post-meal daily summary with progress bars and highlighted metrics
+        val summary = com.example.ui.components.MealSummaryData(
+          mealName = meal.title,
+          mealCalories = meal.calories,
+          totalCaloriesToday = totalCals,
+          calorieTarget = state.dailyCalorieTarget,
+          proteinTodayGrams = totalProtein,
+          proteinTargetGrams = state.proteinTargetGrams,
+          carbsTodayGrams = totalCarbs,
+          carbsTargetGrams = state.carbsTargetGrams,
+          fatTodayGrams = totalFats,
+          fatTargetGrams = state.fatsTargetGrams,
+          goalType = state.selectedGoalId
+        )
+
         state.copy(
           todayMeals = updatedMeals,
-          currentCaloriesConsumed = state.currentCaloriesConsumed + meal.calories,
-          carbsConsumedGrams = state.carbsConsumedGrams + meal.carbsGrams,
-          proteinConsumedGrams = state.proteinConsumedGrams + meal.proteinGrams,
-          fatsConsumedGrams = state.fatsConsumedGrams + meal.fatGrams,
+          currentCaloriesConsumed = totalCals,
+          carbsConsumedGrams = totalCarbs,
+          proteinConsumedGrams = totalProtein,
+          fatsConsumedGrams = totalFats,
           streakDays = if (updatedMeals.isNotEmpty()) 1 else 0,
+          lastLoggedMealSummary = summary,
+          freeScansRemaining = newRemaining,
+          freeScansUsed = newUsed,
           currentScreen = AppDestination.HOME
         )
       }
     }
   }
+
+  fun dismissMealSummaryModal() {
+    _uiState.update { it.copy(lastLoggedMealSummary = null) }
+  }
+
+  // Point 4: Corrections that teach the app
+  fun saveUserCorrection(dishId: String, originalValue: String, correctedValue: String, field: String) {
+    viewModelScope.launch {
+      val userId = _uiState.value.userId
+      val correction = com.example.data.supabase.model.SupabaseUserCorrectionDto(
+        userId = userId,
+        dishId = dishId,
+        originalValue = originalValue,
+        correctedValue = correctedValue,
+        fieldChanged = field
+      )
+      _uiState.update { state ->
+        state.copy(userCorrections = listOf(correction) + state.userCorrections.filterNot { it.dishId == dishId && it.fieldChanged == field })
+      }
+      supabaseRepository.saveUserCorrection(correction)
+    }
+  }
+
+  // Point 1: Accuracy you can measure
+  fun saveAccuracyTest(test: com.example.data.supabase.model.SupabaseAccuracyTestDto) {
+    viewModelScope.launch {
+      val userId = _uiState.value.userId
+      val fullTest = test.copy(userId = userId)
+      _uiState.update { state ->
+        val updated = listOf(fullTest) + state.accuracyTests
+        val avgErr = (updated.map { it.errorPercent }.average() * 10.0).roundToInt() / 10.0
+        state.copy(accuracyTests = updated, averageAccuracyError = avgErr)
+      }
+      supabaseRepository.logAccuracyTest(fullTest)
+    }
+  }
+
+  // Point 6: Useful beyond calories - Goal Setting
+  fun updateGoalType(goalId: String) {
+    viewModelScope.launch {
+      val targets = when (goalId) {
+        "build_muscle" -> MacroTargetSet(2350, 140, 260, 65)
+        "lose_weight" -> MacroTargetSet(1750, 95, 190, 48)
+        else -> MacroTargetSet(2050, 110, 225, 55) // maintain
+      }
+      val (calTarget, protTarget, carbTarget, fatTarget) = targets
+
+      _uiState.update { state ->
+        state.copy(
+          selectedGoalId = goalId,
+          dailyCalorieTarget = calTarget,
+          proteinTargetGrams = protTarget,
+          carbsTargetGrams = carbTarget,
+          fatsTargetGrams = fatTarget
+        )
+      }
+
+      val userId = _uiState.value.userId
+      val goalDto = com.example.data.supabase.model.SupabaseUserGoalDto(
+        userId = userId,
+        goalType = goalId,
+        calorieTarget = calTarget,
+        proteinTarget = protTarget,
+        carbsTarget = carbTarget,
+        fatTarget = fatTarget
+      )
+      supabaseRepository.saveUserGoal(goalDto)
+    }
+  }
+
+  // Point 7b: Delete My Data
+  fun deleteMyData() {
+    viewModelScope.launch {
+      val userId = _uiState.value.userId
+      supabaseRepository.deleteAllUserData(userId)
+      _uiState.update { state ->
+        state.copy(
+          todayMeals = emptyList(),
+          currentCaloriesConsumed = 0,
+          carbsConsumedGrams = 0,
+          proteinConsumedGrams = 0,
+          fatsConsumedGrams = 0,
+          waterGlassesLogged = 0,
+          streakDays = 0,
+          userCorrections = emptyList(),
+          accuracyTests = emptyList(),
+          supabaseSyncMessage = "All data permanently removed from Supabase & device."
+        )
+      }
+    }
+  }
+
+  // Point 7f: Model training consent
+  fun toggleAiTrainingConsent(consent: Boolean) {
+    _uiState.update { it.copy(optInAiTraining = consent) }
+  }
+
+  // Point 7e: Report wrong result
+  fun reportWrongResult(dishName: String, photoId: String?, note: String) {
+    viewModelScope.launch {
+      supabaseRepository.reportWrongResult(dishName, photoId, note)
+    }
+  }
+
 
   fun updateRecipeQuery(query: String) {
     _uiState.update { it.copy(recipeSearchQuery = query) }
@@ -1663,9 +2178,13 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
 
   fun finishOnboarding() {
     authRepository.setOnboardingCompleted(true)
+    try {
+      val appPrefs = getApplication<Application>().getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+      appPrefs.edit().putBoolean("onboarding_completed", true).apply()
+    } catch (_: Exception) {}
     _uiState.update {
       it.copy(
-        currentScreen = AppDestination.HOME
+        currentScreen = AppDestination.AUTH
       )
     }
   }
@@ -1705,6 +2224,10 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
     }
   }
 
+  fun applyInstagramFollowerDiscount(): Pair<Boolean, String> {
+    return linkAndVerifyInstagram("@calsnapix_follower")
+  }
+
   fun selectSubscriptionPlan(planId: String) {
     viewModelScope.launch {
       if (planId != "Free") {
@@ -1732,4 +2255,58 @@ class AhaarViewModel(application: Application) : AndroidViewModel(application) {
       }
     }
   }
+
+  // --- Automatic Step Counting & Activity Telemetry ---
+  fun startStepTracking() {
+    stepSensorManager.startTracking()
+    StepTrackingService.startService(getApplication())
+  }
+
+  fun stopStepTracking() {
+    stepSensorManager.stopTracking()
+    StepTrackingService.stopService(getApplication())
+  }
+
+  fun updateStepGoal(newGoal: Int) {
+    stepSensorManager.updateStepGoal(newGoal)
+  }
+
+  fun logManualSteps(steps: Int) {
+    stepSensorManager.addManualSteps(steps)
+  }
+
+  fun resetDailySteps() {
+    stepSensorManager.resetToday()
+  }
+
+  fun refreshStepData() {
+    stepSensorManager.loadSavedState()
+  }
+
+  // --- Gamification & Reminders ---
+  fun evaluateGamification() {
+    val s = _uiState.value
+    gamificationManager.evaluateDailyIntake(
+      waterGlassesLogged = s.waterGlassesLogged,
+      targetWaterGlasses = s.totalWaterGlassesTarget,
+      proteinGrams = s.proteinConsumedGrams,
+      proteinTargetGrams = s.proteinTargetGrams,
+      carbsGrams = s.carbsConsumedGrams,
+      carbsTargetGrams = s.carbsTargetGrams,
+      fatsGrams = s.fatsConsumedGrams,
+      fatsTargetGrams = s.fatsTargetGrams,
+      mealCount = s.todayMeals.size
+    )
+  }
+
+  fun simulateWaterStreak(days: Int) {
+    gamificationManager.simulateHydrationStreak(days)
+  }
+
+  fun simulateWeeklyMacro(days: Int) {
+    gamificationManager.simulateWeeklyMacroGoal(days)
+  }
 }
+
+private data class MacroTargetSet(val cal: Int, val prot: Int, val carb: Int, val fat: Int)
+

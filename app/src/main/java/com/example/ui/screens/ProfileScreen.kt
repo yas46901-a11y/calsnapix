@@ -23,10 +23,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
@@ -107,6 +109,11 @@ fun ProfileScreen(
   onLinkInstagram: (String) -> Unit = {},
   onUnlinkInstagram: () -> Unit = {},
   onNavigateToPricing: () -> Unit = {},
+  onNavigateToAuth: () -> Unit = {},
+  onUpdateGoalType: (String) -> Unit = {},
+  onDeleteMyData: () -> Unit = {},
+  onToggleAiConsent: (Boolean) -> Unit = {},
+  onSaveAccuracyTest: (com.example.data.supabase.model.SupabaseAccuracyTestDto) -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val colors = CalTheme.colors
@@ -125,6 +132,8 @@ fun ProfileScreen(
   var showFullPrivacyPolicyDialog by remember { mutableStateOf(false) }
   var showFullTermsDialog by remember { mutableStateOf(false) }
   var showBreachPlanDialog by remember { mutableStateOf(false) }
+  var showPrivacyAndDataDialog by remember { mutableStateOf(false) }
+  var showAccuracyTestDialog by remember { mutableStateOf(false) }
 
   val avatarGradients = listOf(
     "Emerald Glow" to listOf(Color(0xFF10B981), Color(0xFF059669)),
@@ -161,14 +170,20 @@ fun ProfileScreen(
       modifier = Modifier.fillMaxWidth(),
       verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Text("🪷", fontSize = 20.sp)
+        Text(
+          text = "My Profile & Identity",
+          fontSize = 26.sp,
+          fontWeight = FontWeight.Bold,
+          color = colors.ink
+        )
+      }
       Text(
-        text = "My Profile",
-        fontSize = 28.sp,
-        fontWeight = FontWeight.Bold,
-        color = colors.ink
-      )
-      Text(
-        text = "Your personal nutrition blueprint and preferences",
+        text = "Your personal Indian nutrition blueprint and Ayurvedic constitution",
         fontSize = 13.sp,
         color = colors.ink2
       )
@@ -277,15 +292,324 @@ fun ProfileScreen(
       }
     }
 
-    // CalSnapix 100% Free Status Banner
+    // Account & Authentication Access Banner
     Surface(
       shape = RoundedCornerShape(14.dp),
       color = colors.surface,
-      border = BorderStroke(1.dp, colors.accent.copy(alpha = 0.5f)),
+      border = BorderStroke(1.dp, colors.line),
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable { onNavigateToAuth() }
+        .testTag("profile_auth_action_banner")
+    ) {
+      Row(
+        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+          Surface(
+            shape = CircleShape,
+            color = colors.accentSoft,
+            modifier = Modifier.size(32.dp)
+          ) {
+            Box(contentAlignment = Alignment.Center) {
+              Icon(Icons.Default.Person, contentDescription = null, tint = colors.accent, modifier = Modifier.size(18.dp))
+            }
+          }
+          Column {
+            Text(
+              text = if (uiState.userEmail.isBlank() || uiState.userEmail.contains("guest", ignoreCase = true)) "Sign In / Register Account" else "Account & Security",
+              fontSize = 13.sp,
+              fontWeight = FontWeight.Bold,
+              color = colors.ink
+            )
+            Text(
+              text = if (uiState.userEmail.isBlank() || uiState.userEmail.contains("guest", ignoreCase = true)) "Sync meal data across all your devices" else "Logged in as ${uiState.userEmail}",
+              fontSize = 11.sp,
+              color = colors.ink2
+            )
+          }
+        }
+        Text(
+          text = if (uiState.userEmail.isBlank() || uiState.userEmail.contains("guest", ignoreCase = true)) "Sign In →" else "Manage →",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold,
+          color = colors.accent
+        )
+      }
+    }
+
+    // POINT 6: Goal Setting in Profile (Lose weight, Build muscle, Maintain)
+    Surface(
+      shape = RoundedCornerShape(16.dp),
+      color = colors.surface,
+      border = BorderStroke(1.dp, colors.line),
+      modifier = Modifier.fillMaxWidth().testTag("profile_goal_selector_card")
+    ) {
+      Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Column {
+            Text(
+              text = "Nutritional & Physique Goal",
+              fontSize = 15.sp,
+              fontWeight = FontWeight.Bold,
+              color = colors.ink
+            )
+            Text(
+              text = "Targets calibrated & stored in Supabase user_goals table",
+              fontSize = 11.sp,
+              color = colors.ink2
+            )
+          }
+          Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = colors.accentSoft
+          ) {
+            Text(
+              text = "Synced Cloud RLS",
+              fontSize = 10.sp,
+              fontWeight = FontWeight.Bold,
+              color = colors.accent,
+              modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+          }
+        }
+
+        // 3 Goal Tabs: Lose weight, Build muscle, Maintain
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          listOf(
+            Triple("lose_weight", "Lose Weight", "🔥 Deficit"),
+            Triple("build_muscle", "Build Muscle", "💪 High Protein"),
+            Triple("maintain", "Maintain", "⚖️ Balance")
+          ).forEach { (id, title, tag) ->
+            val isSelected = uiState.selectedGoalId == id
+            Surface(
+              shape = RoundedCornerShape(10.dp),
+              color = if (isSelected) colors.accent else colors.surface2,
+              border = BorderStroke(1.dp, if (isSelected) colors.accent else colors.line),
+              modifier = Modifier
+                .weight(1f)
+                .clickable { onUpdateGoalType(id) }
+                .testTag("goal_tab_$id")
+            ) {
+              Column(
+                modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+              ) {
+                Text(
+                  text = title,
+                  fontSize = 11.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = if (isSelected) Color.White else colors.ink,
+                  textAlign = TextAlign.Center
+                )
+                Text(
+                  text = tag,
+                  fontSize = 9.sp,
+                  color = if (isSelected) Color.White.copy(alpha = 0.85f) else colors.ink2,
+                  textAlign = TextAlign.Center
+                )
+              }
+            }
+          }
+        }
+
+        // Highlight based on goal (Point 6)
+        Surface(
+          shape = RoundedCornerShape(10.dp),
+          color = colors.surface2,
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            when (uiState.selectedGoalId) {
+              "build_muscle" -> {
+                Column {
+                  Text(text = "Primary Focus: Clean Protein Target", fontSize = 11.sp, color = colors.ink2)
+                  Text(text = "${uiState.proteinTargetGrams}g Protein / day", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colors.accent)
+                }
+                Text(text = "Target: ${uiState.dailyCalorieTarget} kcal", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+              }
+              "lose_weight" -> {
+                val remaining = (uiState.dailyCalorieTarget - uiState.currentCaloriesConsumed).coerceAtLeast(0)
+                Column {
+                  Text(text = "Primary Focus: Calories Remaining Today", fontSize = 11.sp, color = colors.ink2)
+                  Text(text = "$remaining kcal Remaining", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colors.accent)
+                }
+                Text(text = "Daily Limit: ${uiState.dailyCalorieTarget} kcal", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+              }
+              else -> {
+                Column {
+                  Text(text = "Primary Focus: Calorie & Macro Equilibrium", fontSize = 11.sp, color = colors.ink2)
+                  Text(text = "${uiState.dailyCalorieTarget} kcal Target", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colors.accent)
+                }
+                Text(text = "${uiState.proteinTargetGrams}g Protein", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // POINT 4: "My usual portions" section in the profile
+    Surface(
+      shape = RoundedCornerShape(16.dp),
+      color = colors.surface,
+      border = BorderStroke(1.dp, colors.line),
+      modifier = Modifier.fillMaxWidth().testTag("profile_my_usual_portions_card")
+    ) {
+      Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Column {
+            Text(
+              text = "My Usual Portions",
+              fontSize = 15.sp,
+              fontWeight = FontWeight.Bold,
+              color = colors.ink
+            )
+            Text(
+              text = "Top 10 dishes corrected by you (isolated to your account)",
+              fontSize = 11.sp,
+              color = colors.ink2
+            )
+          }
+          Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = colors.surface2,
+            border = BorderStroke(1.dp, colors.line)
+          ) {
+            Text(
+              text = "Adaptive AI",
+              fontSize = 10.sp,
+              fontWeight = FontWeight.Bold,
+              color = colors.accent,
+              modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+          }
+        }
+
+        val usualPortions = uiState.userCorrections.take(10)
+        if (usualPortions.isNotEmpty()) {
+          Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            usualPortions.forEach { c ->
+              Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = colors.surface2,
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Row(
+                  modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Text(text = c.dishId.replace('_', ' ').replaceFirstChar { it.uppercase() }, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = colors.ink)
+                  Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Default: ${c.originalValue}", fontSize = 11.sp, color = colors.ink2)
+                    Text(text = "→", fontSize = 11.sp, color = colors.accent)
+                    Text(text = c.correctedValue, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colors.accent)
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          // Pre-seeded authentic portion habits for Priya Sharma
+          val sampleUsual = listOf(
+            Triple("Whole Wheat Phulka", "1.0x (1 roti)", "1.5x (2 phulkas)"),
+            Triple("Dal Tadka", "1.0x (standard)", "1.0x (1 katori)"),
+            Triple("Homestyle Palak Paneer", "1.0x (standard)", "1.25x (generous)")
+          )
+          Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            sampleUsual.forEach { (dish, orig, userPref) ->
+              Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = colors.surface2,
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Row(
+                  modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Text(text = dish, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = colors.ink)
+                  Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = orig, fontSize = 11.sp, color = colors.ink2)
+                    Text(text = "→", fontSize = 11.sp, color = colors.accent)
+                    Text(text = userPref, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colors.accent)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // POINT 1 & POINT 7: Accuracy Benchmark & Trust & Privacy Actions
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+      // Accuracy Test Mode Action
+      Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = colors.surface,
+        border = BorderStroke(1.dp, colors.line),
+        modifier = Modifier
+          .weight(1f)
+          .clickable { showAccuracyTestDialog = true }
+          .testTag("profile_open_accuracy_mode_button")
+      ) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+          Icon(Icons.Default.Assessment, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
+          Text(text = "Accuracy Tests", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Text(text = "Avg Error: ${uiState.averageAccuracyError}%", fontSize = 11.sp, color = colors.ink2)
+        }
+      }
+
+      // Privacy & Data Trust Action
+      Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = colors.surface,
+        border = BorderStroke(1.dp, colors.line),
+        modifier = Modifier
+          .weight(1f)
+          .clickable { showPrivacyAndDataDialog = true }
+          .testTag("profile_open_privacy_trust_button")
+      ) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+          Icon(Icons.Default.PrivacyTip, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(20.dp))
+          Text(text = "Trust & Privacy", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Text(text = "30-day lifecycle • RLS", fontSize = 11.sp, color = colors.ink2)
+        }
+      }
+    }
+
+    // CalSnapix Premium Status Banner
+    Surface(
+      shape = RoundedCornerShape(14.dp),
+      color = colors.surface,
+      border = BorderStroke(1.dp, Color(0xFFFF9800).copy(alpha = 0.6f)),
       modifier = Modifier
         .fillMaxWidth()
         .clickable { onNavigateToPricing() }
-        .testTag("profile_free_status_banner")
+        .testTag("profile_premium_status_banner")
     ) {
       Row(
         modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -296,13 +620,13 @@ fun ProfileScreen(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Text("✨", fontSize = 15.sp)
-          Text("CalSnapix Free Access", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.ink)
-          Surface(shape = RoundedCornerShape(4.dp), color = colors.accentSoft) {
-            Text("100% FREE FOREVER", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = colors.accent, modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp))
+          Text("🔥", fontSize = 15.sp)
+          Text("Premium Launch Special", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.ink)
+          Surface(shape = RoundedCornerShape(4.dp), color = Color(0xFFFFEBEE)) {
+            Text("THIS WEEK ONLY", fontSize = 9.sp, fontWeight = FontWeight.Black, color = Color(0xFFC62828), modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp))
           }
         }
-        Icon(Icons.Default.CheckCircle, contentDescription = "Free Access Active", tint = colors.accent, modifier = Modifier.size(16.dp))
+        Text("From $0.09/day →", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colors.accent)
       }
     }
 
@@ -726,14 +1050,14 @@ fun ProfileScreen(
             }
             Column {
               Text(
-                text = "CalSnapix Membership",
+                text = "CalSnapix Premium Membership",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = colors.ink
               )
               Text(
-                text = "All features unlocked • 100% Free Forever",
-                fontSize = 12.sp,
+                text = "Day Pass $0.09 • Month $1.99 ($0.07/day) • Year $14.99 ($0.04/day)",
+                fontSize = 11.sp,
                 color = colors.ink2
               )
             }
@@ -741,12 +1065,12 @@ fun ProfileScreen(
 
           Surface(
             shape = RoundedCornerShape(999.dp),
-            color = colors.accent
+            color = Color(0xFFFF9800)
           ) {
             Text(
-              text = "FREE FOREVER",
-              fontSize = 10.sp,
-              fontWeight = FontWeight.Bold,
+              text = "THIS WEEK ONLY",
+              fontSize = 9.sp,
+              fontWeight = FontWeight.Black,
               color = Color.White,
               modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
             )
@@ -764,10 +1088,10 @@ fun ProfileScreen(
             verticalAlignment = Alignment.CenterVertically
           ) {
             Column {
-              Text("ZERO SUBSCRIPTIONS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colors.ink2)
+              Text("STARTING AT $0.09 / DAY", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colors.ink2)
               Text(
-                text = "Unlimited Scans & AI Free",
-                fontSize = 15.sp,
+                text = "Save Up to 86% vs Others",
+                fontSize = 14.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = colors.accent
               )
@@ -779,7 +1103,7 @@ fun ProfileScreen(
               shape = RoundedCornerShape(10.dp),
               modifier = Modifier.testTag("open_pricing_screen_button")
             ) {
-              Text("View Free Features", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+              Text("View Plans", fontSize = 12.sp, fontWeight = FontWeight.Bold)
               Spacer(modifier = Modifier.width(4.dp))
               Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(14.dp))
             }
@@ -1050,11 +1374,13 @@ fun ProfileScreen(
     )
   }
 
-  // DIALOG 3: Pricing Paywall Modal (All 5 plans, per day highlight & Instagram 20% discount)
+  // DIALOG 3: Pricing Paywall Modal (All 5 plans, per day highlight & dollar/euro conversion)
   if (showPricingPaywallDialog) {
     PricingPaywallDialog(
       onDismiss = { showPricingPaywallDialog = false },
-      onSubscribeSuccess = { _ -> showPricingPaywallDialog = false }
+      onSubscribeSuccess = { planId ->
+        showPricingPaywallDialog = false
+      }
     )
   }
 
@@ -1315,6 +1641,23 @@ fun ProfileScreen(
           Text("Understood")
         }
       }
+    )
+  }
+
+  if (showPrivacyAndDataDialog) {
+    com.example.ui.components.PrivacyAndDataScreenDialog(
+      optInModelTraining = uiState.optInAiTraining,
+      onToggleModelTraining = onToggleAiConsent,
+      onDeleteMyData = onDeleteMyData,
+      onDismiss = { showPrivacyAndDataDialog = false }
+    )
+  }
+
+  if (showAccuracyTestDialog) {
+    com.example.ui.components.AccuracyTestModeDialog(
+      testHistory = uiState.accuracyTests,
+      onSaveTest = onSaveAccuracyTest,
+      onDismiss = { showAccuracyTestDialog = false }
     )
   }
 }

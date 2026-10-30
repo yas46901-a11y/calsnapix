@@ -95,7 +95,8 @@ class MealRepository(context: Context) {
     photoUri: String? = null,
     scanSource: String = "CAMERA",
     barcode: String? = null,
-    chefNote: String = ""
+    chefNote: String = "",
+    scannedAt: Long = System.currentTimeMillis()
   ): Long = withContext(Dispatchers.IO) {
     val mealEntity = ScannedMealEntity(
       userId = userId,
@@ -107,7 +108,8 @@ class MealRepository(context: Context) {
       photoUri = photoUri,
       scanSource = scanSource,
       barcode = barcode,
-      chefNote = chefNote
+      chefNote = chefNote,
+      scannedAt = scannedAt
     )
     val nutritionEntity = NutritionalInfoEntity(
       scannedMealId = 0,

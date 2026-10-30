@@ -2,81 +2,98 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// CalSnapix Apple Health meets Cal AI palette — Orange is completely banned.
-val CalBgLight = Color(0xFFF7F6F2)
-val CalBgDark = Color(0xFF0B0C0B)
+// =====================================================================
+// PREMIUM LUXURY AUTOMOTIVE & FINTECH DESIGN SYSTEM PALETTE
+// Minimal, modern, neutral base with single precision accent and soft gray
+// =====================================================================
 
-val CalSurfaceLight = Color(0xFFFFFFFF)
-val CalSurfaceDark = Color(0xFF151716)
+// Neutral Base Tokens
+val AutoNeutralLight = Color(0xFFF8F9FA)       // Crisp near-white base (#F8F9FA)
+val AutoNeutralDark = Color(0xFF0F1115)        // Very dark charcoal / obsidian (#0F1115)
 
-val CalSurface2Light = Color(0xFFEFEDE7)
-val CalSurface2Dark = Color(0xFF1E211F)
+// Surface Tokens
+val AutoSurfaceLight = Color(0xFFFFFFFF)       // Clean white card surface
+val AutoSurfaceDark = Color(0xFF171A21)        // Elevated dark surface (#171A21)
 
-val CalInkLight = Color(0xFF0E0F0C)
-val CalInkDark = Color(0xFFF4F3EE)
+// Secondary Elevated Surface Tokens
+val AutoSurface2Light = Color(0xFFF1F3F6)      // Subtle secondary card surface
+val AutoSurface2Dark = Color(0xFF20242D)       // Subtle secondary dark surface
 
-val CalInk2Light = Color(0xFF5E6159)
-val CalInk2Dark = Color(0xFFA3A79F)
+// Text / Ink Tokens
+val AutoInkLight = Color(0xFF111827)           // Deep charcoal primary text (#111827)
+val AutoInkDark = Color(0xFFF9FAFB)            // Crisp near-white primary text (#F9FAFB)
+val AutoInk2Light = Color(0xFF6B7280)          // Soft gray secondary text (#6B7280)
+val AutoInk2Dark = Color(0xFF9CA3AF)           // Soft gray secondary text dark (#9CA3AF)
 
-val CalLineLight = Color(0xFFE4E2DA)
-val CalLineDark = Color(0xFF2A2D2B)
+// Divider / Line Tokens
+val AutoLineLight = Color(0xFFE5E7EB)          // Subtle divider line (#E5E7EB)
+val AutoLineDark = Color(0xFF262B35)           // Subtle dark divider line (#262B35)
 
-val CalAccentLight = Color(0xFF0F5C47) // Deep Emerald
-val CalAccentDark = Color(0xFF4ADE9F)
+// Single Precision Accent Token (Used sparingly for primary actions)
+val AutoAccentLight = Color(0xFF2563EB)        // Precision electric blue (#2563EB)
+val AutoAccentDark = Color(0xFF3B82F6)         // Electric blue dark mode (#3B82F6)
+val AutoAccentSoftLight = Color(0xFFEFF6FF)    // Soft accent tint
+val AutoAccentSoftDark = Color(0xFF1E293B)     // Dark accent tint
 
-val CalAccentSoftLight = Color(0xFFDCEBE4)
-val CalAccentSoftDark = Color(0xFF14302A)
+// Functional Status Tokens
+val AutoSuccessLight = Color(0xFF10B981)       // Precision status green
+val AutoSuccessDark = Color(0xFF34D399)
+val AutoWarnLight = Color(0xFFF59E0B)          // Amber warning
+val AutoWarnDark = Color(0xFFFBBF24)
+val AutoDangerLight = Color(0xFFEF4444)        // Alert red
+val AutoDangerDark = Color(0xFFF87171)
 
-// Macro Colors
-val CalProteinLight = Color(0xFF4C5BD4) // Indigo
-val CalProteinDark = Color(0xFF8C97F2)
+// Mappings into CalTheme
+val CalBgLight = AutoNeutralLight
+val CalBgDark = AutoNeutralDark
 
-val CalCarbsLight = Color(0xFFD9A441)   // Muted Gold
-val CalCarbsDark = Color(0xFFE8C06A)
+val CalSurfaceLight = AutoSurfaceLight
+val CalSurfaceDark = AutoSurfaceDark
 
-val CalFatLight = Color(0xFFD9697F)     // Dusty Rose
-val CalFatDark = Color(0xFFEE90A2)
+val CalSurface2Light = AutoSurface2Light
+val CalSurface2Dark = AutoSurface2Dark
 
-val CalSuccessLight = Color(0xFF2E9E6B)
-val CalSuccessDark = Color(0xFF4ADE9F)
+val CalInkLight = AutoInkLight
+val CalInkDark = AutoInkDark
 
-val CalWarnLight = Color(0xFFC98A1B)
-val CalWarnDark = Color(0xFFE8C06A)
+val CalInk2Light = AutoInk2Light
+val CalInk2Dark = AutoInk2Dark
 
-val CalDangerLight = Color(0xFFC8433B)
-val CalDangerDark = Color(0xFFF87171)
+val CalLineLight = AutoLineLight
+val CalLineDark = AutoLineDark
 
-// Backward-compatible mappings (Orange eliminated — mapped to emerald and ink)
-val AhaarPrimary = CalAccentLight
-val AhaarPrimaryContainer = CalInkLight
+val CalAccentLight = AutoAccentLight
+val CalAccentDark = AutoAccentDark
+
+val CalAccentSoftLight = AutoAccentSoftLight
+val CalAccentSoftDark = AutoAccentSoftDark
+
+val CalProteinLight = AutoAccentLight
+val CalProteinDark = AutoAccentDark
+
+val CalCarbsLight = Color(0xFF64748B)
+val CalCarbsDark = Color(0xFF94A3B8)
+
+val CalFatLight = Color(0xFF475569)
+val CalFatDark = Color(0xFF64748B)
+
+val CalSuccessLight = AutoSuccessLight
+val CalSuccessDark = AutoSuccessDark
+
+val CalWarnLight = AutoWarnLight
+val CalWarnDark = AutoWarnDark
+
+val CalDangerLight = AutoDangerLight
+val CalDangerDark = AutoDangerDark
+
+// Backward-compatible semantic bindings mapped to luxury automotive/fintech palette
+val AhaarPrimary = AutoAccentLight
 val AhaarOnPrimary = Color.White
-val AhaarOnPrimaryContainer = CalBgLight
-val AhaarPrimaryFixed = CalAccentSoftLight
-val AhaarPrimaryFixedDim = CalAccentSoftLight
+val AhaarPrimaryContainer = AutoAccentSoftLight
+val AhaarPrimaryFixed = AutoAccentSoftLight
+val AhaarSecondary = AutoInk2Light
+val AhaarSecondaryFixed = AutoLineLight
+val AhaarTertiary = AutoAccentLight
+val AhaarTertiaryContainer = AutoAccentSoftLight
+val AhaarTertiaryFixed = AutoLineLight
 
-val AhaarSecondary = CalInk2Light
-val AhaarSecondaryContainer = CalSurface2Light
-val AhaarSecondaryFixed = CalSurface2Light
-val AhaarSecondaryFixedDim = CalLineLight
-val AhaarOnSecondaryFixed = CalInkLight
-val AhaarOnSecondaryFixedVariant = CalInk2Light
-
-val AhaarTertiary = CalAccentLight
-val AhaarTertiaryContainer = CalAccentSoftLight
-val AhaarTertiaryFixed = CalAccentSoftLight
-val AhaarTertiaryFixedDim = CalAccentSoftLight
-val AhaarOnTertiaryFixed = CalInkLight
-val AhaarOnTertiaryFixedVariant = CalAccentLight
-
-val AhaarSurface = CalSurfaceLight
-val AhaarBackground = CalBgLight
-val AhaarSurfaceContainerLowest = Color.White
-val AhaarSurfaceContainerLow = CalSurface2Light
-val AhaarSurfaceContainer = CalSurface2Light
-val AhaarSurfaceContainerHigh = CalLineLight
-val AhaarSurfaceContainerHighest = CalLineLight
-
-val AhaarOnSurface = CalInkLight
-val AhaarOnSurfaceVariant = CalInk2Light
-val AhaarOutline = CalLineLight
-val AhaarOutlineVariant = CalLineLight

@@ -77,7 +77,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import java.util.Locale
-import coil.compose.AsyncImage
+import com.example.ui.components.IndianGreetingBadge
+import com.example.ui.components.IndianMandalaMotif
+import com.example.ui.components.IndianRangoliDivider
+import com.example.ui.components.IndianToranBorder
 import com.example.AhaarUiState
 import com.example.data.gemini.GeminiService
 import com.example.data.gemini.LeftoverRecipeResult
@@ -198,12 +201,24 @@ fun RecipesScreen(
       verticalAlignment = Alignment.CenterVertically
     ) {
       Column(modifier = Modifier.weight(1f)) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          Text("🪷", fontSize = 18.sp)
+          Text(
+            text = "Indian Recipe Catalog",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = colors.ink,
+            letterSpacing = (-0.5).sp
+          )
+        }
         Text(
-          text = "Global & Desi Kitchen",
-          fontSize = 24.sp,
-          fontWeight = FontWeight.Bold,
-          color = colors.ink,
-          letterSpacing = (-0.5).sp
+          text = "Ghar Ka Khana & Ayurvedic Nutrition",
+          fontSize = 11.sp,
+          fontWeight = FontWeight.SemiBold,
+          color = colors.accent
         )
       }
 
@@ -381,15 +396,59 @@ fun RecipesScreen(
       },
       text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-          AsyncImage(
-            model = recipe.imageUrl,
-            contentDescription = recipe.title,
+          Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = colors.accentSoft,
             modifier = Modifier
               .fillMaxWidth()
-              .height(180.dp)
-              .clip(RoundedCornerShape(14.dp)),
-            contentScale = ContentScale.Crop
-          )
+              .height(90.dp)
+          ) {
+            Row(
+              modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+              Surface(
+                shape = CircleShape,
+                color = colors.surface,
+                modifier = Modifier.size(52.dp)
+              ) {
+                Box(contentAlignment = Alignment.Center) {
+                  Text(
+                    text = when {
+                      recipe.title.contains("Idli", true) || recipe.title.contains("Dosa", true) -> "🥞"
+                      recipe.title.contains("Paneer", true) -> "🧀"
+                      recipe.title.contains("Chicken", true) -> "🍗"
+                      recipe.title.contains("Fish", true) -> "🐟"
+                      recipe.title.contains("Egg", true) -> "🍳"
+                      recipe.title.contains("Dal", true) || recipe.title.contains("Chilla", true) -> "🍲"
+                      recipe.title.contains("Paratha", true) || recipe.title.contains("Thepla", true) -> "🫓"
+                      recipe.title.contains("Chaat", true) || recipe.title.contains("Salad", true) -> "🥗"
+                      recipe.title.contains("Poha", true) || recipe.title.contains("Oats", true) || recipe.title.contains("Khichdi", true) -> "🥣"
+                      else -> "🍛"
+                    },
+                    fontSize = 28.sp
+                  )
+                }
+              }
+              Column {
+                Text(
+                  text = recipe.category,
+                  fontSize = 11.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = colors.accent
+                )
+                Text(
+                  text = recipe.macroHighlight,
+                  fontSize = 13.sp,
+                  fontWeight = FontWeight.SemiBold,
+                  color = colors.ink
+                )
+              }
+            }
+          }
           Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -1115,31 +1174,98 @@ private fun LargeRecipeCard(
     shape = CalTheme.cardShape
   ) {
     Column {
-      // Large recipe image
-      Box(modifier = Modifier.fillMaxWidth().height(160.dp)) {
-        AsyncImage(
-          model = recipe.imageUrl,
-          contentDescription = recipe.title,
-          modifier = Modifier.fillMaxSize(),
-          contentScale = ContentScale.Crop
-        )
-        // Bookmark button
-        IconButton(
-          onClick = onBookmarkClick,
+      // Culinary Category & Icon Header (No Images)
+      Surface(
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        color = colors.surface2,
+        modifier = Modifier.fillMaxWidth().height(80.dp)
+      ) {
+        Row(
           modifier = Modifier
-            .align(Alignment.TopEnd)
-            .padding(10.dp)
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.5f))
-            .testTag("bookmark_${recipe.id}")
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
         ) {
-          Icon(
-            imageVector = if (recipe.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-            contentDescription = "Bookmark",
-            tint = if (recipe.isBookmarked) colors.accent else Color.White,
-            modifier = Modifier.size(20.dp)
-          )
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+          ) {
+            Surface(
+              shape = CircleShape,
+              color = colors.accentSoft,
+              modifier = Modifier.size(44.dp)
+            ) {
+              Box(contentAlignment = Alignment.Center) {
+                Text(
+                  text = when {
+                    recipe.title.contains("Idli", true) || recipe.title.contains("Dosa", true) -> "🥞"
+                    recipe.title.contains("Paneer", true) -> "🧀"
+                    recipe.title.contains("Chicken", true) -> "🍗"
+                    recipe.title.contains("Fish", true) -> "🐟"
+                    recipe.title.contains("Egg", true) -> "🍳"
+                    recipe.title.contains("Dal", true) || recipe.title.contains("Chilla", true) -> "🍲"
+                    recipe.title.contains("Paratha", true) || recipe.title.contains("Thepla", true) -> "🫓"
+                    recipe.title.contains("Chaat", true) || recipe.title.contains("Salad", true) -> "🥗"
+                    recipe.title.contains("Poha", true) || recipe.title.contains("Oats", true) || recipe.title.contains("Khichdi", true) -> "🥣"
+                    else -> "🍛"
+                  },
+                  fontSize = 24.sp
+                )
+              }
+            }
+
+            Column {
+              Surface(
+                shape = RoundedCornerShape(4.dp),
+                color = when {
+                  recipe.title.contains("Chicken", true) || recipe.title.contains("Fish", true) || recipe.title.contains("Turkey", true) -> Color(0xFFFFEBEE)
+                  recipe.title.contains("Egg", true) -> Color(0xFFFFF8E1)
+                  else -> Color(0xFFE8F5E9)
+                }
+              ) {
+                Text(
+                  text = when {
+                    recipe.title.contains("Chicken", true) || recipe.title.contains("Fish", true) || recipe.title.contains("Turkey", true) -> "🔴 Non-Veg"
+                    recipe.title.contains("Egg", true) -> "🟡 Eggetarian"
+                    else -> "🟢 Pure Veg"
+                  },
+                  fontSize = 10.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = when {
+                    recipe.title.contains("Chicken", true) || recipe.title.contains("Fish", true) || recipe.title.contains("Turkey", true) -> Color(0xFFC62828)
+                    recipe.title.contains("Egg", true) -> Color(0xFFF57F17)
+                    else -> Color(0xFF2E7D32)
+                  },
+                  modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+              }
+              Spacer(modifier = Modifier.height(2.dp))
+              Text(
+                text = recipe.category,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.ink2
+              )
+            }
+          }
+
+          IconButton(
+            onClick = onBookmarkClick,
+            modifier = Modifier
+              .size(36.dp)
+              .clip(CircleShape)
+              .background(colors.surface)
+              .border(1.dp, colors.line, CircleShape)
+              .testTag("bookmark_${recipe.id}")
+          ) {
+            Icon(
+              imageVector = if (recipe.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+              contentDescription = "Bookmark",
+              tint = if (recipe.isBookmarked) colors.accent else colors.ink2,
+              modifier = Modifier.size(18.dp)
+            )
+          }
         }
       }
 

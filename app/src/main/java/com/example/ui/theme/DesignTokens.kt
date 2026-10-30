@@ -78,38 +78,38 @@ data class CalColors(
 )
 
 val LightCalColors = CalColors(
-  bg = Color(0xFFF7F6F2),          // warm ivory
-  surface = Color(0xFFFFFFFF),     // crisp white
-  surface2 = Color(0xFFEFEDE7),    // elevated warm ivory
-  ink = Color(0xFF0E0F0C),         // primary deep text
-  ink2 = Color(0xFF5E6159),        // secondary muted text
-  line = Color(0xFFE4E2DA),        // delicate dividing line
-  accent = Color(0xFF0F5C47),      // deep emerald
-  accentSoft = Color(0xFFDCEBE4),  // soft emerald mist
-  protein = Color(0xFF4C5BD4),     // modern indigo
-  carbs = Color(0xFFD9A441),       // muted gold
-  fat = Color(0xFFD9697F),         // dusty rose
-  success = Color(0xFF2E9E6B),     // fresh jade
-  warn = Color(0xFFC98A1B),        // amber gold
-  danger = Color(0xFFC8433B),      // muted crimson
+  bg = AutoNeutralLight,           // near-white neutral background (#F8F9FA)
+  surface = AutoSurfaceLight,      // crisp white card surface (#FFFFFF)
+  surface2 = AutoSurface2Light,    // secondary neutral surface (#F1F3F6)
+  ink = AutoInkLight,              // primary dark charcoal text (#111827)
+  ink2 = AutoInk2Light,            // soft gray secondary text (#6B7280)
+  line = AutoLineLight,            // subtle border & divider line (#E5E7EB)
+  accent = AutoAccentLight,        // precision electric blue (#2563EB)
+  accentSoft = AutoAccentSoftLight,// soft blue tint (#EFF6FF)
+  protein = AutoAccentLight,       // primary metric accent
+  carbs = Color(0xFF64748B),       // slate
+  fat = Color(0xFF475569),         // dark slate
+  success = AutoSuccessLight,      // status green (#10B981)
+  warn = AutoWarnLight,            // amber warning (#F59E0B)
+  danger = AutoDangerLight,        // alert red (#EF4444)
   isDark = false
 )
 
 val DarkCalColors = CalColors(
-  bg = Color(0xFF0B0C0B),          // true dark
-  surface = Color(0xFF151716),     // elevated surface
-  surface2 = Color(0xFF1E211F),    // secondary surface
-  ink = Color(0xFFF4F3EE),         // primary light text
-  ink2 = Color(0xFFA3A79F),        // secondary muted text
-  line = Color(0xFF2A2D2B),        // dark line
-  accent = Color(0xFF4ADE9F),      // vibrant mint emerald
-  accentSoft = Color(0xFF14302A),  // deep emerald container
-  protein = Color(0xFF8C97F2),     // soft indigo
-  carbs = Color(0xFFE8C06A),       // soft gold
-  fat = Color(0xFFEE90A2),         // soft rose
-  success = Color(0xFF4ADE9F),
-  warn = Color(0xFFE8C06A),
-  danger = Color(0xFFF87171),
+  bg = AutoNeutralDark,            // deep obsidian/charcoal background (#0F1115)
+  surface = AutoSurfaceDark,       // dark surface (#171A21)
+  surface2 = AutoSurface2Dark,     // secondary dark surface (#20242D)
+  ink = AutoInkDark,               // crisp light text (#F9FAFB)
+  ink2 = AutoInk2Dark,             // soft gray secondary text (#9CA3AF)
+  line = AutoLineDark,             // subtle dark border (#262B35)
+  accent = AutoAccentDark,         // precision electric blue (#3B82F6)
+  accentSoft = AutoAccentSoftDark, // dark blue tint (#1E293B)
+  protein = AutoAccentDark,
+  carbs = Color(0xFF94A3B8),
+  fat = Color(0xFF64748B),
+  success = AutoSuccessDark,
+  warn = AutoWarnDark,
+  danger = AutoDangerDark,
   isDark = true
 )
 
@@ -120,11 +120,11 @@ object CalTheme {
     @Composable
     get() = LocalCalColors.current
 
-  val cardRadius: Dp = 20.dp
-  val pillRadius: Dp = 999.dp
-  val cardShape = RoundedCornerShape(20.dp)
-  val pillShape = RoundedCornerShape(999.dp)
-  val sidePadding: Dp = 20.dp
+  val cardRadius: Dp = 14.dp
+  val pillRadius: Dp = 12.dp
+  val cardShape = RoundedCornerShape(14.dp)
+  val pillShape = RoundedCornerShape(12.dp)
+  val sidePadding: Dp = 16.dp
 }
 
 /**
@@ -343,8 +343,8 @@ fun CalSecondaryButton(
 }
 
 /**
- * Standard CalSnapix Card:
- * --surface background, 1px --line border, 20dp corners, soft shadow.
+ * Standard CalSnapix Frosted Glassmorphism Card:
+ * Translucent frosted glass fill, specular highlight gradient border, 20dp corners, soft shadow.
  */
 @Composable
 fun CalCard(
@@ -354,6 +354,7 @@ fun CalCard(
   borderColor: Color = CalTheme.colors.line,
   content: @Composable ColumnScope.() -> Unit
 ) {
+  val colors = CalTheme.colors
   val clickModifier = if (onClick != null) {
     val view = LocalView.current
     Modifier.clickable {
@@ -365,15 +366,21 @@ fun CalCard(
   Surface(
     modifier = modifier
       .fillMaxWidth()
-      .shadow(elevation = 1.dp, shape = CalTheme.cardShape, clip = false)
-      .border(1.dp, borderColor, CalTheme.cardShape)
+      .shadow(
+        elevation = 2.dp,
+        shape = CalTheme.cardShape,
+        clip = false,
+        ambientColor = Color(0x10000000),
+        spotColor = Color(0x0C000000)
+      )
+      .border(BorderStroke(1.dp, borderColor), CalTheme.cardShape)
       .clip(CalTheme.cardShape)
       .then(clickModifier),
     color = backgroundColor,
     shape = CalTheme.cardShape
   ) {
     Column(
-      modifier = Modifier.padding(18.dp),
+      modifier = Modifier.padding(16.dp),
       content = content
     )
   }

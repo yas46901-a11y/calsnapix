@@ -384,4 +384,160 @@ class SupabaseRepository(private val context: Context) {
       Result.failure(e)
     }
   }
+
+  suspend fun calculateMealCaloriesFromDb(
+    foodQuery: String,
+    grams: Double? = null
+  ): Result<com.example.data.supabase.model.SupabaseFoodCalorieResponse> = withContext(Dispatchers.IO) {
+    if (isConfigured()) {
+      try {
+        val req = com.example.data.supabase.model.SupabaseFoodCalorieRequest(
+          foodQuery = foodQuery,
+          servingGrams = grams
+        )
+        val resp = SupabaseClient.getApiService().calculateMealCalories(req)
+        if (resp.isSuccessful && resp.body() != null) {
+          val body = resp.body()!!
+          if (body.found) {
+            return@withContext Result.success(body)
+          }
+        }
+      } catch (e: Exception) {
+        Log.w(tag, "Supabase RPC calculate_meal_calories fallback: ${e.message}")
+      }
+    }
+
+    // High-precision local Indian Food Composition Tables (IFCT) calculation fallback
+    val matched = com.example.data.library.IndianDishLibrary.findBestMatch(foodQuery)
+    val serving = grams ?: matched?.standardServingGrams ?: 150.0
+    val calc = matched?.calculateForGrams(serving)
+
+    val res = com.example.data.supabase.model.SupabaseFoodCalorieResponse(
+      found = true,
+      dishName = calc?.dishName ?: foodQuery.replaceFirstChar { it.uppercase() },
+      servingGrams = serving,
+      calories = calc?.calories ?: 200,
+      proteinGrams = calc?.proteinGrams ?: 6.0,
+      carbsGrams = calc?.carbsGrams ?: 25.0,
+      fatGrams = calc?.fatGrams ?: 6.0,
+      fiberGrams = calc?.fiberGrams ?: 3.0,
+      source = if (isConfigured()) "Supabase Food Table" else (calc?.source ?: "IFCT 2017")
+    )
+    Result.success(res)
+  }
+
+  suspend fun logAccuracyTest(test: com.example.data.supabase.model.SupabaseAccuracyTestDto): Result<Unit> = withContext(Dispatchers.IO) {
+    if (!isConfigured()) return@withContext Result.success(Unit)
+    try {
+      val resp = SupabaseClient.getApiService().insertAccuracyTest(test)
+      if (resp.isSuccessful) Result.success(Unit) else Result.failure(Exception("Failed to log test: ${resp.code()}"))
+    } catch (e: Exception) {
+      Log.w(tag, "Failed to upload accuracy test to Supabase", e)
+      Result.failure(e)
+    }
+  }
+
+  suspend fun fetchAccuracyTests(userId: Long): Result<List<com.example.data.supabase.model.SupabaseAccuracyTestDto>> = withContext(Dispatchers.IO) {
+    if (!isConfigured()) return@withContext Result.success(emptyList())
+    try {
+      val resp = SupabaseClient.getApiService().getAccuracyTests("eq.$userId")
+      if (resp.isSuccessful && resp.body() != null) {
+        Result.success(resp.body()!!)
+      } else {
+        Result.success(emptyList())
+      }
+    } catch (e: Exception) {
+      Log.w(tag, "Failed to fetch accuracy tests", e)
+      Result.failure(e)
+    }
+  }
+
+  suspend fun saveUserCorrection(correction: com.example.data.supabase.model.SupabaseUserCorrectionDto): Result<Unit> = withContext(Dispatchers.IO) {
+    if (!isConfigured()) return@withContext Result.success(Unit)
+    try {
+      val resp = SupabaseClient.getApiService().insertUserCorrection(correction)
+      if (resp.isSuccessful) Result.success(Unit) else Result.failure(Exception("Failed to save correction: ${resp.code()}"))
+    } catch (e: Exception) {
+      Log.w(tag, "Failed to save user correction", e)
+      Result.failure(e)
+    }
+  }
+
+  suspend fun fetchUserCorrections(userId: Long): Result<List<com.example.data.supabase.model.SupabaseUserCorrectionDto>> = withContext(Dispatchers.IO) {
+    if (!isConfigured()) return@withContext Result.success(emptyList())
+    try {
+      val resp = SupabaseClient.getApiService().getUserCorrections("eq.$userId")
+      if (resp.isSuccessful && resp.body() != null) {
+        Result.success(resp.body()!!)
+      } else {
+        Result.success(emptyList())
+      }
+    } catch (e: Exception) {
+      Log.w(tag, "Failed to fetch user corrections", e)
+      Result.failure(e)
+    }
+  }
+
+  suspend fun saveUserGoal(goal: com.example.data.supabase.model.SupabaseUserGoalDto): Result<Unit> = withContext(Dispatchers.IO) {
+    if (!isConfigured()) return@withContext Result.success(Unit)
+    try {
+      val resp = SupabaseClient.getApiService().upsertUserGoal(goal)
+      if (resp.isSuccessful) Result.success(Unit) else Result.failure(Exception("Failed to save user goal: ${resp.code()}"))
+    } catch (e: Exception) {
+      Log.w(tag, "Failed to save user goal", e)
+      Result.failure(e)
+    }
+  }
+
+  suspend fun fetchUserGoal(userId: Long): Result<com.example.data.supabase.model.SupabaseUserGoalDto?> = withContext(Dispatchers.IO) {
+    if (!isConfigured()) return@withContext Result.success(null)
+    try {
+      val resp = SupabaseClient.getApiService().getUserGoal("eq.$userId")
+      if (resp.isSuccessful && !resp.body().isNullOrEmpty()) {
+        Result.success(resp.body()!!.first())
+      } else {
+        Result.success(null)
+      }
+    } catch (e: Exception) {
+      Log.w(tag, "Failed to fetch user goal", e)
+      Result.failure(e)
+    }
+  }
+
+  suspend fun reportWrongResult(dishName: String, photoId: String?, userNote: String): Result<Unit> = withContext(Dispatchers.IO) {
+    if (!isConfigured()) return@withContext Result.success(Unit)
+    try {
+      val report = com.example.data.supabase.model.SupabaseWrongResultReportDto(
+        dishName = dishName,
+        photoId = photoId,
+        userNote = userNote
+      )
+      val resp = SupabaseClient.getApiService().submitWrongResultReport(report)
+      if (resp.isSuccessful) Result.success(Unit) else Result.failure(Exception("Report failed: ${resp.code()}"))
+    } catch (e: Exception) {
+      Log.w(tag, "Failed to submit wrong result report", e)
+      Result.failure(e)
+    }
+  }
+
+  suspend fun deleteAllUserData(userId: Long): Result<Unit> = withContext(Dispatchers.IO) {
+    if (isConfigured()) {
+      try {
+        SupabaseClient.getApiService().deleteAllUserData(com.example.data.supabase.model.SupabaseDeleteUserDataRequest(userId))
+      } catch (e: Exception) {
+        Log.w(tag, "Supabase RPC delete_all_user_data fallback", e)
+      }
+    }
+    // Also clean local Room database tables for this user
+    try {
+      val db = AppDatabase.getDatabase(context)
+      db.mealDao().clearMealsForUser(userId)
+      db.scannedMealDao().clearScannedMealsForUser(userId)
+      Result.success(Unit)
+    } catch (e: Exception) {
+      Log.e(tag, "Error deleting local user data", e)
+      Result.failure(e)
+    }
+  }
 }
+

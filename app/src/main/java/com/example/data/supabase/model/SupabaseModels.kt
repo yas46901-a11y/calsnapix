@@ -97,3 +97,75 @@ data class SupabaseAuthUserResponse(
   @Json(name = "user_metadata") val userMetadata: SupabaseUserMetadata? = null
 )
 
+@JsonClass(generateAdapter = true)
+data class SupabaseFoodCalorieRequest(
+  @Json(name = "p_food_query") val foodQuery: String,
+  @Json(name = "p_serving_grams") val servingGrams: Double? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SupabaseFoodCalorieResponse(
+  @Json(name = "found") val found: Boolean = false,
+  @Json(name = "dish_name") val dishName: String? = null,
+  @Json(name = "serving_grams") val servingGrams: Double? = null,
+  @Json(name = "calories") val calories: Int? = null,
+  @Json(name = "protein_grams") val proteinGrams: Double? = null,
+  @Json(name = "carbs_grams") val carbsGrams: Double? = null,
+  @Json(name = "fat_grams") val fatGrams: Double? = null,
+  @Json(name = "fiber_grams") val fiberGrams: Double? = null,
+  @Json(name = "iron_mg") val ironMg: Double? = null,
+  @Json(name = "calcium_mg") val calciumMg: Double? = null,
+  @Json(name = "source") val source: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SupabaseAccuracyTestDto(
+  @Json(name = "id") val id: Long? = null,
+  @Json(name = "user_id") val userId: Long? = null,
+  @Json(name = "meal_name") val mealName: String,
+  @Json(name = "category") val category: String = "Curry / Sabzi",
+  @Json(name = "weighed_grams") val weighedGrams: Double,
+  @Json(name = "estimated_grams") val estimatedGrams: Double,
+  @Json(name = "weighed_kcal") val weighedKcal: Double,
+  @Json(name = "estimated_kcal") val estimatedKcal: Double,
+  @Json(name = "error_percent") val errorPercent: Double,
+  @Json(name = "created_at") val createdAt: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SupabaseUserCorrectionDto(
+  @Json(name = "id") val id: Long? = null,
+  @Json(name = "user_id") val userId: Long,
+  @Json(name = "dish_id") val dishId: String,
+  @Json(name = "original_value") val originalValue: String,
+  @Json(name = "corrected_value") val correctedValue: String,
+  @Json(name = "field_changed") val fieldChanged: String, // 'portion', 'dish_name', 'calories'
+  @Json(name = "created_at") val createdAt: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SupabaseUserGoalDto(
+  @Json(name = "user_id") val userId: Long,
+  @Json(name = "goal_type") val goalType: String, // 'lose_weight', 'build_muscle', 'maintain'
+  @Json(name = "calorie_target") val calorieTarget: Int,
+  @Json(name = "protein_target") val proteinTarget: Int,
+  @Json(name = "carbs_target") val carbsTarget: Int,
+  @Json(name = "fat_target") val fatTarget: Int,
+  @Json(name = "updated_at") val updatedAt: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SupabaseWrongResultReportDto(
+  @Json(name = "id") val id: Long? = null,
+  @Json(name = "dish_name") val dishName: String,
+  @Json(name = "photo_id") val photoId: String? = null,
+  @Json(name = "user_note") val userNote: String,
+  @Json(name = "created_at") val createdAt: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SupabaseDeleteUserDataRequest(
+  @Json(name = "p_user_id") val userId: Long
+)
+
+
